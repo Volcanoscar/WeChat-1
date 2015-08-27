@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp" 
+    android:layout_marginBottom="10dp">
+        
+	<ImageView
+		android:id="@+id/img_user_icon"
+      	android:layout_width="wrap_content"
+      	android:layout_height="wrap_content"
+      	android:layout_alignParentLeft="true"
+      	android:layout_centerVertical="true"
+      	android:contentDescription="@string/contentDesc"
+      	android:src="@drawable/head"/>
+
+  	<TextView
+      	android:id="@+id/tv_user_nickName"
+      	android:layout_width="wrap_content"
+      	android:layout_height="wrap_content"
+      	android:layout_toRightOf="@id/img_user_icon"
+      	android:text="小明"
+      	android:textSize="14sp" />
+
+	  	<TextView
+	      	android:id="@+id/tv_msg_time"
+	     	android:layout_width="wrap_content"
+	      	android:layout_height="wrap_content"
+	      	android:layout_toRightOf="@id/img_user_icon"
+	      	android:layout_below="@id/tv_user_nickName"
+	      	android:text="19:23"
+	      	android:textSize="12sp" />
+    
+	  	<Button
+	      	android:id="@+id/btn_reply"
+	      	android:layout_width="wrap_content"
+	      	android:layout_height="wrap_content"
+	      	android:layout_alignParentRight="true"
+	      	android:layout_alignParentBottom="true"
+	      	android:gravity="center"
+	      	android:textSize="12sp"
+	      	android:text="回复"
+	      	android:background="@drawable/msg_reply_bg" />
+</RelativeLayout>

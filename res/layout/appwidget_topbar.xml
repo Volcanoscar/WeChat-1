@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+    
+    <ImageButton
+        android:id="@+id/img_msgbd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/msgbd_chat_inlet_selector"
+        android:contentDescription="@string/contentDesc"/>
+    
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/img_msgbd"
+        android:layout_marginRight="10dp"
+        android:text="@string/main_title"
+        android:textColor="@color/white"
+        android:textSize="36sp"	/>
+</RelativeLayout>

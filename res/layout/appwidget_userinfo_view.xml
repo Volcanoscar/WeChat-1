@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+        
+	<ImageView
+		android:id="@+id/img_user_icon"
+      	android:layout_width="wrap_content"
+      	android:layout_height="wrap_content"
+      	android:layout_alignParentLeft="true"
+      	android:layout_marginTop="10dp"
+      	android:layout_marginLeft="35dp"
+      	android:contentDescription="@string/contentDesc"
+      	android:src="@drawable/big_head"/>
+	
+	<TextView 
+	    android:id="@+id/tv_user_name"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_toRightOf="@id/img_user_icon"
+	    android:paddingLeft="10dp"
+	    android:layout_marginTop="20dp"
+	    android:text="Rex" 
+	    android:textSize="24sp"
+	    android:textColor="@color/black"/>
+	
+	<TextView 
+	    android:id="@+id/tv_msg_receiver_time"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/tv_user_name"
+	    android:layout_toRightOf="@id/img_user_icon"
+	    android:paddingLeft="15dp"
+	    android:text="8.28" 
+	    android:textSize="20sp"
+	    android:textColor="@color/black"/>
+	
+	<Button 
+	    android:id="@+id/btn_reply"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentRight="true"
+	    android:layout_marginTop="25dp"
+	    android:padding="10dp"
+	    android:gravity="center"
+	    android:background="@drawable/msg_reply_bg"
+	    android:text="@string/reply"
+	    android:textSize="24sp"
+	    android:textColor="@color/wheat"
+	    android:textStyle="bold"/>
+  	
+</RelativeLayout>

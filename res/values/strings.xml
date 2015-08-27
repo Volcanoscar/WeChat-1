@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">WeChat</string>
+    <string name="main_title">微信留言板</string>
+    <string name="reply">&#160;回&#160;&#160;复&#160;</string>
+    
+    <!-- 主界面 -->
+    <string name="add">添加</string>
+    <string name="myfriend">我的好友</string>
+    <string name="familyboard">家庭留言板</string>
+    
+    <!-- 聊天界面 -->
+    
+    <!-- 个人信息界面 -->
+    <string name="personal_info">个人信息</string>
+       
+    
+    
+    <string name="back">&#160;&#160;返回&#160;&#160;</string>
+    <string name="contentDesc"></string>
+</resources>

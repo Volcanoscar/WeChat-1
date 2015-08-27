@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center|left"
+    android:orientation="horizontal" >
+    
+    <com.tcl.wechat.view.UserInfoView
+		android:id="@+id/user_info"
+        android:layout_width="wrap_content"
+        android:layout_height="140dp" 
+        android:layout_gravity="center"
+        android:paddingLeft="20dp"
+        custom:textTitle="HHAH"
+        custom:textSize="16sp"
+        custom:textColor="#ff000000"
+        custom:textBackground="@drawable/big_head_word"
+        custom:imageSrc="@drawable/big_head"
+        custom:imageBackground="@drawable/big_head_bg"
+        custom:imageScaleType="center"/>
+    
+    <com.tcl.wechat.view.UserInfoView 
+        android:id="@+id/add_fiend"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp" 
+        android:layout_gravity="center"
+        android:paddingLeft="20dp"
+        custom:textTitle=""
+        custom:textSize="14sp"
+        custom:textColor="#ff000000"
+        custom:textBackground="@drawable/add_friend"
+        custom:imageSrc="@drawable/add"
+        custom:imageBackground="@drawable/add_bg"
+        custom:imageScaleType="center"/>
+   
+</LinearLayout>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <!-- 顶部topBar -->
+    <include 
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        layout="@layout/appwidget_topbar" />
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/appwidget_bg"
+        android:orientation="vertical" >
+        
+        <!-- 消息模块 -->
+	    <include 
+	        android:layout_width="match_parent"
+	        android:layout_height="0dp"
+	        android:layout_weight="2"
+	        layout="@layout/appwidget_msginfo_view"/>
+	    
+	    <!-- 消息提示模块 -->
+	    <include 
+	        android:layout_width="match_parent"
+	        android:layout_height="0dp"
+	       	android:layout_weight="1"
+	       	layout="@layout/appwidget_userinfo_view"/>
+    </LinearLayout>
+</LinearLayout>
