@@ -1,6 +1,5 @@
 package com.tcl.wechat.modle;
 
-import java.util.Arrays;
 
 /**
  * 消息实体类
@@ -9,15 +8,7 @@ import java.util.Arrays;
  */
 public class Message {
 
-	/**
-	 * 消息类型:
-	 * 0：文本，默认
-	 * 1：音频
-	 * 2：视频
-     * 3：图片
-     * 4：动画
-     * -1：错误类型
-	 */
+	
 	private int msgType;
 	
 	/**
@@ -31,14 +22,14 @@ public class Message {
 	/**
 	 * 发送消息内容,可为：文本、音频、视频、图像、动画
 	 */
-	private byte[] msgContent;
+	private String msgContent;
 	
 	/**
 	 * 消息未读数量
 	 */
 	private int msgUnReadCnt;
 	
-	public Message(int msgType, int msgStatus, byte[] msgContent,
+	public Message(int msgType, int msgStatus, String msgContent,
 			int msgUnReadCnt) {
 		super();
 		this.msgType = msgType;
@@ -63,11 +54,11 @@ public class Message {
 		this.msgStatus = msgStatus;
 	}
 
-	public byte[] getMsgContent() {
+	public String getMsgContent() {
 		return msgContent;
 	}
 
-	public void setMsgContent(byte[] msgContent) {
+	public void setMsgContent(String msgContent) {
 		this.msgContent = msgContent;
 	}
 
@@ -82,7 +73,8 @@ public class Message {
 	@Override
 	public String toString() {
 		return "Message [msgType=" + msgType + ", msgStatus=" + msgStatus
-				+ ", msgContent=" + Arrays.toString(msgContent)
-				+ ", msgUnReadCnt=" + msgUnReadCnt + "]";
+				+ ", msgContent=" + msgContent + ", msgUnReadCnt="
+				+ msgUnReadCnt + "]";
 	}
+
 }

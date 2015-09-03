@@ -15,8 +15,12 @@ public class WeChatApplication extends Application {
 		
 		//初始化图片加载器
 		initImageLoader(getApplicationContext());
+		
+		//初始化文件夹系统
+		initFileSystem();
 	}
 
+	
 	/**
 	 * 初始化图片加载器
 	 * @param context
@@ -30,5 +34,10 @@ public class WeChatApplication extends Application {
         	.discCacheSize(10 * 1024 * 1024).threadPoolSize(10).build();
 		ImageLoader.getInstance().init(config);
 	}
+	
+	private void initFileSystem() {
+		
+	}
+
 
 }

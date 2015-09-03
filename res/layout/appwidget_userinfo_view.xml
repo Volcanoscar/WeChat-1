@@ -11,7 +11,7 @@
       	android:layout_marginTop="10dp"
       	android:layout_marginLeft="35dp"
       	android:contentDescription="@string/contentDesc"
-      	android:src="@drawable/big_head"/>
+      	android:src="@drawable/head_user_icon"/>
 	
 	<TextView 
 	    android:id="@+id/tv_user_name"
@@ -19,7 +19,7 @@
 	    android:layout_height="wrap_content"
 	    android:layout_toRightOf="@id/img_user_icon"
 	    android:paddingLeft="10dp"
-	    android:layout_marginTop="20dp"
+	    android:layout_marginTop="10dp"
 	    android:text="Rex" 
 	    android:textSize="24sp"
 	    android:textColor="@color/black"/>
@@ -40,12 +40,12 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_alignParentRight="true"
-	    android:layout_marginTop="25dp"
+	    android:layout_marginTop="20dp"
 	    android:padding="10dp"
 	    android:gravity="center"
 	    android:background="@drawable/msg_reply_bg"
 	    android:text="@string/reply"
-	    android:textSize="24sp"
+	    android:textSize="22sp"
 	    android:textColor="@color/wheat"
 	    android:textStyle="bold"/>
   	

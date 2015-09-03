@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="left" >
+    
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="80dp"
+        android:layout_marginRight="80dp"
+        android:background="@drawable/chat_left_bg">
+        <TextView 
+            android:id="@+id/tv_left_msg"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:paddingRight="20dp"
+            android:layout_marginTop="80dp"
+            android:text="超出取值范围的值将被恢复为默认值"
+            android:background="#45F0F0F0"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:rotation="5"/>
+    </RelativeLayout>
+    
+    <ImageView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="150dp"
+        android:src="@drawable/chat_clip_left"
+        android:contentDescription="@string/contentDesc"/>
+    
+    <Button 
+        android:id="@+id/btn_msg_left_reply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="400dp"
+        android:background="@drawable/msg_reply_left_selector"
+        android:onClick="msgReplyLeftClick"/>
+
+</RelativeLayout>

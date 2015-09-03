@@ -1,44 +1,49 @@
 package com.tcl.wechat.modle;
 
+import com.tcl.wechat.modle.IData.IData;
+
 /**
  * 用户角色类
  * @author rex.lei
  *
  */
-public class User {
+public class User implements IData{
 
-	private int userId;			//用户编号
+	private int openId;			//用户编号
 	private String userName;	//用户账号
 	private String nickName;	//用户昵称
-	private String reMarkName;	//备注名称
-	private String userIconUrl; //用户图像对应的URL
+	private String remarkName;	//备注名称
+	private String sex ;
+	private String headimageurl;
+	private String signature;
+	private String newsNum;
+	private String status;
 	
-	/**
-	 * 类型参数：
-	 * 0：男 
-	 * 1：女
-	 */
-	private boolean userSex;	 //用户性别
-	private String signatureInfo;//签名信息
-	
-	public User(int userId, String userName, String nickName,
-			String reMarkName, String userIconUrl, boolean userSex,
-			String signatureInfo) {
-		this.userId = userId;
+	private User() {
+		super();
+	}
+
+	private User(int openId, String userName, String nickName,
+			String remarkName, String sex, String headimageurl,
+			String signature, String newsNum, String status) {
+		super();
+		this.openId = openId;
 		this.userName = userName;
 		this.nickName = nickName;
-		this.reMarkName = reMarkName;
-		this.userIconUrl = userIconUrl;
-		this.userSex = userSex;
-		this.signatureInfo = signatureInfo;
+		this.remarkName = remarkName;
+		this.sex = sex;
+		this.headimageurl = headimageurl;
+		this.signature = signature;
+		this.newsNum = newsNum;
+		this.status = status;
 	}
 
-	public int getUserId() {
-		return userId;
+	public int getOpenId() {
+		return openId;
 	}
 
-	public void setUserId(int userId) {
-		this.userId = userId;
+	public void setOpenId(int openId) {
+		this.openId = openId;
 	}
 
 	public String getUserName() {
@@ -57,43 +62,60 @@ public class User {
 		this.nickName = nickName;
 	}
 
-	public String getReMarkName() {
-		return reMarkName;
+	public String getRemarkName() {
+		return remarkName;
 	}
 
-	public void setReMarkName(String reMarkName) {
-		this.reMarkName = reMarkName;
+	public void setRemarkName(String remarkName) {
+		this.remarkName = remarkName;
 	}
 
-	public String getUserIconUrl() {
-		return userIconUrl;
+	public String getSex() {
+		return sex;
 	}
 
-	public void setUserIconUrl(String userIconUrl) {
-		this.userIconUrl = userIconUrl;
+	public void setSex(String sex) {
+		this.sex = sex;
 	}
 
-	public boolean isUserSex() {
-		return userSex;
+	public String getHeadimageurl() {
+		return headimageurl;
 	}
 
-	public void setUserSex(boolean userSex) {
-		this.userSex = userSex;
+	public void setHeadimageurl(String headimageurl) {
+		this.headimageurl = headimageurl;
 	}
 
-	public String getSignatureInfo() {
-		return signatureInfo;
+	public String getSignature() {
+		return signature;
 	}
 
-	public void setSignatureInfo(String signatureInfo) {
-		this.signatureInfo = signatureInfo;
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public String getNewsNum() {
+		return newsNum;
+	}
+
+	public void setNewsNum(String newsNum) {
+		this.newsNum = newsNum;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	@Override
 	public String toString() {
-		return "User [userId=" + userId + ", userName=" + userName
-				+ ", nickName=" + nickName + ", reMarkName=" + reMarkName
-				+ ", userIconUrl=" + userIconUrl + ", userSex=" + userSex
-				+ ", signatureInfo=" + signatureInfo + "]";
+		return "User [openId=" + openId + ", userName=" + userName
+				+ ", nickName=" + nickName + ", remarkName=" + remarkName
+				+ ", sex=" + sex + ", headimageurl=" + headimageurl
+				+ ", signature=" + signature + ", newsNum=" + newsNum
+				+ ", status=" + status + "]";
 	}
 }

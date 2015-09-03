@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.tcl.wechat.activity.MainActivity;
 import com.tcl.wechat.common.IConstant;
+import com.tcl.wechat.ui.activity.MainActivity;
 
 /**
  * 进入应用广播消息处理

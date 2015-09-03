@@ -60,7 +60,6 @@ public class UserInfoView extends LinearLayout{
 		mImgDrawable = ta.getDrawable(R.styleable.userImageView_imageBackground);
 		ta.recycle();
 		
-		
 		mImageView = (ImageView) mView.findViewById(R.id.user_icon);
 		mTextView = (TextView) mView.findViewById(R.id.user_name);
 		
@@ -101,5 +100,12 @@ public class UserInfoView extends LinearLayout{
 		mTextView.setText(userName);
 	}
 	
+	/**
+	 * 设置用户名称是否可见
+	 * @param visibility
+	 */
+	public void setUserNameVisible(int visibility){
+		mTextView.setVisibility(visibility);
+	}
 	
 }

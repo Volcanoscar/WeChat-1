@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="140dp"
+        android:background="@drawable/main_familyboard_bg_3">
+        <TextView 
+            android:id="@+id/tv_familboard_msg3"
+            android:layout_width="280dp"
+            android:layout_height="180dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="120dp"
+            android:padding="3dp"
+            android:background="#45F0F0F0"
+            android:maxLines="6"
+            android:text="妈妈叫我们赶紧回去!"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:rotation="11"/>
+    </RelativeLayout>
+    
+     <com.tcl.wechat.view.UserInfoView
+		android:id="@+id/uv_familboard_userinfo3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="140dp"
+        android:layout_marginTop="80dp"
+        custom:textTitle="HHAH"
+        custom:textSize="16sp"
+        custom:textColor="#ff000000"
+        custom:textBackground="@drawable/big_head_word"
+        custom:imageSrc="@drawable/big_head"
+        custom:imageScaleType="center"
+        android:rotation="10"/>
+     
+     <ImageView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="120dp"
+        android:layout_marginRight="70dp"
+        android:src="@drawable/clip_2"
+        android:contentDescription="@string/contentDesc"/>
+     
+     <Button 
+         android:id="@+id/btn_familyborad_replay3"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentLeft="true"
+         android:layout_marginTop="420dp"
+         android:background="@drawable/familyborad_reply3_selector"
+         android:onClick="onBtnReplyClick"/>
+    
+    <TextView 
+        android:id="@+id/btn_familyborad_time3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="160dp"
+        android:layout_marginTop="520dp"
+        android:text="17:52"
+        android:textColor="@color/gray"
+        android:textSize="18sp"
+        android:rotation="12"/>
+</RelativeLayout>

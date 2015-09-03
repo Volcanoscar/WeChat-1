@@ -1,0 +1,43 @@
+{
+    "userList": [
+    	{
+    		"userId":1,
+    		"userName":"Lei6234",
+    		"nickName":"雷亮",
+    		"reMarkName":null,
+    		"userIconUrl":null,
+    		"userSex":"男",
+    		"signatureInfo":"我爱攻城狮!!"
+    	},
+    	{
+    		"userId":2,
+    		"userName":"lvAH123",
+    		"nickName":"奥利",
+    		"reMarkName":null,
+    		"userIconUrl":null,
+    		"userSex":"男",
+    		"signatureInfo":"哈利波特!!"
+    	},
+    	{
+    		"userId":3,
+    		"userName":"TRRY312",
+    		"nickName":"TRRY",
+    		"reMarkName":null,
+    		"userIconUrl":null,
+    		"userSex":"女",
+    		"signatureInfo":"咋看都快来!!"
+    	},
+    	{
+    		"userId":4,
+    		"userName":"HHASKHG1313",
+    		"nickName":"科比",
+    		"reMarkName":null,
+    		"userIconUrl":null,
+    		"userSex":"男",
+    		"signatureInfo":"火热足球季!!"
+    	}
+    ],
+    "ret": "0",
+    "retInfo": "成功",
+    "version": ""
+}

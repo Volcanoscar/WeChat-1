@@ -1,5 +1,7 @@
 package com.tcl.wechat.modle;
 
+import java.util.Date;
+
 /**
  * 消息模型
  * @author rex.lei
@@ -7,14 +9,15 @@ package com.tcl.wechat.modle;
  */
 public class MessageInfo {
 
-	private int messageId; 		//消息编号
-	private String sender; 		//消息发送者
-	private String receiver;	//消息接收者
-	private String msgSendTime; //消息发送时间
-	private Message massage;	//消息实体
+	private int messageId; 		  //消息编号
+	private String sender; 		  //消息发送者
+	private String receiver;	  //消息接收者
+	private Date msgSendTime; 	  //消息发送时间
+	private Message massage;	  //消息实体
 	
 	public MessageInfo(int messageId, String sender, String receiver,
-			String msgSendTime, Message massage) {
+			Date msgSendTime, Message massage) {
+		super();
 		this.messageId = messageId;
 		this.sender = sender;
 		this.receiver = receiver;
@@ -46,11 +49,11 @@ public class MessageInfo {
 		this.receiver = receiver;
 	}
 
-	public String getMsgSendTime() {
+	public Date getMsgSendTime() {
 		return msgSendTime;
 	}
 
-	public void setMsgSendTime(String msgSendTime) {
+	public void setMsgSendTime(Date msgSendTime) {
 		this.msgSendTime = msgSendTime;
 	}
 

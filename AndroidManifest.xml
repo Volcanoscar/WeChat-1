@@ -5,8 +5,17 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="18"
         android:targetSdkVersion="21" />
+    
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    
+    <instrumentation 
+        android:name="android.test.InstrumentationTestRunner" 
+        android:targetPackage="com.tcl.wechat"></instrumentation>
 
     <application
         android:name=".WeChatApplication"
@@ -17,9 +26,10 @@
         
         <!-- 主界面 -->
         <activity
-            android:name=".activity.MainActivity"
+            android:name="com.tcl.wechat.ui.activity.MainActivity"
             android:label="@string/app_name" 
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 				<action android:name="android.intent.action.DELETE"/>
@@ -28,17 +38,27 @@
         </activity>
         
         <!-- 用户信息显示界面 -->
-        <activity android:name=".activity.PersonalInfoActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.PersonalInfoActivity"
+            android:theme="@android:style/Theme.Translucent"/>
         <!-- 好友信息显示界面 -->
-        <activity android:name=".activity.FriendInfoActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.FriendInfoActivity"
+            android:theme="@android:style/Theme.Translucent"/>
         <!-- 聊天界面 -->
-        <activity android:name=".activity.ChatActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.ChatActivity"
+            android:theme="@android:style/Theme.Translucent"
+            android:launchMode="singleInstance"/>
         <!-- 联系人列表界面 -->
-        <activity android:name=".activity.FriendListActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.FriendListActivity"
+            android:theme="@android:style/Theme.Translucent"/>
         <!-- 登录界面 -->
-        <activity android:name=".activity.LoginActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.LoginActivity"
+            android:theme="@android:style/Theme.Translucent"/>
         <!-- 用户注册界面 -->
-        <activity android:name=".activity.RegisterActivity"/>
+        <activity android:name="com.tcl.wechat.ui.activity.RegisterActivity"
+            android:theme="@android:style/Theme.Translucent"/>
+        <!-- 二维码生成界面 -->
+        <activity android:name="com.tcl.wechat.ui.activity.QRCodeActivity"
+            android:theme="@android:style/Theme.Translucent"/>
         
         <!-- appWidget -->
         <receiver 
@@ -54,7 +74,7 @@
         </receiver>
         
         <!-- 启动应用消息接收器 -->
-        <receiver 
+        <receiver
             android:name="com.tcl.wechat.receiver.StartAppReceiver">
             <intent-filter >
                 <action android:name="com.tcl.action.MAINVIEW"/>
@@ -63,6 +83,8 @@
                 <action android:name="com.tcl.action.CHATVIEW"/>
             </intent-filter>
         </receiver>
+        
+        <uses-library android:name="android.test.runner"/>
     </application>
 
 </manifest>

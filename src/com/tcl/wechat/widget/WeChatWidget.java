@@ -9,8 +9,8 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.activity.MainActivity;
 import com.tcl.wechat.common.IConstant;
+import com.tcl.wechat.ui.activity.MainActivity;
 
 public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	
