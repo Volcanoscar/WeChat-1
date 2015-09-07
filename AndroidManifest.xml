@@ -56,8 +56,8 @@
         <!-- 用户注册界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.RegisterActivity"
             android:theme="@android:style/Theme.Translucent"/>
-        <!-- 二维码生成界面 -->
-        <activity android:name="com.tcl.wechat.ui.activity.QRCodeActivity"
+        <!-- 添加好友界面 -->
+        <activity android:name="com.tcl.wechat.ui.activity.AddFriendActivity"
             android:theme="@android:style/Theme.Translucent"/>
         
         <!-- appWidget -->

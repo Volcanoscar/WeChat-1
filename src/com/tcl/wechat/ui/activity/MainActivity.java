@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
 			public void onClick(View view) {
 				// TODO Auto-generated method stub
 				Log.i(TAG, "onClick To AddFriend-->>");
-				Intent intent = new Intent(mContext, QRCodeActivity.class);
+				Intent intent = new Intent(mContext, AddFriendActivity.class);
 				startActivity(intent);
 			}
 		});

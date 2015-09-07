@@ -14,4 +14,54 @@ public interface IConstant {
 	public static final String ACTION_PLAYVIEW = "com.tcl.action.PLAYVIEW";
 	//进入聊天界面
 	public static final String ACTION_CHATVIEW = "com.tcl.action.CHATVIEW";
+	
+	
+	/**
+	 * xmpp协议返回接口定义
+	 * @author rex.lei
+	 *
+	 */
+	public static final class CommandType{
+		public static final int COMMAND_NEWWORK_NOT_AVAILABLE  = 0;
+		public static final int COMMAND_NEWWORK_UNCONNECTED = 1;
+		public static final int COMMAND_NEWWORK_TIME_OUT = 2;
+		public static final int COMMAND_PLAY_VIEWO = 20;
+		public static final int COMMAND_VIEWO_DOWNING = 21;
+		public static final int COMMAND_VIEWO_FINISH = 22;
+		public static final int COMMAND_GET_ICON_PIC = 100;
+		public static final int COMMAND_REGISTER = 101;
+		public static final int COMMAND_LOGIN = 102;
+		public static final int COMMAND_GET_QR = 103;
+		public static final int COMMAND_GET_BINDER = 104;
+		public static final int COMMAND_UN_BINDER = 105;
+		public static final int COMMAND_GET_WEIXIN_MSG = 106;
+		public static final int COMMAND_GET_WEIXIN_NOTICE = 107;
+		public static final int COMMAND_GET_WEIXIN_CONTROL = 108;
+		public static final int COMMAND_BINDER_TOUI = 109;
+		public static final int COMMAND_UNBINDER_TOUI = 110;
+		public static final int COMMAND_GET_TVSTATUS = 111;
+		
+		public static final int LOGIN_GETDATA_SUCCESS = 112;		
+		public static final int FRESH_NEWS = 113;
+		public static final int LONGCONNECTION_EXIST = 114;
+		public static final int COMMAND_REPORT_DEVICEINFO = 115;
+		public static final int COMMAND_REMOTEBINDER = 116;
+		public static final int SEND_REMOTEBIND_RESPONSE = 117;
+		public static final int COMMAND_MSGRESPONSE = 118;
+		public static final int COMMAND_REPORTTVSTATUS = 119;
+		public static final int COMMAND_RESPONSETVSTATUS = 120;
+		public static final int COMMAND_TVPROGRAMNOTICE = 121;
+		public static final int COMMAND_RESPONSEBARRRAGE = 122;
+		public static final int COMMAND_REPORTVIDEO = 123;
+		
+		
+		public static final int NOTFINDVIDEOFILE = 124;
+		
+		public static final int COMMAND_UN_BINDER_ERROR = 125;
+		
+		public static final int COMMAND_DEVICEIDNULL = 126;
+		public static final int COMMAND_MACNULL = 127;
+		
+		public static final int COMMAND_GET_WEIXIN_APP = 128;
+	}
 }

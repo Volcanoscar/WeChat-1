@@ -10,12 +10,12 @@ public class QrInfo {
 	private String url;
 	private String uuid;
 	
-	private QrInfo() {
+	public QrInfo() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	private QrInfo(String url, String uuid) {
+	public QrInfo(String url, String uuid) {
 		super();
 		this.url = url;
 		this.uuid = uuid;

@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.view.UserInfoView;
 
 /**
  * 用户详细信息界面
@@ -17,7 +18,7 @@ import com.tcl.wechat.R;
  */
 public class PersonalInfoActivity extends Activity{
 	
-	private ImageView mPersonalQrImg;
+	private UserInfoView mUserInfoView ;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +30,15 @@ public class PersonalInfoActivity extends Activity{
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_personal_info);
         
-        mPersonalQrImg = (ImageView) findViewById(R.id.img_personal_qrcode);
-        
+        initView();
 	}
 	
+	private void initView() {
+		// TODO Auto-generated method stub
+		mUserInfoView = (UserInfoView) findViewById(R.id.uv_personal_icon);
+		mUserInfoView.setUserNameVisible(View.GONE);
+	}
+
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
