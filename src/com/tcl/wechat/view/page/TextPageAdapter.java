@@ -6,13 +6,12 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class TextPageAdapter extends PagerAdapter {
 
-	private ArrayList<TextView> mPagedViews;
+	private ArrayList<ReadView> mPagedViews;
 
-	public TextPageAdapter(ArrayList<TextView> views) {
+	public TextPageAdapter(ArrayList<ReadView> views) {
 		super();
 		this.mPagedViews = views;
 	}
@@ -30,7 +29,7 @@ public class TextPageAdapter extends PagerAdapter {
 	
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
-		TextView readView = mPagedViews.get(position);
+		ReadView readView = mPagedViews.get(position);
 		container.addView(readView);
 		return readView;
 	}

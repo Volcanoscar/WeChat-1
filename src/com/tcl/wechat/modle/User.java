@@ -9,21 +9,21 @@ import com.tcl.wechat.modle.IData.IData;
  */
 public class User implements IData{
 
-	private int openId;			//用户编号
+	private String openId;			//用户编号
 	private String userName;	//用户账号
 	private String nickName;	//用户昵称
 	private String remarkName;	//备注名称
-	private String sex ;
-	private String headimageurl;
-	private String signature;
-	private String newsNum;
-	private String status;
+	private String sex ;		//用户性别
+	private String headimageurl;//用户头像存储地址
+	private String signature;	//用户签名信息
+	private String newsNum;		//消息个数
+	private String status;      //用户在线状态
 	
-	private User() {
+	public User() {
 		super();
 	}
 
-	private User(int openId, String userName, String nickName,
+	public User(String openId, String userName, String nickName,
 			String remarkName, String sex, String headimageurl,
 			String signature, String newsNum, String status) {
 		super();
@@ -38,11 +38,11 @@ public class User implements IData{
 		this.status = status;
 	}
 
-	public int getOpenId() {
+	public String getOpenId() {
 		return openId;
 	}
 
-	public void setOpenId(int openId) {
+	public void setOpenId(String openId) {
 		this.openId = openId;
 	}
 

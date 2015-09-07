@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.TextUtils;
@@ -33,11 +34,12 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 	private TextView mPageNumTv;
 	private ViewPager mPageMsgInfo;
 	private TextPageAdapter mAdapter;
-	private ArrayList<TextView> mReadViews ;
+	private ArrayList<ReadView> mReadViews ;
 	
 	private int mPageCount = 0;
 	private int position = -1;
 	private String mMsgInfoStr;
+	private String mFontPath = "fonts/oop.TTF";
 	
 	public TextPageView(Context context) {
 		super(context);
@@ -64,11 +66,14 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 		if (mPageCount == 1){
 			mPageNumTv.setVisibility(View.GONE);
 		}
-		mReadViews = new ArrayList<TextView>();
+		mReadViews = new ArrayList<ReadView>();
 		if (!TextUtils.isEmpty(mMsgInfoStr)){
 			for (int i = 0; i < mPageCount; i++) {
-				TextView readView = new TextView(context);
+				ReadView readView = new ReadView(context);
 				readView.setText(getCurrentPageMessage(i));
+				readView.setTextSize(24);
+				readView.setTextColor(Color.BLACK);
+				readView.setFont(mFontPath);
 				mReadViews.add(readView);
 			} 
 		}
@@ -82,6 +87,7 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 		if (TextUtils.isEmpty(mMsgInfoStr)){
 			return 0;
 		}
+		
 		int count = (int)(mMsgInfoStr.length() /  PAGE_CHAT_COUNT);
 		if ((mMsgInfoStr.length() %  PAGE_CHAT_COUNT) != 0){
 			count ++;
@@ -129,6 +135,25 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 	public void setMessageInfo(Context context,String message){
 		mMsgInfoStr = message;
 		init(context);
+	}
+	
+	/**
+	 * 添加数据,提供外部接口,带字体
+	 * @param message
+	 * @param fontPath 字体路径
+	 */
+	public void setMessageInfo(Context context,String message, String fontPath){
+		mMsgInfoStr = message;
+		mFontPath = fontPath;
+		init(context);
+	}
+	
+	/**
+	 * 设置字体样式
+	 * @param fontPath
+	 */
+	public void setFont(String fontPath){
+		mFontPath = fontPath;
 	}
 	
 	@Override

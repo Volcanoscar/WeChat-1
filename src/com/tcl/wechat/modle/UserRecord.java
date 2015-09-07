@@ -1,6 +1,5 @@
 package com.tcl.wechat.modle;
 
-import java.util.Date;
 
 /**
  * 消息记录
@@ -17,21 +16,21 @@ public class UserRecord {
 	private String format;
 	private String mediaId;
 	private String humbmediaId;
-	private Date createTime;
-	private Date expireTime;
-	private boolean readed;
+	private long createTime;
+	private long expireTime;
+	private String readed;
 	private String fileName;
 	private int fileSize;
-	private Date fileTime;
+	private long fileTime;
 	
-	private UserRecord() {
+	public UserRecord() {
 		super();
 	}
 
-	private UserRecord(String openId, String accessToken, String msgType,
+	public UserRecord(String openId, String accessToken, String msgType,
 			String content, String imageurl, String format, String mediaId,
-			String humbmediaId, Date createTime, Date expireTime,
-			boolean readed, String fileName, int fileSize, Date fileTime) {
+			String humbmediaId, long createTime, long expireTime,
+			String readed, String fileName, int fileSize, long fileTime) {
 		super();
 		this.openId = openId;
 		this.accessToken = accessToken;
@@ -113,27 +112,27 @@ public class UserRecord {
 		this.humbmediaId = humbmediaId;
 	}
 
-	public Date getCreateTime() {
+	public long getCreateTime() {
 		return createTime;
 	}
 
-	public void setCreateTime(Date createTime) {
+	public void setCreateTime(long createTime) {
 		this.createTime = createTime;
 	}
 
-	public Date getExpireTime() {
+	public long getExpireTime() {
 		return expireTime;
 	}
 
-	public void setExpireTime(Date expireTime) {
+	public void setExpireTime(long expireTime) {
 		this.expireTime = expireTime;
 	}
 
-	public boolean isReaded() {
+	public String getReaded() {
 		return readed;
 	}
 
-	public void setReaded(boolean readed) {
+	public void setReaded(String readed) {
 		this.readed = readed;
 	}
 
@@ -153,11 +152,11 @@ public class UserRecord {
 		this.fileSize = fileSize;
 	}
 
-	public Date getFileTime() {
+	public long getFileTime() {
 		return fileTime;
 	}
 
-	public void setFileTime(Date fileTime) {
+	public void setFileTime(long fileTime) {
 		this.fileTime = fileTime;
 	}
 
@@ -171,4 +170,5 @@ public class UserRecord {
 				+ ", readed=" + readed + ", fileName=" + fileName
 				+ ", fileSize=" + fileSize + ", fileTime=" + fileTime + "]";
 	}
+
 }

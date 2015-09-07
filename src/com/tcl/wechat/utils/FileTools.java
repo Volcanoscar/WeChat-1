@@ -29,6 +29,12 @@ public class FileTools{
         return false;
     }
     
+    /**
+     * 拷贝文件
+     * @param from
+     * @param to
+     * @return
+     */
     public static boolean copySystemDir(String from, String to) {
         return copySystemDir(new File(from), new File(to));
     }

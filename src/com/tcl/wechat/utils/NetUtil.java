@@ -10,6 +10,12 @@ import android.net.NetworkInfo;
  *
  */
 public class NetUtil {
+	
+	/**
+	 * 网络是否链接
+	 * @param context
+	 * @return
+	 */
 	public static boolean isNetConnected(Context context) {
 		boolean isNetConnected;
 		// 获得网络连接服务
@@ -22,5 +28,28 @@ public class NetUtil {
 			isNetConnected = false;
 		}
 		return isNetConnected;
+	}
+	
+	/**
+	 * 网络是否可用
+	 * @param context
+	 * @return
+	 */
+	public static boolean isNetworkAvailable(Context context) {
+		return getAllNetworkStates(context);
+	}
+	
+	public synchronized static boolean getAllNetworkStates(Context mContext) {
+		ConnectivityManager connec = (ConnectivityManager) mContext.
+				getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (connec == null){
+			return false;
+		}
+		NetworkInfo activeInfo = connec.getActiveNetworkInfo();			
+		if (activeInfo != null && activeInfo.isConnected()
+				&& activeInfo.isAvailable()) {							
+			return true;
+		} 
+		return false;
 	}
 }

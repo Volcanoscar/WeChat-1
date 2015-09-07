@@ -64,4 +64,11 @@ public interface IConstant {
 		
 		public static final int COMMAND_GET_WEIXIN_APP = 128;
 	}
+	
+	//后台服务启动模式定义
+	public static final class StartServiceMode{
+		public static final String OWN = "own";//应用自身启动
+		public static final String OTHERS = "others";//启动应用启动的，比如开机向导和家庭信箱
+		public static  String CURRENTMODE = "own";//启动应用启动的，比如开机向导和家庭信箱
+	}
 }

@@ -29,7 +29,7 @@
         android:layout_marginLeft="175dp"
         android:gravity="center"
         android:text="@string/myfriend"
-        android:textSize="22sp"
+        android:textSize="28sp"
         android:textColor="#ffffffff"
         android:rotation="-6" />
     

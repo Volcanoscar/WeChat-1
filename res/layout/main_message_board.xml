@@ -19,14 +19,14 @@
         android:contentDescription="@string/contentDesc"  />
     
     <TextView 
-        android:id="@+id/myfriend_word"
+        android:id="@+id/my_messageborad_word"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="110dp"
+        android:layout_marginTop="120dp"
         android:layout_marginLeft="80dp"
         android:text="@string/familyboard"
         android:textColor="@color/white" 
-        android:textSize="32sp"
+        android:textSize="36sp"
         android:ems="1"
         android:rotation="4"/>
     
@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="40dp"
-        android:layout_toRightOf="@id/myfriend_word"
+        android:layout_toRightOf="@id/my_messageborad_word"
         layout="@layout/main_familyboard_layout"/>   
 
 </RelativeLayout>

@@ -12,10 +12,10 @@ public class Property {
 	public static final String COLUMN_OPENID = "openId";
 	public static final String COLUMN_USERNAME = "userName";
 	public static final String COLUMN_NICKNAME = "nickName";
-	public static final String COLUMN_REMARKNAME = "nickName";
+	public static final String COLUMN_REMARKNAME = "remarkName";
 	public static final String COLUMN_USERSEX = "sex";
 	public static final String COLUMN_HEADIMAGE_URL = "headimageurl";
-	public static final String  COLUMN_SIGNATURE_INFO = "signature";
+	public static final String COLUMN_SIGNATURE_INFO = "signature";
 	public static final String COLUMN_NEWS_NUM = "newsNum";
 	public static final String COLUMN_STATUS = "status";
 	public static final String COLUMN_DATA1 = "data1";
@@ -72,7 +72,7 @@ public class Property {
             Property.COLUMN_OPENID + " VACHAR(100)," +
             Property.COLUMN_USERNAME + " VACHAR(100)," +
             Property.COLUMN_NICKNAME + " VACHAR(100)," +
-            Property.COLUMN_REMARKNAME+ " VACHAR(100," +
+            Property.COLUMN_REMARKNAME+ " VACHAR(100)," +
             Property.COLUMN_USERSEX + " VACHAR(50)," + 
             Property.COLUMN_HEADIMAGE_URL + " VACHAR(500)," +
             Property.COLUMN_SIGNATURE_INFO + " TEXT," +
@@ -89,17 +89,17 @@ public class Property {
             Property.COLUMN_OPENID + " VACHAR(100)," +
             Property.COLUMN_ACCESS_TOKENS + " VACHAR(100)," +
             Property.COLUMN_MSGTYPE + " VACHAR(50)," +
-            Property.COLUMN_CONTENT+ " TEXT," +
+            Property.COLUMN_CONTENT + " TEXT," +
             Property.COLUMN_IMAGE_URL + " TEXT," + 
             Property.COLUMN_FORMAT + " VACHAR(50)," +
             Property.COLUMN_MDDIAID + " VACHAR(100)," +
             Property.COLUMN_HUMBMEDIAID + " VACHAR(500)," +
-            Property.COLUMN_CREATE_TIME + " VACHAR(50)," +
-            Property.COLUMN_EXPIRETIME + " VACHAR(50)," +
+            Property.COLUMN_CREATE_TIME + " REAL," +
+            Property.COLUMN_EXPIRETIME + " REAL," +
             Property.COLUMN_READED + " VACHAR(20)," +
-            Property.COLUMN_FILENAME + " TEXT" + 
-            Property.COLUMN_FILESIZE + " VACHAR(50)," +
-            Property.COLUMN_FILETIME + " VACHAR(50)," +
+            Property.COLUMN_FILENAME + " TEXT," + 
+            Property.COLUMN_FILESIZE + " INTEGER," +
+            Property.COLUMN_FILETIME + " REAL," +
             Property.COLUMN_DATA1 + " VACHAR(100)," +
             Property.COLUMN_DATA2 + " VACHAR(100)," +
             Property.COLUMN_DATA3 + " VACHAR(100)" + ")";

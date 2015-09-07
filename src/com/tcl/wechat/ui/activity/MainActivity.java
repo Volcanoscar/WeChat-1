@@ -1,23 +1,31 @@
 package com.tcl.wechat.ui.activity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.xbill.DNS.TextParseException;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.action.UserHelper;
+import com.tcl.wechat.db.RecordDao;
+import com.tcl.wechat.db.UserDao;
 import com.tcl.wechat.modle.User;
+import com.tcl.wechat.modle.UserRecord;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
+import com.tcl.wechat.view.page.TextPageView;
 
 /**
  * 主界面Activity
@@ -32,6 +40,13 @@ public class MainActivity extends Activity {
 	
 	private UserInfoView mUserInfo;
 	private UserInfoView mAddFriend;
+	private TextView mMyFriendWord;
+	private TextView mMyFamilyBoardWord;
+	
+	private TextPageView mTextPageView1;
+	private TextPageView mTextPageView2;
+	private TextPageView mTextPageView3;
+	private TextPageView mTextPageView4;
 	
 	/**
 	 * 好友模块
@@ -41,10 +56,7 @@ public class MainActivity extends Activity {
 	/**
 	 * 留言板模块
 	 */
-	
-	/**
-	 * 工具类
-	 */
+	private HashMap<String, ArrayList<UserRecord>> mAllUserRecords;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +77,7 @@ public class MainActivity extends Activity {
 	
 	private void initData() {
 		Log.i(TAG, "initData-->>");
-		
-		mAllUsers = UserHelper.getAllUsers(mContext);
-		
-		Log.i(TAG, "mAllUsers:" + mAllUsers);
+		test();
 	}
 
 	private void initView() {
@@ -97,6 +106,23 @@ public class MainActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+		
+		mMyFriendWord = (TextView)findViewById(R.id.myfriend_word);
+		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
+		
+		setFont(mMyFriendWord, "fonts/oop.TTF");
+		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
+		
+		mTextPageView1 = (TextPageView) findViewById(R.id.tv_familboard_msg1);
+		mTextPageView2 = (TextPageView) findViewById(R.id.tv_familboard_msg2);
+		mTextPageView3 = (TextPageView) findViewById(R.id.tv_familboard_msg3);
+		mTextPageView4 = (TextPageView) findViewById(R.id.tv_familboard_msg4);
+		
+		mTextPageView1.setMessageInfo(mContext, mAllUserRecords.get("1").get(0).getContent());
+		mTextPageView2.setMessageInfo(mContext, mAllUserRecords.get("2").get(0).getContent());
+		mTextPageView3.setMessageInfo(mContext, mAllUserRecords.get("3").get(0).getContent());
+		mTextPageView4.setMessageInfo(mContext, mAllUserRecords.get("4").get(0).getContent());
+		
 	}
 
 	@Override
@@ -104,6 +130,38 @@ public class MainActivity extends Activity {
 		super.onResume();
 		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		}
+		
+	}
+	
+	/**
+	 * 请求用户数据
+	 */
+	private void test() {
+
+		// TODO Auto-generated method stub
+		UserDao userDao = UserDao.getInstance(mContext);
+//		for (int i = 0; i < 5; i++) {
+//			User user = new User("" + i, "adjhk" + i, null, null, "男", null, null, null, null);
+//			userDao.addUser(user);
+//		}
+		mAllUsers = userDao.getAllUsers();
+		
+		
+		RecordDao recordDao = RecordDao.getInstance(mContext);
+//		for (int i = 0; i < 5; i++) {
+//			UserRecord record = new UserRecord("" + i, null, "0", getResources().getString(R.string.test),
+//					null, null, null, null, 0 ,0, null, null, 0, 0);
+//			recordDao.addRecord(record);
+//		}
+		mAllUserRecords = new HashMap<String, ArrayList<UserRecord>>();
+		for (int i = 0; i < mAllUsers.size(); i++) {
+			mAllUserRecords.put(mAllUsers.get(i).getOpenId(), recordDao.getAllUserRecord(mAllUsers.get(i).getOpenId()));
+		}
+		
+		Log.i(TAG, "users:" + mAllUsers);
+		for (int i = 0; i < mAllUserRecords.size(); i++) {
+			Log.i(TAG, "UserRecord:" + mAllUserRecords.get("" + i));
 		}
 	}
 	
@@ -137,4 +195,15 @@ public class MainActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onDestroy();
 	}
+	
+	public void setFont(TextView tv, String fontpath) {
+		try {
+			Typeface typeFace = Typeface.createFromAsset(getAssets(), fontpath);
+			tv.setTypeface(typeFace);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 }

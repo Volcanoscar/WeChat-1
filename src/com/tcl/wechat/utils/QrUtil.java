@@ -55,6 +55,9 @@ public class QrUtil {
 		//产生二维码名片
 		Bitmap qRCodeBitmap = QRCodeCreator.create(content, 450);
 		
+		//二维码进行缩放
+		centerIcon = ImageUtil.getInstance().zoomBitmap(centerIcon,50, 50);
+		
 		//合并二维码与个人图像
 		Bitmap bitmap = Bitmap.createBitmap(
 				qRCodeBitmap.getWidth(),
