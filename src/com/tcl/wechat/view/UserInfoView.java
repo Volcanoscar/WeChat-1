@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -65,6 +66,8 @@ public class UserInfoView extends LinearLayout{
 		
 		mImageView.setImageBitmap(mBitmap);
 		mImageView.setBackground(mImgDrawable);
+		mImageView.setPadding(3, 3, 3, 3);
+		mImageView.setScaleType(ScaleType.CENTER_INSIDE);
 		
 		mTextView.setText(mTextTitle);
 		mTextView.setTextSize(mTextSize);

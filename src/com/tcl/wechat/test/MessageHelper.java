@@ -1,4 +1,4 @@
-package com.tcl.wechat.action;
+package com.tcl.wechat.test;
 
 /**
  * 消息处理帮助类

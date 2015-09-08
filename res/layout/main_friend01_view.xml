@@ -21,6 +21,7 @@
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
         custom:imageSrc="@drawable/big_head"
+        custom:imageBackground="@drawable/add_bg"
         custom:imageScaleType="center"/>
 
 </LinearLayout>

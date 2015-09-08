@@ -3,8 +3,6 @@ package com.tcl.wechat.ui.activity;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.xbill.DNS.TextParseException;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -204,6 +202,4 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
-	
-	
 }

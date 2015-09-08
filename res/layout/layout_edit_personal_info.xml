@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
+    android:layout_height="500dp"
+    android:layout_gravity="center"
+    android:layout_margin="30dp"
+    android:background="#45ffffff" >
+    
+    <LinearLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:gravity="center"
+        android:layout_centerInParent="true">
+        <ImageView 
+	        android:id="@+id/img_edit_user_icon"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:src="@drawable/big_head"
+	        android:contentDescription="@string/contentDesc"/>
+    </LinearLayout>
+    
+	<EditText
+	    android:id="@+id/edt_user_name"
+	    android:layout_width="match_parent"
+	    android:layout_height="45dp"
+	    android:layout_margin="20dp"
+	    android:layout_below="@id/layout"
+	    android:layout_centerHorizontal="true"
+	    android:singleLine="true"
+	    android:maxLength="20"
+	    android:inputType="text"
+	    android:textColor="#10ffffff"
+	    android:background="@drawable/edittext_bg"
+	    android:hint="@string/input_nick_name"/>
+</RelativeLayout>

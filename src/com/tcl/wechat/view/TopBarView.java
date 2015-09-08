@@ -30,6 +30,7 @@ public class TopBarView extends RelativeLayout {
 		
 		mView = LayoutInflater.from(context).inflate(R.layout.topbar_layout, this, true);
 		mTitleTv = (TextView) mView.findViewById(R.id.tv_topbar_title);
+		mTitleTv.setTextSize(24);
 		mTitleTv.setText(mTitle);
 		
 		ta.recycle();

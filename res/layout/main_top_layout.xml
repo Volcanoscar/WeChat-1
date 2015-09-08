@@ -2,14 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="180dp"
     android:gravity="center|left"
     android:orientation="horizontal" >
     
     <com.tcl.wechat.view.UserInfoView
 		android:id="@+id/user_info"
         android:layout_width="wrap_content"
-        android:layout_height="180dp" 
+        android:layout_height="wrap_content" 
         android:layout_gravity="center"
         android:paddingLeft="20dp"
         custom:textTitle="HHAH"
@@ -17,12 +17,13 @@
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
         custom:imageSrc="@drawable/big_head"
-        custom:imageScaleType="center"/>
+        custom:imageBackground="@drawable/add_bg"
+        custom:imageScaleType="centerInside"/>
     
     <com.tcl.wechat.view.UserInfoView 
         android:id="@+id/add_fiend"
         android:layout_width="wrap_content"
-        android:layout_height="140dp" 
+        android:layout_height="wrap_content" 
         android:layout_gravity="center"
         android:paddingLeft="20dp"
         custom:textTitle=""
@@ -31,6 +32,6 @@
         custom:textBackground="@drawable/add_friend"
         custom:imageSrc="@drawable/add"
         custom:imageBackground="@drawable/add_bg"
-        custom:imageScaleType="center"/>
+        custom:imageScaleType="centerInside"/>
    
 </LinearLayout>

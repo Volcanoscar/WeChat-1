@@ -1,4 +1,4 @@
-package com.tcl.wechat.action;
+package com.tcl.wechat.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;

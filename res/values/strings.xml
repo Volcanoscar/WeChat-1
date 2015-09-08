@@ -17,6 +17,9 @@
     
     <!-- 个人信息界面 -->
     <string name="personal_info">个人信息</string>
+    <string name="edit_personal_info">编辑个人信息</string>
+    <string name="submit">提&#160;&#160;&#160;交</string>
+    <string name="input_nick_name">输入新名称</string>
     
        
     <!-- 添加好友界面 -->
@@ -28,5 +31,5 @@
     
     <string name="page_Indicator">(%1$d / %2$d)</string>
     
-    <string name="test">执行上面SQL语句会往person表中添加进一条记录，在实际应用中， 语句中的“测试数据”这些参数值会由用户输入界面提供，如果把用户输入的内容原样组拼到上面的insert语句， 当用户输入的内容含有单引号时，组拼出来的SQL语句就会存在语法错误。要解决这个问题需要对单引号进行转义，也就是把单引号转换成两个单引号。</string>
+    <string name="test">执行上面SQL语句会往person表中添加进一条记录，在实际应用中， 语句中的“测试数据”这些参数值会由用户输入界面提供，如果把用户输入的内容原样组拼到上面的insert语句， 当用户输入的内容含有单引号时，组拼出来的SQL语句就会存在语法错误。要解决这个问题需要对单引号进行转义，也就是把单引号转换成两个单引号。执行上面SQL语句会往person表中添加进一条记录，在实际应用中.</string>
 </resources>
