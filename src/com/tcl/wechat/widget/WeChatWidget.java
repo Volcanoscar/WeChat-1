@@ -11,6 +11,7 @@ import android.widget.RemoteViews;
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.ui.activity.MainActivity;
+import com.tcl.wechat.ui.activity.VideoPlayerActivity;
 
 public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	
@@ -49,12 +50,24 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		/**
 		 * 跳转进主界面
 		 */
-		Intent mainIntent = new Intent(context, MainActivity.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, mainIntent, 0);
+//		Intent mainIntent = new Intent(context, MainActivity.class);
+//		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, mainIntent, 0);
+//		remoteViews.setOnClickPendingIntent(R.id.btn_reply, pendingIntent);
+//		appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+		//进入主界面
+		Intent mainIntent = new Intent();
+		mainIntent.setAction(IConstant.ACTION_MAINVIEW);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, mainIntent, 0);
 		remoteViews.setOnClickPendingIntent(R.id.btn_reply, pendingIntent);
 		appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 		
-		
+		//for test 
+		Intent palyIntent = new Intent();
+		palyIntent.setAction(IConstant.ACTION_PLAY_VIDEO);
+		PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, 0, palyIntent, 0);
+		remoteViews.setOnClickPendingIntent(R.id.img_msgbd, pendingIntent2);
+		appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 	}
+	
 	
 }

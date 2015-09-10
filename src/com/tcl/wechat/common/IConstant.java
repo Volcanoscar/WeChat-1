@@ -15,7 +15,15 @@ public interface IConstant {
 	//进入聊天界面
 	public static final String ACTION_CHATVIEW = "com.tcl.action.CHATVIEW";
 	
-	
+	/**
+	 * 媒体处理相关类
+	 */
+	//播放视频action
+	public static final String ACTION_PLAY_VIDEO = "com.tcl.action.play.video";
+	//播放音频action
+	public static final String ACTION_PLAY_SOUND = "com.tcl.action.play.sound";
+	//显示图片
+	public static final String ACTION_SHOW_PIC= "com.tcl.action.show.pic";
 	/**
 	 * xmpp协议返回接口定义
 	 * @author rex.lei

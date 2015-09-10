@@ -94,7 +94,7 @@ public class ImageUtil {
 	 * @param flg 是否转化成国标GBK
 	 * @return String字符串
 	 */
-	public String downloadData(String urlStr, boolean flg){
+	public String downloadFile(String urlStr, boolean flg){
 		StringBuffer sBuffer = new StringBuffer();
 		BufferedReader reader = null;
 		

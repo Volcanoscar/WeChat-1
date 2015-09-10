@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
 		
 		mContext = MainActivity.this;
 		
-		initData();
+//		initData();
 		initView();
 	}
 	
@@ -111,15 +111,15 @@ public class MainActivity extends Activity {
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
 		
-		mTextPageView1 = (TextPageView) findViewById(R.id.tv_familboard_msg1);
-		mTextPageView2 = (TextPageView) findViewById(R.id.tv_familboard_msg2);
-		mTextPageView3 = (TextPageView) findViewById(R.id.tv_familboard_msg3);
-		mTextPageView4 = (TextPageView) findViewById(R.id.tv_familboard_msg4);
-		
-		mTextPageView1.setMessageInfo(mContext, mAllUserRecords.get("1").get(0).getContent());
-		mTextPageView2.setMessageInfo(mContext, mAllUserRecords.get("2").get(0).getContent());
-		mTextPageView3.setMessageInfo(mContext, mAllUserRecords.get("3").get(0).getContent());
-		mTextPageView4.setMessageInfo(mContext, mAllUserRecords.get("4").get(0).getContent());
+//		mTextPageView1 = (TextPageView) findViewById(R.id.tv_familboard_msg1);
+//		mTextPageView2 = (TextPageView) findViewById(R.id.tv_familboard_msg2);
+//		mTextPageView3 = (TextPageView) findViewById(R.id.tv_familboard_msg3);
+//		mTextPageView4 = (TextPageView) findViewById(R.id.tv_familboard_msg4);
+//		
+//		mTextPageView1.setMessageInfo(mContext, mAllUserRecords.get("1").get(0).getContent());
+//		mTextPageView2.setMessageInfo(mContext, mAllUserRecords.get("2").get(0).getContent());
+//		mTextPageView3.setMessageInfo(mContext, mAllUserRecords.get("3").get(0).getContent());
+//		mTextPageView4.setMessageInfo(mContext, mAllUserRecords.get("4").get(0).getContent());
 		
 	}
 

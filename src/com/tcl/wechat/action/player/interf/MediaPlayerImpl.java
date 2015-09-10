@@ -1,5 +1,6 @@
 package com.tcl.wechat.action.player.interf;
 
+
 /**
  * 播放接口类
  * @author rex.lei

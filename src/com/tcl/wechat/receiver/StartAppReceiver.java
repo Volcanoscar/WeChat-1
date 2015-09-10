@@ -35,7 +35,7 @@ public class StartAppReceiver extends BroadcastReceiver implements IConstant{
 		} else if (ACTION_USERINFO.equals(action)) {//进入用户信息界面
 			
 			
-		}
+		} 
 	}
 	
 	

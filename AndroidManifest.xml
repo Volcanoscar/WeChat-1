@@ -59,6 +59,9 @@
         <!-- 添加好友界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.AddFriendActivity"
             android:theme="@android:style/Theme.Translucent"/>
+        <!-- 视频播放界面 -->
+        <activity android:name="com.tcl.wechat.ui.activity.VideoPlayerActivity"
+            android:theme="@style/PlayerViewStyle"/>
         
         <!-- appWidget -->
         <receiver 
@@ -81,6 +84,16 @@
                 <action android:name="com.tcl.action.USERINFO"/>
                 <action android:name="com.tcl.action.PLAYVIEW"/>
                 <action android:name="com.tcl.action.CHATVIEW"/>
+            </intent-filter>
+        </receiver>
+        
+        <!-- 媒体播放类接收器 -->
+        <receiver 
+            android:name="com.tcl.wechat.receiver.MediaActionReceiver">
+            <intent-filter >
+                <action android:name="com.tcl.action.play.video"/>
+                <action android:name="com.tcl.action.play.sound"/>
+                <action android:name="com.tcl.action.show.pic"/>
             </intent-filter>
         </receiver>
         

@@ -1,11 +1,11 @@
 package com.tcl.wechat.action.player.listener;
 
 /**
- * 视频播放监听器
+ * 视频播放状态监听器
  * @author rex.lei
  *
  */
-public interface MediaPlayListener {
+public interface PlayStateListener {
 
 	/**
 	 * 开始播放
@@ -17,6 +17,12 @@ public interface MediaPlayListener {
 	 * 	适用于播放网络视频
 	 */
 	public void onBufferingUpdate();
+	
+	/**
+	 * 播放失败
+	 * @param errorCode 错误码
+	 */
+	public void onError(int errorCode);
 	
 	/**
 	 * 播放完成
