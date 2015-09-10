@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -11,10 +12,12 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.ui.activity.ChatActivity;
 
 /**
  * 聊天消息显示内容：消息内容  + 页码
@@ -22,7 +25,7 @@ import com.tcl.wechat.R;
  *
  */
 @SuppressLint("NewApi") 
-public class TextPageView extends LinearLayout implements OnPageChangeListener{
+public class TextPageView extends LinearLayout implements OnPageChangeListener, OnClickListener{
 
 	private static final String TAG = TextPageView.class.getSimpleName();
 	/**
@@ -42,18 +45,17 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 	private String mFontPath = "fonts/oop.TTF";
 	
 	public TextPageView(Context context) {
-		super(context);
+		this(context, null);
 		// TODO Auto-generated constructor stub
 	}
 	
 	public TextPageView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		// TODO Auto-generated constructor stub
+		this(context, attrs, 0);
 	}
 
 	public TextPageView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		// TODO Auto-generated constructor stub
+		setOnClickListener(this);
 	}
 
 	private void init(Context context){
@@ -81,6 +83,7 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 		mPageMsgInfo.setAdapter(mAdapter);
 		mPageMsgInfo.setOnPageChangeListener(this);
 	}
+	
 	
 	
 	private int getPageCount(){
@@ -172,5 +175,12 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener{
 	public void onPageSelected(int arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(getContext(), ChatActivity.class);
+		getContext().startActivity(intent);
 	}
 }

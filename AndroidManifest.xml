@@ -12,6 +12,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     
     <instrumentation 
         android:name="android.test.InstrumentationTestRunner" 
@@ -39,7 +43,8 @@
         
         <!-- 用户信息显示界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.PersonalInfoActivity"
-            android:theme="@android:style/Theme.Translucent"/>
+            android:theme="@android:style/Theme.Translucent"
+            android:windowSoftInputMode="stateHidden|stateAlwaysHidden"/>
         <!-- 好友信息显示界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.FriendInfoActivity"
             android:theme="@android:style/Theme.Translucent"/>

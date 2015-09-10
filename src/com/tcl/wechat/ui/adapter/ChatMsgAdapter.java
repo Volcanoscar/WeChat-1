@@ -113,24 +113,30 @@ public class ChatMsgAdapter extends BaseAdapter{
 			
 		case TYPE_AUDIO:
 			Recorder recoder = (Recorder) chatMessage.getMessage();
-			View mView = null;
+			View mRecordView = null;
 			if (chatMessage.getSource() == ChatMsgSource.SRC_RECEVIED){
-				mView = mInflater.inflate(R.layout.layout_chat_voice_leftview, null);
+				mRecordView = mInflater.inflate(R.layout.layout_chat_voice_leftview, null);
 			} else {
-				mView = mInflater.inflate(R.layout.layout_chat_voice_rightview, null);
+				mRecordView = mInflater.inflate(R.layout.layout_chat_voice_rightview, null);
 			}
-			FrameLayout layout = (FrameLayout) mView.findViewById(R.id.layout_chat_voice);
+			FrameLayout layout = (FrameLayout) mRecordView.findViewById(R.id.layout_chat_voice);
 			ViewGroup.LayoutParams lp = layout.getLayoutParams();
 			lp.width = (int) (mMinItemWidth + (mMaxItemWidth / 60f * recoder.getSeconds()));
 			if (lp.width > CHAT_VIEW_WIDTH){
 				lp.width = CHAT_VIEW_WIDTH;
 			}
-			TextView mMsgTime = (TextView) mView.findViewById(R.id.tv_chat_recorder_time);
+			TextView mMsgTime = (TextView) mRecordView.findViewById(R.id.tv_chat_recorder_time);
 			mMsgTime.setText((Math.round(recoder.getSeconds())) + "\"");
-			holder.mMsgInfoLayout.addView(mView);
+			holder.mMsgInfoLayout.addView(mRecordView);
 			break;
 			
 		case TYPE_VIDEO:
+			View mVideoView = null;
+			int resid = (Integer) chatMessage.getMessage();
+			mVideoView = mInflater.inflate(R.layout.layout_chat_video_view, null);
+			ImageView mHumbmediaImg = (ImageView) mVideoView.findViewById(R.id.img_video_humbmedia);
+			mHumbmediaImg.setBackgroundResource(resid);
+			holder.mMsgInfoLayout.addView(mVideoView);
 			break;
 			
 		case TYPE_ANIM :

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:rotation="-4"
+    android:orientation="vertical" >
+    
+    <!-- 消息输入框 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/edt_msg_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_msg_edit_bg"
+            android:textSize="22sp"
+            android:inputType="text"/>
+    </RelativeLayout>
+    
+   <!-- 底部功能按键 -->
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+        <!-- 录音按钮 -->
+        <com.tcl.wechat.view.AudioRecorderButton
+            android:id="@+id/btn_sound_reply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/sound_reply_selector"/>
+        <!-- 文字消息回复按钮 -->
+        <Button 
+            android:id="@+id/btn_msg_reply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/msg_reply_selector"
+            android:onClick="msgReplyClick"/>
+        <!-- 表情回复控件 -->
+        <Button 
+            android:id="@+id/btn_face_reply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_msg_reply"
+            android:layout_marginRight="40dp"
+            android:background="@drawable/face_reply_selector"
+            android:onClick="msgReplyClick"/>
+        
+        <!-- 图片回复控件 -->
+        <Button 
+            android:id="@+id/btn_img_reply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_face_reply"
+            android:layout_marginRight="40dp"
+            android:background="@drawable/img_reply_selector"
+            android:onClick="imgReplyClick"/>
+    </RelativeLayout>
+    
+</LinearLayout>

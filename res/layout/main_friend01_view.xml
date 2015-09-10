@@ -6,12 +6,6 @@
     android:gravity="center_horizontal"
     android:orientation="horizontal" >
     
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@drawable/tick" />
-    
     <com.tcl.wechat.view.UserInfoView
 		android:id="@+id/user_info"
         android:layout_width="wrap_content"

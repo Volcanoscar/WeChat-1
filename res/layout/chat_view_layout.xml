@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="110dp"
-        android:layout_marginBottom="70dp"
+        android:layout_marginBottom="50dp"
         android:background="@drawable/chat_bg">
         <ListView 
             android:id="@+id/lv_chat_info"
@@ -29,18 +29,6 @@
 	        android:dividerHeight="5dp"
 	        android:scrollbarStyle="outsideOverlay"
 	        android:listSelector="@android:color/transparent" />
-        
-        <EditText
-            android:id="@+id/edt_msg_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="60dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="700dp"
-            android:background="@drawable/chat_msg_edit_bg"
-            android:textSize="22sp"
-            android:rotation="-4"
-            android:inputType="text"/>
     </RelativeLayout>
     
     <ImageView 
@@ -75,6 +63,7 @@
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:background="@drawable/chat_usericon_bg"
+            android:scaleType="centerInside"
             android:src="@drawable/chat_usericon"
             android:contentDescription="@string/contentDesc"/>
         
@@ -91,38 +80,14 @@
     </LinearLayout>
     
     <!-- 底部功能按键 -->
-    <RelativeLayout 
+    <include 
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="30dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="50dp"
-        android:rotation="-3">
-        <!-- 录音按钮 -->
-        <com.tcl.wechat.view.AudioRecorderButton
-            android:id="@+id/btn_sound_reply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="100dp"
-            android:background="@drawable/sound_reply_selector"/>
-        <!-- 图片选择控件 -->
-        <Button 
-            android:id="@+id/btn_msg_reply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="50dp"
-            android:background="@drawable/msg_reply_selector"
-            android:onClick="msgReplyClick"/>
-        <!-- 回复控件 -->
-        <Button 
-            android:id="@+id/btn_face_reply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_msg_reply"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/face_reply_selector"
-            android:onClick="msgReplyClick"/>
-    </RelativeLayout>
+        layout="@layout/chat_bottom_layout"/>
+    "
 </RelativeLayout>

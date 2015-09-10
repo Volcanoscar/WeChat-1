@@ -1,58 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
-    android:orientation="vertical" >
-    
-    <com.tcl.wechat.view.TopBarView
-        android:layout_width="match_parent"
-       	android:layout_height="50dp"
-       	custom:topBarTitle="@string/edit_personal_info"/>
-    
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
-        <!-- 用户头像 -->
-		<include 
+    android:baselineAligned="false"
+    android:orientation="horizontal" >
+    <!-- 用户头像 -->
+	<include 
+	    android:layout_width="0dp"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="2"
+	    android:layout_gravity="center"
+	    layout="@layout/layout_user_info"/>
+
+	<!-- 编辑用户信息 -->
+	<include
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent"
+	    android:layout_weight="3"
+	    layout="@layout/layout_edit_personal_info"/>
+
+	<!-- 提交按钮 -->
+	<LinearLayout 
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent"
+	    android:gravity="center"
+	    android:layout_weight="2"
+	    android:orientation="horizontal" >
+	    <View 
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"/>
+	    <Button
+		    android:id="@+id/btn_submit"
 		    android:layout_width="0dp"
 		    android:layout_height="wrap_content"
-		    android:layout_weight="1"
-		    layout="@layout/layout_user_info"/>
-		
-		<!-- 编辑用户信息 -->
-		<include
-		    android:layout_width="0dp"
-		    android:layout_height="match_parent"
-		    android:layout_weight="2"
-		    android:layout_margin="40dp"
-		    layout="@layout/layout_edit_personal_info"/>
-		
-		<!-- 提交按钮 -->
-		<LinearLayout 
-		    android:layout_width="0dp"
-		    android:layout_height="match_parent"
+		    android:layout_weight="3"
+		    android:padding="10dp"
 		    android:gravity="center"
-		    android:layout_weight="1"
-		    android:orientation="horizontal" >
-		    <Button
-			    android:id="@+id/btn_submit"
-			    android:layout_width="match_parent"
-			    android:layout_height="wrap_content"
-			    android:layout_marginLeft="30dp"
-			    android:layout_marginRight="30dp"
-			    android:paddingRight="30dp"
-			    android:paddingTop="10dp"
-			    android:paddingBottom="10dp"
-			    android:gravity="center"
-			    android:text="@string/submit"
-			    android:textSize="22sp"
-			    android:background="@drawable/submit_btn_selector"/>
-		</LinearLayout>
-    </LinearLayout>
+		    android:text="@string/submit"
+		    android:textSize="22sp"
+		    android:background="@drawable/submit_btn_selector"/>
+	    <View 
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"/>
+	</LinearLayout>
 </LinearLayout>

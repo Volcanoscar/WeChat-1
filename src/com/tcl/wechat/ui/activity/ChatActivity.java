@@ -6,6 +6,7 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
@@ -121,12 +122,35 @@ public class ChatActivity extends Activity {
 		}
 		
 		//TODO 需要添加用户名
-		ChatMessage message = new ChatMessage();
-		message.setMessage(new Recorder("", 25));
-		message.setTime(df.format(new Date()));
-		message.setSource(ChatMsgSource.SRC_SENDED);
-		message.setType(ChatMsgType.TYPE_AUDIO);
-		mDatas.add(message);
+		ChatMessage message1 = new ChatMessage();
+		message1.setMessage(new Recorder("", 25));
+		message1.setTime(df.format(new Date()));
+		message1.setSource(ChatMsgSource.SRC_SENDED);
+		message1.setType(ChatMsgType.TYPE_AUDIO);
+		mDatas.add(message1);
+		
+		//TODO 需要添加用户名
+		ChatMessage message2 = new ChatMessage();
+		message2.setMessage(new Recorder("", 50));
+		message2.setTime(df.format(new Date()));
+		message2.setSource(ChatMsgSource.SRC_RECEVIED);
+		message2.setType(ChatMsgType.TYPE_AUDIO);
+		mDatas.add(message2);
+		
+		//视频
+		ChatMessage videoMsg = new ChatMessage();
+		videoMsg.setMessage(R.drawable.message_video_bg);
+		videoMsg.setTime(df.format(new Date()));
+		videoMsg.setSource(ChatMsgSource.SRC_RECEVIED);
+		videoMsg.setType(ChatMsgType.TYPE_VIDEO);
+		mDatas.add(videoMsg);
+		
+		ChatMessage imgMsg = new ChatMessage();
+		imgMsg.setMessage(BitmapFactory.decodeResource(getResources(), R.drawable.chat_usericon));
+		imgMsg.setTime(df.format(new Date()));
+		imgMsg.setSource(ChatMsgSource.SRC_SENDED);
+		imgMsg.setType(ChatMsgType.TYPE_IAMGE);
+		mDatas.add(imgMsg);
 		
 	}
 
@@ -193,6 +217,10 @@ public class ChatActivity extends Activity {
 				//播放音频
 				mPlayerManager.play(((Recorder)mDatas.get(mCurrentPosition).getMessage()).getFileName());
 				mPlayerManager.setPlayCompletedListener(playCompletedListener);
+			} else if (ChatMsgType.TYPE_VIDEO == message.getType()) {
+				Intent intent = new Intent(mContext, VideoPlayerActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+				startActivity(intent);
 			}
 		}
 	};
@@ -273,6 +301,10 @@ public class ChatActivity extends Activity {
 		mChatListView.setSelection(mDatas.size() - 1);
 		
 		mMsgEdt.setText("");
+	}
+	
+	public void imgReplyClick(View view){
+		
 	}
 	
 	/**

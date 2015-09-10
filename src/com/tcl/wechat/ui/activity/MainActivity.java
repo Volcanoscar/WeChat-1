@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -23,7 +24,6 @@ import com.tcl.wechat.modle.User;
 import com.tcl.wechat.modle.UserRecord;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
-import com.tcl.wechat.view.page.TextPageView;
 
 /**
  * 主界面Activity
@@ -40,11 +40,6 @@ public class MainActivity extends Activity {
 	private UserInfoView mAddFriend;
 	private TextView mMyFriendWord;
 	private TextView mMyFamilyBoardWord;
-	
-	private TextPageView mTextPageView1;
-	private TextPageView mTextPageView2;
-	private TextPageView mTextPageView3;
-	private TextPageView mTextPageView4;
 	
 	/**
 	 * 好友模块
@@ -110,17 +105,6 @@ public class MainActivity extends Activity {
 		
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
-		
-//		mTextPageView1 = (TextPageView) findViewById(R.id.tv_familboard_msg1);
-//		mTextPageView2 = (TextPageView) findViewById(R.id.tv_familboard_msg2);
-//		mTextPageView3 = (TextPageView) findViewById(R.id.tv_familboard_msg3);
-//		mTextPageView4 = (TextPageView) findViewById(R.id.tv_familboard_msg4);
-//		
-//		mTextPageView1.setMessageInfo(mContext, mAllUserRecords.get("1").get(0).getContent());
-//		mTextPageView2.setMessageInfo(mContext, mAllUserRecords.get("2").get(0).getContent());
-//		mTextPageView3.setMessageInfo(mContext, mAllUserRecords.get("3").get(0).getContent());
-//		mTextPageView4.setMessageInfo(mContext, mAllUserRecords.get("4").get(0).getContent());
-		
 	}
 
 	@Override
@@ -162,6 +146,16 @@ public class MainActivity extends Activity {
 			Log.i(TAG, "UserRecord:" + mAllUserRecords.get("" + i));
 		}
 	}
+	
+	/**
+	 * 检测事件
+	 */
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		Log.i(TAG, "action:" + event.getAction());
+		return super.onTouchEvent(event);
+	}
+	
 	
 	/**
 	 * 点击进入用户信息界面，可进行相关信息编辑

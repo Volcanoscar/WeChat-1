@@ -15,10 +15,13 @@
         android:textColor="@color/white"/>
     
     <RelativeLayout
+        android:id="@+id/chat_msg_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/msg_play_time"
         android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:descendantFocusability="beforeDescendants"
         android:gravity="bottom">
         <ImageView
             android:id="@+id/img_msg_detail"
