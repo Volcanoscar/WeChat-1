@@ -1,37 +1,43 @@
 package com.tcl.wechat.modle;
 
+import java.io.Serializable;
+
+
 /**
- * Apk相关信息
- * @author rex.lei
+ * @author kuanghq
  *
  */
-public class AppInfo {
+/**
+ * @author kuanghq
+ * 
+ */
+public class AppInfo implements Serializable {
 
-	private String packageName;
-	private int versionCode;
-	private String versionName;
-	private String md5;//MD5校验码
-	
+
+	private String packageName;// APK包名
+	private String appname;//应用名称
+
+
+
+
+
+
+	public String getappname() {
+		return appname;
+	}
+
+	public void setappname(String appname) {
+		this.appname = appname;
+	}
+
 	public String getPackageName() {
 		return packageName;
 	}
-	
-	public int getVersionCode() {
-		return versionCode;
-	}
-	
-	public String getVersionName() {
-		return versionName;
-	}
-	
-	public String getMd5() {
-		return md5;
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
 	}
 
-	@Override
-	public String toString() {
-		return "AppInfo [packageName=" + packageName + ", versionCode="
-				+ versionCode + ", versionName=" + versionName + ", md5=" + md5
-				+ "]";
-	}
+	
+
 }

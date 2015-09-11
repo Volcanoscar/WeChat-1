@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,12 +19,16 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.RecordDao;
 import com.tcl.wechat.db.UserDao;
 import com.tcl.wechat.modle.User;
 import com.tcl.wechat.modle.UserRecord;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
+import com.tcl.wechat.xmpp.WeiXmppManager;
+import com.tcl.wechat.xmpp.WeiXmppService;
 
 /**
  * 主界面Activity
@@ -51,6 +56,10 @@ public class MainActivity extends Activity {
 	 */
 	private HashMap<String, ArrayList<UserRecord>> mAllUserRecords;
 	
+	
+	
+	private Handler timeHandler = new Handler();
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,6 +75,14 @@ public class MainActivity extends Activity {
 		
 //		initData();
 		initView();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		}
 	}
 	
 	private void initData() {
@@ -107,15 +124,6 @@ public class MainActivity extends Activity {
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
-			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		}
-		
-	}
-	
 	/**
 	 * 请求用户数据
 	 */

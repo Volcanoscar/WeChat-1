@@ -2,14 +2,11 @@ package com.tcl.wechat;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.tcl.wechat.xmpp.WeChatXmppManager;
 
 public class WeChatApplication extends Application {
 	
@@ -17,14 +14,12 @@ public class WeChatApplication extends Application {
 	//第一次进入应用
 	private static final String PREF_FIRST_TIME = "first_time_pref";
 	
-	private WeChatXmppManager mXmppManager;
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
 		mContext = getApplicationContext();
-		mXmppManager = WeChatXmppManager.getInstance();
 		
 		//用户认证模块
 		initAuth();
@@ -46,7 +41,6 @@ public class WeChatApplication extends Application {
 		 * 	否：直接登录
 		 */
 		if (bFirstEnter){
-			mXmppManager.initDeviceDao(mContext);
 		}
 		
 	}
@@ -66,7 +60,7 @@ public class WeChatApplication extends Application {
 	private void initImageLoader(Context context) {
 		DisplayImageOptions options = new DisplayImageOptions.Builder()
         	.showImageOnFail(R.drawable.ic_launcher).showImageForEmptyUri(R.drawable.ic_launcher)
-        	.showStubImage(R.drawable.ic_launcher).cacheInMemory(true).cacheOnDisc(true).build();
+        	.showStubImage(R.drawable.ic_launcher).cacheInMemory().cacheOnDisc().build();
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
         	.defaultDisplayImageOptions(options).threadPriority(Thread.MIN_PRIORITY)
         	.discCacheSize(10 * 1024 * 1024).threadPoolSize(10).build();

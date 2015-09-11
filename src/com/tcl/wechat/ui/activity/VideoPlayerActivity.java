@@ -9,13 +9,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ProgressBar;
+import android.widget.FrameLayout;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.action.player.DownloadManager;
@@ -40,7 +41,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 	private SurfaceView mSurfaceView;
 	private SurfaceHolder mHolder;
 	private Button mPlayBtn;
-	private ProgressBar mDownloadBar;
+	private FrameLayout mProgressBarLayout;
 	
 	private String mFilePath;
 	private boolean bPlayFlag = false;
@@ -84,6 +85,20 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 	 * 初始化
 	 */
 	private void init() {
+		
+		WindowManager.LayoutParams lp = getWindow().getAttributes();
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+		getWindow().setGravity(Gravity.LEFT | Gravity.TOP);
+		
+		//再次可以自定义视频窗口的位置和大小
+		//坐标
+		lp.x = 100;
+		lp.y = 100;
+		//大小
+		lp.width = 800;
+		lp.height = 450;
+		getWindow().setAttributes(lp);
+		
 		mSurfaceView = (SurfaceView) findViewById(R.id.surface_view);
 		mHolder = mSurfaceView.getHolder();
 		mHolder.addCallback(this);
@@ -97,7 +112,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 		mPlayBtn.setBackgroundResource(R.drawable.media_play);
 		mPlayBtn.setVisibility(View.GONE);
 		
-		mDownloadBar = (ProgressBar) findViewById(R.id.progress);
+		mProgressBarLayout = (FrameLayout) findViewById(R.id.layout_progressbar);
 	}
 
 	@Override
@@ -168,7 +183,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case MSG_START_PLAY:
-				mDownloadBar.setVisibility(View.GONE);
+				mProgressBarLayout.setVisibility(View.GONE);
 				mPlayBtn.setVisibility(View.VISIBLE);
 				mPlayBtn.setBackgroundResource(R.drawable.media_pause);
 				play();

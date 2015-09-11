@@ -2,22 +2,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp"
-    android:background="@drawable/playview_bg" >
+    android:background="@drawable/playview_bg">
     
-    <SurfaceView 
-        android:id="@+id/surface_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"/>
+   	<SurfaceView 
+	    android:id="@+id/surface_view"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_centerInParent="true"/>
     
-    <ProgressBar 
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        style="@style/myProgressBarStyleLarge"/>
+   	<FrameLayout 
+   	    android:id="@+id/layout_progressbar"
+   	    android:layout_width="match_parent"
+   	    android:layout_height="match_parent"
+   	    android:layout_centerInParent="true"
+   	    android:background="@drawable/default_player_bg">
+   	    <ProgressBar 
+   	        android:id="@+id/progress"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        style="@style/myProgressBarStyleLarge"/>
+   	</FrameLayout>
+    
     
     <Button 
         android:id="@+id/btn_player_pause"

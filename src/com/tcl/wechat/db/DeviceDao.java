@@ -1,52 +1,60 @@
+/* 
+* -------------------------------------------------------------
+ * Copyright (c) 2011 TCL, All Rights Reserved.
+ * ---------------------------------------------------------
+ * @author:zhangjunjian
+ * @version V1.0
+ */
 package com.tcl.wechat.db;
 
-import android.content.ContentValues;
+
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
+
+
+/**
+ * @ClassName: DeviceDao
+ * @Description: 设备表
+ */
 
 public class DeviceDao {
+	
+	private DBOpenHelper dbOpenHelper;
 
-	private DBHelper mDbHelper;
-
-	public DeviceDao(Context context) {
-		mDbHelper = new DBHelper(context);
+	public DeviceDao(Context context)
+	{
+		this.dbOpenHelper = new DBOpenHelper(context);
 	}
 	
-	/**
-	 * 插入一条设备信息
-	 */
-	public void insert(String memberid){
-		SQLiteDatabase db = mDbHelper.getWritableDatabase();
-		ContentValues values = new ContentValues();
-		values.put(Property.COLUMN_DEVICEID, memberid);
-		values.put(Property.COLUMN_DEVICE_NAME, Build.MODEL);
-		db.insert(Property.TABLE_DEVICE, null, values);
+	public boolean update(String memberid) 
+	{
+		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		db.execSQL("update tcl_weixin_device set memberid=? ",new Object[] { memberid});
+		return true;
 	}
 	
-	/**
-	 * 获取设备ID
-	 * @return
-	 */
-	public String getDeviceId(){
-		String deviceId = null;
-		Cursor cursor = null;
+	public String find() 
+	{
+		String memberid ;
+		// 如果只对数据进行读取，建议使用此方法
 		try {
-			SQLiteDatabase db = mDbHelper.getReadableDatabase();
-			cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
-			if (cursor != null && cursor.moveToFirst()){
-				deviceId = cursor.getString(cursor.getColumnIndex(Property.COLUMN_DEVICEID));
-				return deviceId;
+			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+			Cursor cursor = db.rawQuery(
+					"select memberid from tcl_weixin_device",null);
+			if (cursor.moveToFirst())
+			{
+				memberid = cursor.getString(cursor.getColumnIndex("memberid"));
+				cursor.close();
+				return memberid;
 			}
+			cursor.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			if (cursor != null){
-				cursor.close();
-			}
 		}
 		return null;
+
 	}
 }
