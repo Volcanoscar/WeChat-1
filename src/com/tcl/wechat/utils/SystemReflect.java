@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
  * @author rex.lei
  *
  */
-public class SystemRelfect {
+public class SystemReflect {
 
 	private static final String ClassName = "android.os.SystemProperties";
 

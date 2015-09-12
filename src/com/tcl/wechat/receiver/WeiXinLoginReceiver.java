@@ -24,7 +24,7 @@ import com.tcl.wechat.common.WeiConstant.CommandReturnType;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.db.WeiUserDao;
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.utils.BaseUIHandler;
 import com.tcl.wechat.utils.CommonsFun;
 import com.tcl.wechat.xmpp.InitFinish;
@@ -40,7 +40,8 @@ import com.tcl.wechat.xmpp.WeiXmppService;
 
 public class WeiXinLoginReceiver extends BroadcastReceiver{
 
-	private String tag = "WeiXinLoginReceiver";
+	private static final String TAG = WeiXinLoginReceiver.class.getSimpleName();
+	
 	private Context mContext ;
 	private int getData = 0;
 	public static Handler mHandler = null;
@@ -50,7 +51,7 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
-		Log.i(tag,"receive---WeiXinLoginReceiver");
+		Log.i(TAG,"receive---WeiXinLoginReceiver");
 		mContext = context;
 		getData = 0;
 		handler = new MyHander();
@@ -69,7 +70,7 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 		String localip = preferences.getString("localip", "");
 		String curip = CommonsFun.getLocalIpAddress();
 		if(!localip.equals(curip)){
-			Log.i(tag,"receive---localip="+localip+";curip="+curip);
+			Log.i(TAG,"receive---localip="+localip+";curip="+curip);
 			Editor editor = preferences.edit();
 			editor.putString("localip", curip);
 			editor.commit();
@@ -87,12 +88,9 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 	
 	//判断本地数据库是否已经有了网络二维码的地址，有就直接生成一个二维码图片，没有则从网络获取。
 		public void ifGetNetQR(){
-			 WeiQrDao weiQrDao = new WeiQrDao(mContext);
-			 String qrurl = weiQrDao.find();
-			 Log.i("liyulin","update=qrurl="+qrurl);
-			 if (qrurl != null&&qrurl.length()>0){
-			//	 new QRCodeUtils().createNewQR(qrurl.substring(qrurl.indexOf("ticket=")+7),WeiConstant.CFROM.WeiXin,mContext);
-			 }else{
+			 if (WeiQrDao.getInstance().getQr() != null){
+				 //	 new QRCodeUtils().createNewQR(qrurl.substring(qrurl.indexOf("ticket=")+7),WeiConstant.CFROM.WeiXin,mContext);
+			 } else{
 				 new WeiXmppCommand(new MyHander(), CommandType.COMMAND_GET_QR, null).execute();
 			 }
 		}
@@ -103,10 +101,11 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 	private Runnable getUserCountTimeTask = new Runnable() {     
 		
 		public void run() { 
-			WeiUserDao weiUserDao = new WeiUserDao(mContext);
 			topActivityName = CommonsFun.getTopActivityName(mContext);
-		    if(weiUserDao.find().size()==0 && !topActivityName.equals(mContext.getPackageName())
-		    		&&WeiConstant.StartServiceMode.CURRENTMODE.equals(WeiConstant.StartServiceMode.OWN)){
+		    if(WeiUserDao.getInstance().getBindUserNum() == 0 && 
+		    		!topActivityName.equals(mContext.getPackageName()) &&
+		    		WeiConstant.StartServiceMode.CURRENTMODE.equals(WeiConstant.StartServiceMode.OWN)){
+		    	
 		    	Intent serviceIntent = new Intent(mContext, WeiXmppService.class);      	 			
 		    	mContext.stopService(serviceIntent); 
 		    }
@@ -125,25 +124,20 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 					new WeiXmppCommand(null, CommandType.COMMAND_RESPONSETVSTATUS, hashMap_tvstatus).execute();
 					break;
 				case CommandType.COMMAND_GET_BINDER:
-					 Log.i(tag,"COMMAND_GET_BINDER");
+					 Log.i(TAG,"COMMAND_GET_BINDER");
 					 if (this.getStatus().equals(CommandReturnType.STATUS_SUCCESS)){
-						 ArrayList<BinderUser> files = (ArrayList<BinderUser>)this.getData();
-						 for(int i =0;i<files.size();i++){
-							 Log.i(tag,"files.get(0).headUrl="+files.get(i).getHeadimgurl());
+						 ArrayList<BindUser> usrsList = (ArrayList<BindUser>)this.getData();
+						 for(int i = 0; i< usrsList.size(); i++){
+							 Log.i(TAG,"files.get(0).headUrl=" + usrsList.get(i).getHeadimageurl());
 						 }
-						 Log.d(tag, "当前绑定微信用户大小="+files.size());
-						// if(files.size()!= 0){
-							 //无论是否有绑定用户，保存当前绑定的微信用户
-							 WeiUserDao weiUserDao = new WeiUserDao(mContext);
-						     weiUserDao.save(files);
-						// }
-						     
+						 Log.d(TAG, "当前绑定微信用户大小="+ usrsList.size());
+						 WeiUserDao.getInstance().addUserList(usrsList);
 					     //没有人绑定且当前应用不在前台，则关闭后台服务。
-						 if(files.size()==0){
+						 if(usrsList.size() == 0){
 							 topActivityName = CommonsFun.getTopActivityName(mContext);
-							 Log.i(tag, "topActivityName="+topActivityName+";mContext.getPackageName()="+mContext.getPackageName());
+							 Log.i(TAG, "topActivityName="+topActivityName+";mContext.getPackageName()="+mContext.getPackageName());
 							 if(topActivityName!=null&&!topActivityName.equals(mContext.getPackageName())){
-								 Log.i(tag,"当前绑定用户为0，并且微信应用不在前台");
+								 Log.i(TAG,"当前绑定用户为0，并且微信应用不在前台");
 								 this.removeCallbacks(getUserCountTimeTask);
 							     this.postDelayed(getUserCountTimeTask, 60000);
 							 }
@@ -160,7 +154,7 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 					initfinish.sentPacket();
 					 break;
 				case CommandType.COMMAND_GET_QR:
-					 Log.i(tag,"COMMAND_GET_QR");
+					 Log.i(TAG,"COMMAND_GET_QR");
 					 if (this.getStatus().equals(CommandReturnType.STATUS_SUCCESS)){
 						 String url = (String)this.getData();
 						 Log.i("liyulin","COMMAND_GET_QR--url="+url);
@@ -170,12 +164,13 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 							// ProviderFun.insertRecord(mContext,url);
 							// getQR_url(mContext);
 							 //保存当前绑定的微信二维码
-							 WeiQrDao weiQrDao = new WeiQrDao(mContext);
-							 String qrurl = weiQrDao.find();
+//							 WeiQrDao weiQrDao = new WeiQrDao(mContext);
+							 String qrurl = WeiQrDao.getInstance().getUrl();
 							 Log.i("liyulin","update=qrurl="+qrurl);
 							 if (qrurl != null){
 								// Log.i("liyulin","111update=url="+url);
-								 weiQrDao.update(url);
+//								 weiQrDao.update(url);
+								 WeiQrDao.getInstance().updateUrl(qrurl);
 							 }
 						 }
 					 }

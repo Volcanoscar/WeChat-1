@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,20 +21,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.tcl.wechat.db.DeviceDao;
-//import com.tcl.common.mediaplayer.aidl.MediaBean;
-//import com.tcl.os.system.SystemProperties;
-//import com.tcl.tvmanager.TTvCommonManager;
-//import com.tcl.tvmanager.TTvManager;
-//import com.tcl.tvmanager.TTvUtils;
-//import com.tcl.tvmanager.vo.EnTCLCallBackSetSourceMsg;
-//import com.tcl.tvmanager.vo.EnTCLInputSource;
-//import android.tclwidget.TCLToast;
-
 
 /**
  * A simple, tiny, nicely embeddable HTTP 1.0 (partially 1.1) server in Java
@@ -80,34 +69,25 @@ import com.tcl.wechat.db.DeviceDao;
  * See the end of the source file for distribution license
  * (Modified BSD licence)
  */
-public class NanoHTTPD
-{
+public class NanoHTTPD{
 	
-	public void start() {
-		if (myThread != null) {
-			myThread.setDaemon(true);
-			myThread.start();
-		}
-	}
 	/**
 	 * HTTP response.
 	 * Return one of these from serve().
 	 */
-	public class Response
-	{
+	public class Response{
+		
 		/**
 		 * Default constructor: response = HTTP_OK, data = mime = 'null'
 		 */
-		public Response()
-		{
+		public Response(){
 			this.status = HTTP_OK;
 		}
 
 		/**
 		 * Basic constructor.
 		 */
-		public Response( String status, String mimeType, InputStream data )
-		{
+		public Response( String status, String mimeType, InputStream data ){
 			this.status = status;
 			this.mimeType = mimeType;
 			this.data = data;
@@ -117,16 +97,12 @@ public class NanoHTTPD
 		 * Convenience method that makes an InputStream out of
 		 * given text.
 		 */
-		public Response( String status, String mimeType, String txt )
-		{
+		public Response( String status, String mimeType, String txt ) {
 			this.status = status;
 			this.mimeType = mimeType;
-			try
-			{
+			try {
 				this.data = new ByteArrayInputStream( txt.getBytes("UTF-8"));
-			}
-			catch ( java.io.UnsupportedEncodingException uee )
-			{
+			} catch ( java.io.UnsupportedEncodingException uee ) {
 				uee.printStackTrace();
 			}
 		}
@@ -134,8 +110,7 @@ public class NanoHTTPD
 		/**
 		 * Adds given line to the header.
 		 */
-		public void addHeader( String name, String value )
-		{
+		public void addHeader( String name, String value ) {
 			header.put( name, value );
 		}
 
@@ -161,6 +136,8 @@ public class NanoHTTPD
 		public Properties header = new Properties();
 	}
 
+	private static final String TAG = NanoHTTPD.class.getSimpleName();
+	
 	/**
 	 * Some HTTP response status codes
 	 */
@@ -185,6 +162,15 @@ public class NanoHTTPD
 		MIME_DEFAULT_BINARY = "application/octet-stream",
 		MIME_XML = "text/xml";
 
+	/**
+	 * Socket
+	 */
+	private int myTcpPort;
+	private Socket mySocket;
+	private ServerSocket myServerSocket;
+	private Thread myThread;
+	private static int theBufferSize = 16 * 1024;
+
 	// ==================================================
 	// Socket & server code
 	// ==================================================
@@ -193,456 +179,396 @@ public class NanoHTTPD
 	 * Starts a HTTP server to given port.<p>
 	 * Throws an IOException if the socket is already in use
 	 */
-	private Context ct;
 	private String memberid;
-	private DeviceDao weiDeviceDao;
-	private String remotetime="";
-	private String tag = "NanoHTTPD";
-	private static int UNSUPORTCHANNEL = 10000;
-	public NanoHTTPD( int port, File wwwroot,Context m_ct ) throws IOException
-	{
+	private String remotetime = "";
+	
+	public NanoHTTPD(int port) throws IOException {
 		
-		
-		Log.d(tag, "-------------------------------------NanoHTTPD ------ 1");
-		weiDeviceDao = new DeviceDao(m_ct);
-		Log.d(tag, "-------------------------------------NanoHTTPD ------ 2");
-
-		memberid = weiDeviceDao.find();
 		myTcpPort = port;
-		ct = m_ct;
+		memberid = DeviceDao.getInstance().getMemberId();
 		
-		
-		//this.myRootDir = wwwroot;
-		myServerSocket = new ServerSocket( myTcpPort );
-		myThread = new Thread( new Runnable()
-			{
-				public void run()
-				{
-					try
-					{
-						while( true ){
-							Log.e("lyr","===============>>>>>>>>>>>>wait socket");
-							new HTTPSession( myServerSocket.accept());
-						}
+		myServerSocket = new ServerSocket(myTcpPort);
+		myThread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					while (true) {
+						new HTTPSession(myServerSocket.accept());
 					}
-					catch ( IOException ioe )
-					{}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
-		/*myThread.setDaemon( true );
-		myThread.start();*/
+			}
+		});
 	}
 
 	/**
-	 * Stops the server.
+	 * Start the Server
 	 */
-	public void stop()
-	{
-		try
-		{
-			myServerSocket.close();
-			myThread.join();
+	public void start() {
+		
+		if (myThread != null) {
+			myThread.setDaemon(true);
+			myThread.start();
 		}
-		catch ( IOException ioe ) {}
-		catch ( InterruptedException e ) {}
 	}
 	
-	private boolean onkeyAction(String keyString) {
-		
-//		WeiConstant.mKeyAndMouseControl.setKey((short)KeyMap.parseKeyCode(keyString));
-		return true;
+	/**
+	 * Stop the server.
+	 */
+	public void stop(){
+		try{
+			myServerSocket.close();
+			myThread.join();
+		}catch ( IOException ioe ) {
+			ioe.printStackTrace();
+		} catch ( InterruptedException e ) {
+			e.printStackTrace();
+		}
 	}
+	
 	/**
 	 * Handles one session, i.e. parses the HTTP request
 	 * and returns the response.
 	 */
-	private class HTTPSession implements Runnable
-	{
-		public HTTPSession( Socket s )
-		{
-			mySocket = s;
-			Thread t = new Thread( this );
-			t.setDaemon( true );
-			t.start();
+	private class HTTPSession implements Runnable{
+		
+		public HTTPSession(Socket socket ){
+			mySocket = socket;
+			Thread thread = new Thread();
+			thread.setDaemon(true);
+			thread.start();
 		}
 
-		public void run()
-		{
-			try
-			{
-				InputStream is = mySocket.getInputStream();
+		@Override
+		public void run() {
+			
+			InputStream is = null;
+			BufferedReader reader = null;
+			try {
+				is = mySocket.getInputStream();
+				if (is == null){
+					return ;
+				}
 				
-				Log.e(tag,"============================>>>>>>>>>>>>>>>>>>>>");
-				if ( is == null) return;
-
 				// Read the first 8192 bytes.
 				// The full header should fit in here.
 				// Apache's default header limit is 8KB.
 				// Do NOT assume that a single read will get the entire header at once!
-				final int bufsize = 8192;
-				byte[] buf = new byte[bufsize];
-				
+				final int bufferSize = 8192;
+				byte[] buffer = new byte[bufferSize];
 				int splitbyte = 0;
 				int rlen = 0;
-				{
-					int read = is.read(buf, 0, bufsize);
-					while (read > 0)
-					{
-						rlen += read;
-						splitbyte = findHeaderEnd(buf, rlen);
-						if (splitbyte > 0)
-							break;
-						read = is.read(buf, rlen, bufsize - rlen);
+				int readLen = is.read(buffer, 0, bufferSize);
+				while (readLen > 0) {
+					rlen += readLen;
+					splitbyte = findHeaderEnd(buffer, rlen);
+					if (splitbyte > 0){
+						break;
 					}
+					readLen = is.read(buffer, rlen, bufferSize - rlen);
 				}
-
-				// Create a BufferedReader for parsing the header.
-				String headS=new String(buf);
-				Log.v(tag, "@@@--------------------------------");
-				Log.v(tag, "@@@@@recv http head :"+headS);
-				Log.v(tag, "++++++++++++++++++++++++++++++++");
-			
-				ByteArrayInputStream hbis = new ByteArrayInputStream(buf, 0, rlen);
 				
-				BufferedReader hin = new BufferedReader( new InputStreamReader( hbis ));
+				// Create a BufferedReader for parsing the header.
+				reader = new BufferedReader(new InputStreamReader(
+						new ByteArrayInputStream(buffer, 0, rlen)));
+				
 				Properties pre = new Properties();
 				Properties parms = new Properties();
 				Properties header = new Properties();
-				Properties files = new Properties();
-
+//				Properties files = new Properties();
+				
 				// Decode the header into parms and header java properties
-				decodeHeader(hin, pre, parms, header);
-				String method = pre.getProperty("method");
+				decodeHeader(reader, pre, parms, header);
+//				String method = pre.getProperty("method");
 				String uri = pre.getProperty("uri");
-				if(uri==null)
+				if(uri == null){
 					return;
+				}
 				uri = new String(uri.getBytes("iso-8859-1"));
-				Log.v(tag,"get uri:"+new String(uri.getBytes("iso-8859-1"))+"\n");
-				
-				//澶勭悊鎺ユ敹鍒扮殑鍛戒护
 				httpcmd(uri);
-				
-				is.close();
-			}
-			catch ( IOException ioe )
-			{
-				try
-				{
-					sendError( HTTP_INTERNALERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
+			} catch (IOException e) {
+				try {
+					sendError( HTTP_INTERNALERROR, "SERVER INTERNAL ERROR: IOException: " + e.getMessage());
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
 				}
-				catch ( Throwable t ) {}
-			}
-			catch ( InterruptedException ie )
-			{
-				// Thrown by sendError, ignore and exit the thread.
-			}
-		}
-		/*****澶勭悊鎺ユ敹鍒扮殑鍛戒护*****/
-		private void httpcmd(String uri){
-			/*http://host:port/wechat/remote/up/闅忔満鏁�			  http://host:port/wechat/remote/down/闅忔満鏁�			  http://host:port/wechat/check/闅忔満鏁�			  http://HOST:PORT/wechat/media/player/albumId/vrsAlbumId/vrsTvId/vrsChnId/history/customer/device/Math.random()
-			  http://HOST:PORT/wechat/media/player/videoid/videotype/videouistyle/Math.random()*/	
-			
-			String uritmp = uri.substring(uri.indexOf("/")+1);//鍘绘帀绗竴涓�绗﹀彿
-			String[] cmdStr=uritmp.split("/");
-			for(int i =0;i<cmdStr.length;i++)
-				Log.i(tag,"cmdStr["+i+"]="+cmdStr[i]);		
-			if(cmdStr[1].equals("check")){
-					//////////////鏀跺埌鍛戒护缁欏鎴风鍥炲鍝嶅簲
-					if(memberid==null||memberid.equals(""))
-						memberid = weiDeviceDao.find();
-					JSONObject jsonObject = new JSONObject();
-					try {										
-						jsonObject.put("error", false);
-						jsonObject.put("msg", memberid);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				e.printStackTrace();
+			} finally {
+				try {
+					if (reader != null){
+						reader.close();
 					}
-					String responseString  = "success_jsonpCallback('"+jsonObject.toString()+"')";
-					Log.v(tag, "responseString :"+responseString);
-					sendResponse( HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream( responseString.getBytes()));
-					/////////////////////////
-			}else if(cmdStr[1].equals("remote")){
-				Log.i(tag,"remotetime="+remotetime);
-				if(!remotetime.equals(cmdStr[3])){
-				 onkeyAction(cmdStr[2]);
-				 remotetime = cmdStr[3];		
-					/////////////////////////
-				}
-				 String responseString  = "success_jsonpCallback('')";
-				 Log.v(tag, "responseString :"+responseString);
-				 sendResponse( HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream( responseString.getBytes()));
-			}else if(cmdStr[1].equals("media")){
-
-				JSONObject jsonObject_media = new JSONObject();
-				try {										
-					jsonObject_media.put("error", false);
-					jsonObject_media.put("result", true);
-					jsonObject_media.put("msg", "null");
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
+					if (is != null){
+						is.close();
+					}
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				String responseString  = "success_jsonpCallbackDb('"+jsonObject_media.toString()+"')";
-				Log.v(tag, "responseString :"+responseString);
-				sendResponse( HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream( responseString.getBytes()));
-				
-//				Log.i(tag,"sys.scan.state="+SystemProperties.get("sys.scan.state").equals("on"));
-//				if(SystemProperties.get("sys.scan.state").equals("on")){
-//					Log.i(tag,"sys.scan,---return ");
-
-					return;
-				}
-				
-				//瑙嗛绫伙紝濡傛灉褰撳墠鍦═V妯″紡涓嬶紝闇�鍒囨崲淇℃簮
-//				preparePlay(uri);
-				
-				 
-				
 			}
 		}
-		 
-		 
-		Handler handler = new Handler(ct.getMainLooper()){
-		       @Override
-		       public void handleMessage(Message msg) {
-		           // TODO Auto-generated method stub
-		    	 Log.i(tag, "handleMessage  ---------  msg =  "+msg.what);
-		    	 if(msg.what == UNSUPORTCHANNEL){
-//		    		 TCLToast.makeText(ct, ct.getString(R.string.unsupportchannel), Toast.LENGTH_LONG).show();
-		    		 return;
-		    	 }
-//		    	 if (msg.what == EnTCLCallBackSetSourceMsg.EN_TCL_SET_SOURCE_END_SUCCEED.ordinal()) {
-//		    		 Log.v(tag, "淇℃簮鍒囨崲鎴愬姛");
-//		   			starttoplay(urlStr);
-//						
-//		    	 }else if(msg.what == EnTCLCallBackSetSourceMsg.EN_TCL_SET_SOURCE_END_FAILED.ordinal()){
-//		    		 //TCLToast.makeText(ct, "鏃犳硶鎾斁锛屽垏鎹俊婧愬け璐�, Toast.LENGTH_SHORT).show();
-//		    		
-//		    	 }else if(msg.what == EnTCLCallBackSetSourceMsg.EN_TCL_SET_SOURCE_START.ordinal()){
-//		    		
-//		    		 return;
-//		    	 }
-		    	 
-		    	//閲婃斁handler;
-//					TTvManager.getInstance(ct).releaseHandler(TTvUtils.TV_HANDLER_INDEX_TV_SET_SOURCE); 
-		       }
-		    };
-		/**
-		 * Decodes the sent headers and loads the data into
-		 * java Properties' key - value pairs
-		**/
-		private  void decodeHeader(BufferedReader in, Properties pre, Properties parms, Properties header)
-			throws InterruptedException
-		{
-			try {
-				// Read the request line	
-				String inLine = in.readLine();
-				if (inLine == null) return;
-				StringTokenizer st = new StringTokenizer( inLine );
-				if ( !st.hasMoreTokens())
-					sendError( HTTP_BADREQUEST, "BAD REQUEST: Syntax error. Usage: GET /example/file.html" );
-
-				String method = st.nextToken();
-				pre.put("method", method);
-
-				if ( !st.hasMoreTokens())
-					sendError( HTTP_BADREQUEST, "BAD REQUEST: Missing URI. Usage: GET /example/file.html" );
-
-				String uri = st.nextToken();
-
-				// Decode parameters from the URI
-				int qmi = uri.indexOf( '?' );
-				if ( qmi >= 0 )
-				{
-					decodeParms( uri.substring( qmi+1 ), parms );
-					uri = decodePercent( uri.substring( 0, qmi ));
-				}
-				else uri = decodePercent(uri);
-
-				// If there's another token, it's protocol version,
-				// followed by HTTP headers. Ignore version but parse headers.
-				// NOTE: this now forces header names lowercase since they are
-				// case insensitive and vary by client.
-				if ( st.hasMoreTokens())
-				{
-					String line = in.readLine();
-					while ( line != null && line.trim().length() > 0 )
-					{
-						int p = line.indexOf( ':' );
-						if ( p >= 0 )
-							header.put( line.substring(0,p).trim().toLowerCase(), line.substring(p+1).trim());
-						line = in.readLine();
-					}
-				}
-
-				pre.put("uri", uri);
-			}
-			catch ( IOException ioe )
-			{
-				sendError( HTTP_INTERNALERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
-			}
-		}
-
+	}
+	
+	private void httpcmd(String uri){
+		Log.i(TAG, "[httpcmd]uri:" + uri);
 		
-		/**
-		 * Find byte index separating header from body.
-		 * It must be the last byte of the first two sequential new lines.
-		**/
-		private int findHeaderEnd(final byte[] buf, int rlen)
-		{
-			int splitbyte = 0;
-			while (splitbyte + 3 < rlen)
-			{
-				if (buf[splitbyte] == '\r' && buf[splitbyte + 1] == '\n' && buf[splitbyte + 2] == '\r' && buf[splitbyte + 3] == '\n')
-					return splitbyte + 4;
-				splitbyte++;
+		String uritmp = uri.substring(uri.indexOf("/")+1);
+		String[] cmdStr=uritmp.split("/");
+		if("check".equals(cmdStr[1])){
+			memberid = DeviceDao.getInstance().getMemberId();
+			try {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("error", false);
+				jsonObject.put("msg", memberid);
+				
+				String responseString  = "success_jsonpCallback('" + jsonObject.toString() + "')";
+				Log.i(TAG, "responseString:" + responseString);
+				sendResponse( HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream(responseString.getBytes()));
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
-			return 0;
+		} else if ("remote".equals(cmdStr[1])){
+			Log.i(TAG,"remotetime =" + remotetime);
+			if(remotetime != null && !remotetime.equals(cmdStr[3])){
+				remotetime = cmdStr[3];		
+			}
+			
+			String responseString  = "success_jsonpCallback('')";
+			Log.i(TAG, "responseString :"+responseString);
+			sendResponse(HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream( responseString.getBytes()));
+		} else if ("media".equals(cmdStr[1])){
+			JSONObject jsonObject_media = new JSONObject();
+			try {										
+				jsonObject_media.put("error", false);
+				jsonObject_media.put("result", true);
+				jsonObject_media.put("msg", "null");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			
+			String responseString  = "success_jsonpCallbackDb('" + jsonObject_media.toString() + "')";
+			Log.i(TAG, "responseString :" + responseString);
+			sendResponse( HTTP_OK, MIME_PLAINTEXT, null, new ByteArrayInputStream( responseString.getBytes()));
 		}
-
-
-		/**
-		 * Decodes the percent encoding scheme. <br/>
-		 * For example: "an+example%20string" -> "an example string"
-		 */
-		private String decodePercent( String str ) throws InterruptedException
-		{
-			try
-			{
-				StringBuffer sb = new StringBuffer();
-				for( int i=0; i<str.length(); i++ )
-				{
-					char c = str.charAt( i );
-					switch ( c )
-					{
-						case '+':
-							sb.append( ' ' );
-							break;
-						case '%':
-							sb.append((char)Integer.parseInt( str.substring(i+1,i+3), 16 ));
-							i += 2;
-							break;
-						default:
-							sb.append( c );
-							break;
+		
+	}
+	
+	/**
+	 * Decodes the sent headers and loads the data into
+	 * java Properties' key - value pairs
+	 * @param in
+	 * @param pre
+	 * @param parms
+	 * @param header
+	 * @throws InterruptedException
+	 */
+	private  void decodeHeader(BufferedReader in, Properties pre, Properties parms, Properties header) {
+		if (in == null){
+			return ;
+		}
+		try {
+			String readLine = in.readLine();
+			if (readLine == null){
+				return ;
+			}
+			StringTokenizer tokenizer = new StringTokenizer(readLine);
+			if (!tokenizer.hasMoreTokens()){
+				sendError( HTTP_BADREQUEST, "BAD REQUEST: Syntax error. Usage: GET /example/file.html" );
+			}
+			
+			String method = tokenizer.nextToken();
+			pre.put("method", method);
+			if (!tokenizer.hasMoreTokens()){
+				sendError( HTTP_BADREQUEST, "BAD REQUEST: Missing URI. Usage: GET /example/file.html" );
+			}
+			
+			String uri = tokenizer.nextToken();
+			int qmi = uri.indexOf( '?' );
+			if ( qmi >= 0 ) {
+				decodeParms( uri.substring( qmi+1 ), parms );
+				uri = decodePercent( uri.substring( 0, qmi ));
+			} else {
+				uri = decodePercent(uri);
+			}
+			
+			// If there's another token, it's protocol version,
+			// followed by HTTP headers. Ignore version but parse headers.
+			// NOTE: this now forces header names lowercase since they are
+			// case insensitive and vary by client.
+			if (tokenizer.hasMoreTokens()) {
+				String line = in.readLine();
+				while ( line != null && line.trim().length() > 0 ){
+					int p = line.indexOf( ':' );
+					if ( p >= 0 ){
+						header.put( line.substring(0,p).trim().toLowerCase(), line.substring(p+1).trim());
 					}
+					line = in.readLine();
 				}
-				return sb.toString();
 			}
-			catch( Exception e )
-			{
-				sendError( HTTP_BADREQUEST, "BAD REQUEST: Bad percent-encoding." );
-				return null;
+			pre.put("uri", uri);
+		} catch (IOException e) {
+			try {
+				sendError( HTTP_INTERNALERROR, "SERVER INTERNAL ERROR: IOException: " + e.getMessage());
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Find byte index separating header from body.
+	 * It must be the last byte of the first two sequential new lines.
+	**/
+	private int findHeaderEnd(final byte[] buf, int rlen){
+		int splitbyte = 0;
+		while (splitbyte + 3 < rlen) {
+			if (buf[splitbyte] == '\r' && buf[splitbyte + 1] == '\n' && buf[splitbyte + 2] == '\r' && buf[splitbyte + 3] == '\n'){
+				return splitbyte + 4;
+			}
+			splitbyte++;
+		}
+		return 0;
+	}
+		
+	/**
+	 * Decodes the percent encoding scheme. <br/>
+	 * For example: "an+example%20string" -> "an example string"
+	 */
+	private String decodePercent( String str ){
+		if (TextUtils.isEmpty(str)){
+			return null;
+		}
+		StringBuffer sb = new StringBuffer();
+		for( int i=0; i < str.length(); i++ ){
+			char c = str.charAt( i );
+			switch (c) {
+			case '+':
+				sb.append( ' ' );
+				break;
+				
+			case '%':
+				sb.append((char)Integer.parseInt( str.substring(i+1,i+3), 16 ));
+				i += 2;
+				break;
+				
+			default:
+				sb.append( c );
+				break;
 			}
 		}
-
-		/**
-		 * Decodes parameters in percent-encoded URI-format
-		 * ( e.g. "name=Jack%20Daniels&pass=Single%20Malt" ) and
-		 * adds them to given Properties. NOTE: this doesn't support multiple
-		 * identical keys due to the simplicity of Properties -- if you need multiples,
-		 * you might want to replace the Properties with a Hashtable of Vectors or such.
-		 */
-		private void decodeParms( String parms, Properties p )
-			throws InterruptedException
-		{
-			if ( parms == null )
-				return;
-
-			StringTokenizer st = new StringTokenizer( parms, "&" );
-			while ( st.hasMoreTokens())
-			{
-				String e = st.nextToken();
-				int sep = e.indexOf( '=' );
-				if ( sep >= 0 )
-					p.put( decodePercent( e.substring( 0, sep )).trim(),
+		return sb.toString();
+	}
+	/**
+	 * Decodes parameters in percent-encoded URI-format
+	 * ( e.g. "name=Jack%20Daniels&pass=Single%20Malt" ) and
+	 * adds them to given Properties. NOTE: this doesn't support multiple
+	 * identical keys due to the simplicity of Properties -- if you need multiples,
+	 * you might want to replace the Properties with a Hashtable of Vectors or such.
+	 */
+	private void decodeParms(String parms, Properties properties){
+		if (TextUtils.isEmpty(parms)){
+			return ;
+		}
+		StringTokenizer tokenizer = new StringTokenizer( parms, "&" );
+		while ( tokenizer.hasMoreTokens()){
+			String e = tokenizer.nextToken();
+			int sep = e.indexOf('=');
+			if ( sep >= 0 ){
+				properties.put( decodePercent( e.substring( 0, sep )).trim(),
 						   decodePercent( e.substring( sep+1 )));
 			}
 		}
-
-		/**
-		 * Returns an error message as a HTTP response and
-		 * throws InterruptedException to stop further request processing.
-		 */
-		private void sendError( String status, String msg ) throws InterruptedException
-		{
-			sendResponse( status, MIME_PLAINTEXT, null, new ByteArrayInputStream( msg.getBytes()));
-			throw new InterruptedException();
-		}
-
-		/**
-		 * Sends given response to the socket.
-		 */
-		private void sendResponse( String status, String mime, Properties header, InputStream data )
-		{
-			try
-			{
-				if ( status == null )
-					throw new Error( "sendResponse(): Status can't be null." );
-
-				OutputStream out = mySocket.getOutputStream();
-				PrintWriter pw = new PrintWriter( out );
-				pw.print("HTTP/1.0 " + status + " \r\n");
-
-				if ( mime != null )
-					pw.print("Content-Type: " + mime + "\r\n");
-
-				if ( header == null || header.getProperty( "Date" ) == null )
-					pw.print( "Date: " + gmtFrmt.format( new Date()) + "\r\n");
-
-				if ( header != null )
-				{
-					Enumeration e = header.keys();
-					while ( e.hasMoreElements())
-					{
-						String key = (String)e.nextElement();
-						String value = header.getProperty( key );
-						pw.print( key + ": " + value + "\r\n");
-					}
-				}
-
-				pw.print("\r\n");
-				pw.flush();
-
-				if ( data != null )
-				{
-					int pending = data.available();	// This is to support partial sends, see serveFile()
-					byte[] buff = new byte[theBufferSize];
-					while (pending>0)
-					{
-						int read = data.read( buff, 0, ( (pending>theBufferSize) ?  theBufferSize : pending ));
-						if (read <= 0)	break;
-						out.write( buff, 0, read );
-						pending -= read;
-					}
-				}
-				Log.v("lyr", "&&&&&&&&&&&&out.flush() :");
-				out.flush();
-				out.close();
-				if ( data != null )
-					data.close();
-			}
-			catch( IOException ioe )
-			{
-				// Couldn't write? No can do.
-				try { mySocket.close(); } catch( Throwable t ) {}
-			}
-		}
-
-		private Socket mySocket;
+	}
 	
+	/**
+	 * Returns an error message as a HTTP response and
+	 * throws InterruptedException to stop further request processing.
+	 * @throws InterruptedException 
+	 */
+	private void sendError( String status, String msg ) throws InterruptedException{
+		sendResponse( status, MIME_PLAINTEXT, null, new ByteArrayInputStream( msg.getBytes()));
+		throw new InterruptedException();
+	}
+	
+	/**
+	 * Sends given response to the socket.
+	 * @param status
+	 * @param mime
+	 * @param header
+	 * @param data
+	 */
+	private void sendResponse( String status, String mime, Properties header, InputStream inputStream){
+		if (TextUtils.isEmpty(status)){
+			throw new Error( "sendResponse(): Status can't be null." );
+		}
+		OutputStream outputStream = null;
+		PrintWriter writer = null;
+		try {
+			outputStream = mySocket.getOutputStream();
+			writer = new PrintWriter(outputStream);
+			writer.print("HTTP/1.0 " + status + " \r\n");
+			
+			if ( mime != null ){
+				writer.print("Content-Type: " + mime + "\r\n");
+			}
+			
+			if (header == null || header.getProperty("Date") == null){
+				writer.print( "Date: " + gmtFrmt.format( new Date()) + "\r\n");
+			}
+			
+			if (header != null){
+				Enumeration<Object> e = header.keys();
+				while (e.hasMoreElements()){
+					String key = (String)e.nextElement();
+					String value = header.getProperty( key );
+					writer.print( key + ": " + value + "\r\n");
+				}
+			}
+			writer.print("\r\n");
+			writer.flush();
+			
+			if (inputStream != null){
 
-	private int myTcpPort;
-	private final ServerSocket myServerSocket;
-	private Thread myThread;
-
-
-	private static int theBufferSize = 16 * 1024;
-
-	// Change these if you want to log to somewhere else than stdout
-	protected static PrintStream myOut = System.out; 
-	protected static PrintStream myErr = System.err;
+				int pending = inputStream.available();	// This is to support partial sends, see serveFile()
+				byte[] buff = new byte[theBufferSize];
+				while (pending>0)
+				{
+					int read = inputStream.read( buff, 0, ((pending>theBufferSize) ? theBufferSize : pending ));
+					if (read <= 0)	break;
+					outputStream.write( buff, 0, read );
+					pending -= read;
+				}
+			}
+			outputStream.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		} finally {
+			try {
+				if (outputStream != null){
+					outputStream.close();
+				}
+				if (writer != null){
+					writer.close();
+				}
+				if (inputStream != null){
+					inputStream.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 
 	/**
 	 * GMT date formatter

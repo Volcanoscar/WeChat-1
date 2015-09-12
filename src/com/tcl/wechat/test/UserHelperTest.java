@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import com.tcl.wechat.modle.User;
-import com.tcl.wechat.modle.UserList;
 import com.tcl.wechat.modle.IData.IData;
 import com.tcl.wechat.modle.IData.ModelImpl;
 

@@ -9,8 +9,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.tcl.wechat.modle.User;
-import com.tcl.wechat.modle.UserList;
 import com.tcl.wechat.modle.IData.IData;
 import com.tcl.wechat.modle.IData.ModelImpl;
 

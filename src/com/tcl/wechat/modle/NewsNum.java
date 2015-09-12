@@ -8,40 +8,43 @@
 package com.tcl.wechat.modle;
 
 /**
- * @ClassName: BinderUser
+ * 消息信息
+ * @author rex.lei
+ *
  */
-
 public class NewsNum {
 	
 	private String openid;
 	private String newsnum;
-	/**
-	 * @return the openid
-	 */
+	
+	public NewsNum() {
+		super();
+	}
+
+	public NewsNum(String openid, String newsnum) {
+		super();
+		this.openid = openid;
+		this.newsnum = newsnum;
+	}
+
 	public String getOpenid() {
 		return openid;
 	}
-	/**
-	 * @param openid the openid to set
-	 */
+
 	public void setOpenid(String openid) {
 		this.openid = openid;
 	}
-	/**
-	 * @return the newsnum
-	 */
+
 	public String getNewsnum() {
 		return newsnum;
 	}
-	/**
-	 * @param headimgurl the headimgurl to set
-	 */
+
 	public void setNewsnum(String newsnum) {
 		this.newsnum = newsnum;
 	}
-	
-	public void init (){
-		openid="";
-		newsnum="";
+
+	@Override
+	public String toString() {
+		return "NewsNum [openid=" + openid + ", newsnum=" + newsnum + "]";
 	}
 }

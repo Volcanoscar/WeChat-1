@@ -20,7 +20,7 @@ import org.jivesoftware.smack.provider.ProviderManager;
 import android.util.Log;
 
 import com.tcl.wechat.common.WeiConstant.CommandType;
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.utils.BaseUIHandler;
 
 /**
@@ -70,7 +70,7 @@ public class QueryBinder {
 										Log.i(tag,"1111111111111111111");
 										QueryBinderResultIQ getQueryBinderResultIQ = (QueryBinderResultIQ) p;
 										String err = getQueryBinderResultIQ.getErrorcode();
-										ArrayList<BinderUser> files = getQueryBinderResultIQ.getFiles();
+										ArrayList<BindUser> files = getQueryBinderResultIQ.getFiles();
 										Log.i(tag,"00000files.size="+files.size());
 										if (mHandler != null){
 											Log.i(tag,"222222222222222");

@@ -2,56 +2,51 @@ package com.tcl.wechat;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
+import android.graphics.Bitmap;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.controller.DatabaseController;
+import com.tcl.wechat.xmpp.WeiXmppService;
 
 public class WeChatApplication extends Application {
-	
-	private Context mContext;
-	//第一次进入应用
-	private static final String PREF_FIRST_TIME = "first_time_pref";
-	
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
-		mContext = getApplicationContext();
-		
-		//用户认证模块
+		//初始化数据库
+		initDateBase();
+
+		//用户注册模块
 		initAuth();
 		
 		//初始化图片加载器
 		initImageLoader(getApplicationContext());
 	}
 
+
 	/**
-	 * 用户认证
+	 * 用户注册
+	 * 	 启动服务，进行用户注册
+	 * 	
 	 */
 	private void initAuth() {
-		SharedPreferences preferences = mContext.getSharedPreferences(
-				PREF_FIRST_TIME, Context.MODE_PRIVATE);
-		Boolean bFirstEnter = preferences.getBoolean("isFirst", false);
-		/**
-		 * 启动Application，判断是否是第一次进入应用
-		 * 	是：进行用户注册-->登录
-		 * 	否：直接登录
-		 */
-		if (bFirstEnter){
-		}
-		
+		Intent serviceIntent = new Intent(this, WeiXmppService.class);
+		serviceIntent.putExtra("startmode", WeiConstant.StartServiceMode.OWN);
+		serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startService(serviceIntent);
 	}
 	
 	/**
-	 * 
+	 * 初始化数据库
 	 */
-	private void startXmppService(){
-		
+	private void initDateBase() {
+		DatabaseController.getController(getApplicationContext()).initDataBase();
 	}
-
 
 	/**
 	 * 初始化图片加载器
@@ -60,12 +55,13 @@ public class WeChatApplication extends Application {
 	private void initImageLoader(Context context) {
 		DisplayImageOptions options = new DisplayImageOptions.Builder()
         	.showImageOnFail(R.drawable.ic_launcher).showImageForEmptyUri(R.drawable.ic_launcher)
-        	.showStubImage(R.drawable.ic_launcher).cacheInMemory().cacheOnDisc().build();
+        	.showStubImage(R.drawable.ic_launcher).cacheInMemory().cacheOnDisc()
+        	.bitmapConfig(Bitmap.Config.ARGB_8888).build();
+		
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
         	.defaultDisplayImageOptions(options).threadPriority(Thread.MIN_PRIORITY)
         	.discCacheSize(10 * 1024 * 1024).threadPoolSize(10).build();
+		
 		ImageLoader.getInstance().init(config);
 	}
-	
-
 }

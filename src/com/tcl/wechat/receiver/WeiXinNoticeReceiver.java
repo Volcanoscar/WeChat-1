@@ -15,7 +15,7 @@ import android.util.Log;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.WeiRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.WeiNotice;
 import com.tcl.wechat.utils.BaseUIHandler;
 //import com.tcl.webchat.homepage.HomePageUIHandler;
@@ -31,8 +31,7 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
 		
-		WeiUserDao weiUserDao = new WeiUserDao(context);
-		WeiRecordDao weiRecordDao = new WeiRecordDao(context);
+		WeiRecordDao weiRecordDao = WeiRecordDao.getInstance();
 		//获取服务器推送绑定或解绑定的微信用户
 		WeiNotice weiNotice = (WeiNotice)intent.getExtras().getSerializable("weiNotice");
 		Log.d("GetWeiXinNoticeReceiver", "收到绑定通知,event:"+weiNotice.getEvent());
@@ -48,32 +47,32 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 		
 		
 		
-		BinderUser binderUser = new BinderUser();
-		binderUser.init();
+		BindUser binderUser = new BindUser();
+//		binderUser.init();
 		Log.d("liyulin", "openid="+openid);
 		if (openid !=null){
-			binderUser.setOpenid(openid);			
+			binderUser.setOpenId(openid);		
 		}
 		if (nickName !=null){
-			binderUser.setNickname(nickName);
+			binderUser.setNickName(nickName);
 		}
 		if (sex !=null){
 			binderUser.setSex(sex);
 		}
 		if (headImageurl !=null){
-			binderUser.setHeadimgurl(headImageurl);
+			binderUser.setHeadimageurl(headImageurl);
 		}
 		//更新数据库微信用户
 		if (event.equals("bind")){
-			weiUserDao.save(binderUser);
+			WeiUserDao.getInstance().addUser(binderUser);
 			if (mHandler != null){
 				Log.d("GetWeiXinNoticeReceiver", "send bind to to uihandle");
 				mHandler.sendEmptyMessage(CommandType.COMMAND_BINDER_TOUI);
 			}
 		}else if (event.equals("unbind")){
-			weiUserDao.delete(binderUser.getOpenid());
+			WeiUserDao.getInstance().deleteUser(binderUser);
 			//删除此用户分享的记录
-			weiRecordDao.delMsg(binderUser.getOpenid());
+			weiRecordDao.delMsg(binderUser.getOpenId());
 			if (mHandler != null){
 				mHandler.sendEmptyMessage(CommandType.COMMAND_UNBINDER_TOUI);
 			}

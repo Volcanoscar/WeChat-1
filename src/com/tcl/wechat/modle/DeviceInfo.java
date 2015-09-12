@@ -1,5 +1,10 @@
 package com.tcl.wechat.modle;
 
+/**
+ * 设备信息
+ * @author rex.lei
+ *
+ */
 public class DeviceInfo {
 	private String deviceId;
 	private String deviceName;

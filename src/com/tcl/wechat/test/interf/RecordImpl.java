@@ -1,4 +1,4 @@
-package com.tcl.wechat.db.interf;
+package com.tcl.wechat.test.interf;
 
 import java.util.ArrayList;
 

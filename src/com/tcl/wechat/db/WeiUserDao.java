@@ -8,213 +8,453 @@
 package com.tcl.wechat.db;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
+import android.util.Log;
 
-import com.tcl.wechat.modle.BinderUser;
-import com.tcl.wechat.modle.NewsNum;
+import com.tcl.wechat.modle.BindUser;
 
 /**
- * @ClassName: WeiUserDao
-* @Description: 用户信息表
+ * 用户信息表
+ * @author rex.lei
+ *
  */
-
 public class WeiUserDao {
 	
-	private DBOpenHelper dbOpenHelper;
+	private static final String TAG = WeiUserDao.class.getSimpleName();
 	
-	public WeiUserDao(Context context)
-	{
-		this.dbOpenHelper = new DBOpenHelper(context);
+	private DBHelper mDbHelper;
+	
+	private static WeiUserDao mInstance;
+	
+	private WeiUserDao(Context context) {
+		super();
+		mDbHelper = new DBHelper(context);
+		mDbHelper.getReadableDatabase();
+	}
+
+	public static void initWeiUserDao(Context context){
+		if (mInstance == null){
+			mInstance = new WeiUserDao(context);
+		}
 	}
 	
-	public boolean save(ArrayList<BinderUser> files)
-	{
-		//删除表所有记录之前，把用户新消息条数记录下来。
-		 List<NewsNum> newsNums = findNews();
-		// 如果要对数据进行更改，就调用此方法得到用于操作数据库的实例,该方法以读和写方式打开数据库
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();		
-		db.execSQL("delete from weibinderuser");
-		/*db.execSQL("CREATE TABLE IF NOT EXISTS weibinderuser (id integer primary key autoincrement, " +
-				"openid varchar(100), nickname varchar(100), sex varchar(50),headimgurl varchar(100),newsnum varchar(100))");*/
-		for (int i = 0 ;i < files.size();i++){
-			db.execSQL("insert into weibinderuser (openid,nickname, sex ,headimgurl,newsnum) values(?,?,?,?,?)",
-					new Object[] { files.get(i).getOpenid(), files.get(i).getNickname(),
-							files.get(i).getSex(), files.get(i).getHeadimgurl(),"0" });	
+	public static WeiUserDao getInstance(){
+		if (mInstance == null){
+			throw new NullPointerException("WeiUserDao is Null, You should initialize WeiUserDao first");
 		}
-		//将新消息记录存进去
-		for(int i=0;i<newsNums.size();i++){
-			db.execSQL("update weibinderuser set newsnum=? where openid=?",
-					new Object[] { newsNums.get(i).getNewsnum(),newsNums.get(i).getOpenid() });
+		return mInstance;
+	}
+
+	/**
+	 * 判断用户是否存在
+	 * @param openid
+	 * @return
+	 */
+	public boolean bindUserIsExist(String openid){
+		if (TextUtils.isEmpty(openid)){
+			OpenidException();
+			return false;
+		}
+		BindUser user = getUser(openid);
+		if (user == null){
+			BinderUserNotFoundException();
+			return false ;
 		}
 		return true;
 	}
-	public boolean save(BinderUser file)
-	{
-		if (file == null){
+	
+	/**
+	 * 判断用户是否已经绑定
+	 * @return
+	 */
+	public boolean userIsBound(BindUser bindUser){
+		if ("success".equals(bindUser.getStatus())){
+			return true;
+		} 
+		return false;
+	}
+	
+	/**
+	 * 获取绑定用户数
+	 * @return
+	 */
+	public int getBindUserNum(){
+		return getAllUsers() == null ? 0 :
+			getAllUsers().size();
+	}
+	
+	/**
+	 * 添加单个用户
+	 * @param user 用户信息
+	 * @return true: success
+	 * 		   false: failed
+	 * @exception 以下情况时添加用户失败
+	 * 			  1)用户数据为空
+	 * 			  2)用户数据库已经存在
+	 * 			  3)用户未绑定
+	 */
+	public boolean addUser(BindUser bindUser){	
+		if (bindUser == null){
 			return false;
 		}
-		String openid = file.getOpenid();
-		List<BinderUser> cacheList = find(openid);
+		
 		//如果当前已经存在该绑定的用户则不再插入数据库
-		if (cacheList != null && cacheList.size() > 0){
+		if (bindUserIsExist(bindUser.getOpenId())){
+			Log.e(TAG, "User already exist!");
 			return false;
 		}
-		// 如果要对数据进行更改，就调用此方法得到用于操作数据库的实例,该方法以读和写方式打开数据库
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		db.execSQL("insert into weibinderuser (openid,nickname, sex ,headimgurl,status) values(?,?,?,?,?)",
-					new Object[] { file.getOpenid(), file.getNickname(),
-					file.getSex(), file.getHeadimgurl(),file.getstatus() });	
 		
-		return true;
+		//用户未绑定，不能添加数据可
+		if (!userIsBound(bindUser)){
+			Log.e(TAG, "User is not bound!!");
+//			return false;
+		}
+		
+		//插入新用户
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
+		values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
+		values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
+		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
+		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
+		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
+		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
+		if (db.insert(Property.TABLE_USER, null, values) != -1){
+			return true;
+		}
+		return false;
 	}
-	public List<BinderUser> find(String openid) 
-	{
-		List<BinderUser> cacheList = new ArrayList<BinderUser>();
-
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-
-			Cursor cursor = db.rawQuery("select * from weibinderuser where openid=?",new String[] { openid });
-			while (cursor.moveToNext())
-			{
-				BinderUser object = new BinderUser();
-				object.setOpenid(cursor.getString(cursor.getColumnIndex("openid")));
-				object.setNickname(cursor.getString(cursor.getColumnIndex("nickname")));
-				object.setSex(cursor.getString(cursor.getColumnIndex("sex")));
-				object.setHeadimgurl(cursor.getString(cursor.getColumnIndex("headimgurl")));			
-				cacheList.add(object);
+	
+	public Boolean addUserList(ArrayList<BindUser> userList){
+		if (userList == null || userList.isEmpty()){
+			Log.i(TAG, "userList is NULL!!");
+			return false ;
+		}
+		boolean bRet = false;
+		int addedUserCnt = 0;
+		//插入新用户
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		for (int i = 0; i < userList.size(); i++) {
+			BindUser bindUser = userList.get(i);
+			
+			//如果当前已经存在该绑定的用户则不再插入数据库
+			if (bindUserIsExist(bindUser.getOpenId())){
+				Log.e(TAG, "User already exist! openId = " + bindUser.getOpenId());
+				continue;
+			}
+			
+			//用户未绑定，不能添加数据可
+			if (!userIsBound(bindUser)){
+				Log.e(TAG, "User is not bound!! openId = " + bindUser.getOpenId());
+				continue;
+			}
+			
+			ContentValues values = new ContentValues();
+			values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
+			values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
+			values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
+			values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
+			values.put(Property.COLUMN_USERSEX, bindUser.getSex());
+			values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+			values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
+			values.put(Property.COLUMN_STATUS, bindUser.getStatus());
+			if (db.insert(Property.TABLE_USER, null, values) != -1){
+				addedUserCnt ++;
+				bRet &= true;
+			}
+		}
+		Log.i(TAG, "success:" + addedUserCnt + ",failure:" + (userList.size() - addedUserCnt));
+		return bRet;
+	}
+	
+	/**
+	 * 根据openid获取用户信息
+	 * @param openId 
+	 * @return 用户信息
+	 */
+	public BindUser getUser(String openid){
+		if (TextUtils.isEmpty(openid)){
+			OpenidException();
+			return null;
+		}
+		
+		BindUser user = null;
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		
+		String selection = Property.COLUMN_OPENID + "=?";
+		String[] selectionArgs = new String[]{openid};
+		String orderBy = Property.COLUMN_OPENID;
+		Cursor cursor = db.query(Property.TABLE_USER, null, selection, selectionArgs , null, null, orderBy );
+		if (cursor != null && cursor.moveToFirst()){
+			user = new BindUser(openid,
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NICKNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
+			cursor.close();
+		}
+		return user;
+	}
+	
+	/**
+	 * 获取所用用户信息
+	 * @return 所用用户列表
+	 */
+	public ArrayList<BindUser> getAllUsers(){
+		ArrayList<BindUser> userList = new ArrayList<BindUser>();
+		
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_USER, null, null, null, null, null, null);
+		if (cursor != null){
+			while (cursor.moveToNext()) {
+				BindUser user = new BindUser(cursor.getString(cursor.getColumnIndex(Property.COLUMN_OPENID)),
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NICKNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
+				userList.add(user);
 			}
 			cursor.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return cacheList;
-
+		return userList;
 	}
-	public List<BinderUser> find() 
-	{
-		List<BinderUser> cacheList = new ArrayList<BinderUser>();
+	
+	/**
+	 * 删除用户
+	 * @param user
+	 * @return
+	 */
+	public boolean deleteUser(BindUser user){
+		if (user == null || !bindUserIsExist(user.getOpenId())){
+			return false ;
+		}
+		
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		String whereClause = Property.COLUMN_OPENID + "=?";
+		String[] whereArgs = new String[]{user.getOpenId()};
+		if (db.delete(Property.TABLE_USER, whereClause, whereArgs) > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 删除所有用户
+	 * @return
+	 */
+	public boolean deleteAllUser(){
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		if (db.delete(Property.TABLE_USER, null, null) > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 更新用户信息
+	 * @param user
+	 * @return
+	 */
+	public boolean updateUser(BindUser bindUser){
+		if (bindUser == null || !bindUserIsExist(bindUser.getOpenId())){
+			return false;
+		}
+		
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
+		values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
+		values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
+		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
+		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
+		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
+		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
+		String whereClause = Property.COLUMN_OPENID + "=?";
+		String[] whereArgs = new String[]{bindUser.getOpenId()};
+		if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){
+			return true;
+		}
+		return false;
+	}
 
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-
-			Cursor cursor = db.rawQuery("select * from weibinderuser", null);
-			while (cursor.moveToNext())
-			{
-				BinderUser object = new BinderUser();
-				object.setOpenid(cursor.getString(cursor.getColumnIndex("openid")));
-				object.setNickname(cursor.getString(cursor.getColumnIndex("nickname")));
-				object.setSex(cursor.getString(cursor.getColumnIndex("sex")));
-				object.setHeadimgurl(cursor.getString(cursor.getColumnIndex("headimgurl")));
-				object.setNewsnum(cursor.getString(cursor.getColumnIndex("newsnum")));
-				String statusString = cursor.getString(cursor.getColumnIndex("status"));
-				if(statusString==null||statusString.equals("success"))//绑定的status有的没有赋值，有的是success
-					cacheList.add(object);
+	
+	/**
+	 * 获取消息个数
+	 * @param openid
+	 * @return
+	 */
+	public int getNewsNum(String openid){
+		if (TextUtils.isEmpty(openid)){
+			return 0;
+		}
+		BindUser user = getUser(openid);
+		if (user != null){
+			String allNewsNum = user.getNewsNum();
+			if (allNewsNum != null){
+				return Integer.parseInt(allNewsNum);
 			}
-			cursor.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return cacheList;
-
+		return 0;
 	}
-	public List<NewsNum> findNews() 
-	{
-		List<NewsNum> cacheList = new ArrayList<NewsNum>();
-
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-
-			Cursor cursor = db.rawQuery("select * from weibinderuser", null);
-			while (cursor.moveToNext())
-			{
-				NewsNum object = new NewsNum();
-				object.setOpenid(cursor.getString(cursor.getColumnIndex("openid")));
-				object.setNewsnum(cursor.getString(cursor.getColumnIndex("newsnum")));
-				cacheList.add(object);
+	
+	
+	/**
+	 * 增加一条消息
+	 * @param openid
+	 * @return
+	 */
+	public boolean addOneNews(String openid){
+		if (bindUserIsExist(openid)){
+			BindUser user = getUser(openid);
+			return updateNewsNum(openid, increaseNewsNum(user.getNewsNum())) ;
+		}
+		return false;
+	}
+	
+	/**
+	 * 删除一条消息
+	 * @param openid
+	 * @return
+	 */
+	public boolean deleteOneNews(String openid){
+		if (bindUserIsExist(openid)){
+			BindUser user = getUser(openid);
+			return updateNewsNum(openid, reduceNewsNum(user.getNewsNum())) ;
+		}
+		return false;
+	}
+	
+	/**
+	 * 更新消息个数
+	 * @param openid
+	 * @param newsNum
+	 * @return
+	 */
+	public boolean updateNewsNum(String openid, String newsNum){
+		BindUser user = getUser(openid);
+		if (user != null){
+			SQLiteDatabase db = mDbHelper.getWritableDatabase();
+			ContentValues values = new ContentValues();
+			values.put(Property.COLUMN_NEWS_NUM, newsNum);
+			String whereClause = Property.COLUMN_OPENID + "=?";
+			String[] whereArgs = new String[]{openid};
+			if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){
+				return true;
 			}
-			cursor.close();
+		}
+		return false ;
+	}
+	
+	/**
+	 * 获取状态
+	 * @param openid
+	 * @return
+	 */
+	public String getStatus(String openid){
+		if (TextUtils.isEmpty(openid)){
+			OpenidException();
+			return null;
+		}
+	
+		BindUser user = getUser(openid);
+		if (user == null){
+			BinderUserNotFoundException();
+			return null;
+		}
+		return user.getStatus();
+	}
+	
+	/**
+	 * 更新状态
+	 * @param openid
+	 * @return
+	 */
+	public boolean updateStatus(String openid, String status){
+		
+		//TODO 因为status是字符，在此要判断输入是否合法
+		
+		//openid 是否合法
+		if (TextUtils.isEmpty(openid)){
+			OpenidException();
+			return false;
+		}
+	
+		//Binduser是否存在
+		BindUser user = getUser(openid);
+		if (user == null){
+			BinderUserNotFoundException();
+			return false;
+		}
+		
+		//更新状态
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_STATUS, status);
+		String whereClause = Property.COLUMN_OPENID + "=?";
+		String[] whereArgs = new String[]{openid};
+		if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0 ){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 消息数 + 1
+	 * @param newsNum
+	 */
+	private String increaseNewsNum(String newsNum){
+		if (TextUtils.isEmpty(newsNum)){
+			newsNum = "0";
+		}
+		return String.valueOf((Integer.valueOf(newsNum)+1));
+	}
+	
+	/**
+	 * 消息数 - 1
+	 * @param newsNum
+	 * @return
+	 */
+	private String reduceNewsNum(String newsNum){
+		if (TextUtils.isEmpty(newsNum) || Integer.valueOf(newsNum) <= 1){
+			newsNum = "0";
+		}
+		return String.valueOf((Integer.valueOf(newsNum) - 1));
+	}
+	
+	/**
+	 * openid错误异常
+	 */
+	private void OpenidException(){
+		try {
+			throw new Exception("openid is NULL");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return cacheList;
-
 	}
-	public boolean addNews(String openid) 
-	{
-		
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-		Cursor cursor = db.rawQuery("select * from weibinderuser where openid=?",new String[] { openid });
-		String newsnumStr = "0";
-		while (cursor.moveToNext())
-		{
-			newsnumStr = cursor.getString(cursor.getColumnIndex("newsnum"));			
+	
+	/**
+	 * 用户不存在异常
+	 */
+	public void BinderUserNotFoundException(){
+		try {
+			throw new Exception("Users do not exist!");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		if(newsnumStr==null)
-			newsnumStr = "0";
-		newsnumStr = String.valueOf((Integer.valueOf(newsnumStr)+1));		
-		
-		db.execSQL("update weibinderuser set newsnum=? where openid=?",
-				new Object[] { newsnumStr,openid });
-		
-		return true;
-
 	}
-	public boolean reduceNews(String openid,int num) 
-	{
-		
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-		Cursor cursor = db.rawQuery("select * from weibinderuser where openid=?",new String[] { openid });
-		String newsnumStr = "0";
-		while (cursor.moveToNext())
-		{
-			newsnumStr = cursor.getString(cursor.getColumnIndex("newsnum"));			
-		}
-		if(newsnumStr==null)
-			newsnumStr = "0";
-		newsnumStr = String.valueOf((Integer.valueOf(newsnumStr)-num));		
-		
-		db.execSQL("update weibinderuser set newsnum=? where openid=?",
-				new Object[] { newsnumStr,openid });
-		
-		return true;
-
-	}
-	public boolean setNews(String openid) 
-	{
-		
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();				
-		db.execSQL("update weibinderuser set newsnum=? where openid=?",
-				new Object[] { "0",openid });
-		
-		return true;
-
-	}
-	public boolean setStatus(String openid,String status) 
-	{
-		
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();				
-		db.execSQL("update weibinderuser set status=? where openid=?",
-				new Object[] { status,openid });
-		
-		return true;
-
-	}
-	public boolean delete(String openid){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		db.execSQL(
-				"delete from weibinderuser where openid=?",
-				new Object[] {  openid });
-		return true;
-	}
+	
 }

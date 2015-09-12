@@ -1,4 +1,4 @@
-package com.tcl.wechat.modle;
+package com.tcl.wechat.test;
 
 import java.util.ArrayList;
 

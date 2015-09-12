@@ -1,8 +1,8 @@
-package com.tcl.wechat.db.interf;
+package com.tcl.wechat.test.interf;
 
 import java.util.ArrayList;
 
-import com.tcl.wechat.modle.User;
+import com.tcl.wechat.test.User;
 
 public interface UserImpl {
 

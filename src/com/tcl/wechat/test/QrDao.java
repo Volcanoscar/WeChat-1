@@ -1,10 +1,12 @@
-package com.tcl.wechat.db;
+package com.tcl.wechat.test;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.tcl.wechat.db.DBHelper;
+import com.tcl.wechat.db.Property;
 import com.tcl.wechat.modle.QrInfo;
 
 public class QrDao {

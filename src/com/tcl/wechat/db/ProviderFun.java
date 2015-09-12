@@ -9,7 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.WeiXinMsg;
 
 
@@ -95,33 +95,10 @@ public class ProviderFun {
 				}    
 			    return uuid;
 			}
-	 public static List<BinderUser> getUserList(Context mContext){
-		  List<BinderUser> cacheList = new ArrayList<BinderUser>();
-		  try {
-			Cursor c = mContext.getContentResolver().query(MyUsers.CONTENT_USER, null, null,
-			     null, null);
-			while (c.moveToNext())
-			{
-				BinderUser object = new BinderUser();
-				object.setOpenid(c.getString(c.getColumnIndex("openid")));
-				object.setNickname(c.getString(c.getColumnIndex("nickname")));
-				object.setSex(c.getString(c.getColumnIndex("sex")));
-				object.setHeadimgurl(c.getString(c.getColumnIndex("headimgurl")));
-				object.setNewsnum(c.getString(c.getColumnIndex("newsnum")));
-				String statusString = c.getString(c.getColumnIndex("status"));
-				if(statusString==null||statusString.equals("success"))//绑定的status有的没有赋值，有的是success
-					cacheList.add(object);
-			}
-
-			if (c != null && !c.isClosed()) {
-			   c.close();
-			}
-		  } catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		  }    
-	    return cacheList;
-	}
+		 
+	 public static List<BindUser> getUserList(Context mContext){
+		return WeiUserDao.getInstance().getAllUsers();
+	 }
 	 public static List<WeiXinMsg> getRecordList(Context mContext) 
 		{
 			List<WeiXinMsg> msgList = new ArrayList<WeiXinMsg>();

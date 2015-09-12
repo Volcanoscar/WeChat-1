@@ -7,79 +7,190 @@
  */
 package com.tcl.wechat.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.tcl.wechat.modle.QrInfo;
 
 /**
- * @ClassName: WeiQrDao
- * @Description: 该表用于存储二维码信�?
+ * 二维码信息
+ * @author rex.lei
+ *
  */
-
 public class WeiQrDao {
-	private DBOpenHelper dbOpenHelper;
+	private static final String TAG = WeiQrDao.class.getSimpleName();
+	
+	private DBHelper mDbHelper;
+	private static WeiQrDao mInstance;
 
-	public WeiQrDao(Context context)
-	{
-		this.dbOpenHelper = new DBOpenHelper(context);
+	private WeiQrDao(Context context){
+		mDbHelper = new DBHelper(context);
+		mDbHelper.getReadableDatabase();
 	}
 	
-	public boolean update(String url) 
-	{
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		db.execSQL("update qrinfo set url=? ",new Object[] { url});
-		return true;
+	public static void initWeiUserDao(Context context){
+		if (mInstance == null){
+			mInstance = new WeiQrDao(context);
+		}
 	}
 	
-	public boolean update_uuid(String uuid) 
-	{
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		db.execSQL("update qrinfo set uuid=? ",new Object[] { uuid});
-		return true;
+	public static WeiQrDao getInstance(){
+		if (mInstance == null){
+			throw new NullPointerException("WeiQrDao is Null, You should initialize WeiQrDao first");
+		}
+		return mInstance;
 	}
 	
-	public String find() 
-	{
-		String url ;
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-			Cursor cursor = db.rawQuery(
-					"select url from qrinfo",null);
-			if (cursor.moveToFirst())
-			{
-				url = cursor.getString(cursor.getColumnIndex("url"));
+	/**
+	 * 判断二维码是否已经存在
+	 * @return
+	 */
+	public boolean isQrExist(){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_QR, null, null, null, null, null, null);
+		if (cursor != null ){
+			if (cursor.getColumnCount() > 0){
 				cursor.close();
-				return url;
+				return true;
 			}
 			cursor.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return null;
-
+		return false;
 	}
-	public String find_uuid() 
-	{
-		String uuid ;
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-			Cursor cursor = db.rawQuery(
-					"select uuid from qrinfo",null);
-			if (cursor.moveToFirst())
-			{
-				uuid = cursor.getString(cursor.getColumnIndex("uuid"));
-				cursor.close();
-				return uuid;
-			}
+	
+	/**
+	 * 添加二维码
+	 * @param qrInfo
+	 * @return
+	 */
+	public boolean addQr(QrInfo qrInfo){
+		if (qrInfo == null){
+			Log.i(TAG, "qrInfo is NULL!!");
+			return false;
+		}
+		if (isQrExist()){
+			Log.i(TAG, "qrInfo is exist!!");
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_QR_URL, qrInfo.getUrl());
+		values.put(Property.COLUMN_UUID, qrInfo.getUuid());
+		if (db.insert(Property.TABLE_QR, null, values ) > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 删除二维码
+	 * @return
+	 */
+	public boolean deleteQr(){
+		if (!isQrExist()){
+			Log.e(TAG, "No Qr Exist!!");
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		if (db.delete(Property.TABLE_QR, null, null) > 0 ){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 查询二维码
+	 * @return
+	 */
+	public QrInfo getQr(){
+		if (!isQrExist()){
+			return null;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		Cursor cursor = db.query(Property.TABLE_QR, null, null, null, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			QrInfo qrInfo = new QrInfo(cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_QR_URL)), 
+					cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_UUID)));
 			cursor.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return qrInfo;
 		}
 		return null;
-
+	}
+	
+	/**
+	 * 更新二维码
+	 * @param qrInfo
+	 * @return
+	 */
+	public boolean updateQr(QrInfo qrInfo){
+		if (qrInfo == null){
+			return false;
+		}
+		deleteQr();
+		return addQr(qrInfo);
+	}
+	
+	/**
+	 * 获取Url
+	 * @return
+	 */
+	public String getUrl(){
+		QrInfo qrInfo = getQr();
+		if (qrInfo != null){
+			return qrInfo.getUrl();
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取uuid
+	 * @return
+	 */
+	public String getUUID(){
+		QrInfo qrInfo = getQr();
+		if (qrInfo != null){
+			return qrInfo.getUuid();
+		}
+		return null;
+	}
+	
+	/**
+	 * 跟新Url
+	 * @param url
+	 * @return
+	 */
+	public boolean updateUrl(String url){
+		if (TextUtils.isEmpty(url)){
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_QR_URL, url);
+		if (db.update(Property.TABLE_QR, values, null, null) > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 更新uuid
+	 * @param uuid
+	 * @return
+	 */
+	public boolean updateUuid(String uuid){
+		if (TextUtils.isEmpty(uuid)){
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_UUID, uuid);
+		if (db.update(Property.TABLE_QR, values, null, null) > 0){
+			return true;
+		}
+		return false;
 	}
 }

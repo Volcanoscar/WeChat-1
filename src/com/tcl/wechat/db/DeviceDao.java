@@ -7,54 +7,71 @@
  */
 package com.tcl.wechat.db;
 
-
-
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 
 /**
- * @ClassName: DeviceDao
- * @Description: 设备表
+ * 设备表
+ * @author rex.lei
+ *
  */
-
 public class DeviceDao {
 	
-	private DBOpenHelper dbOpenHelper;
+	private DBHelper mDbHelper;
+	private static DeviceDao mInstance;
 
-	public DeviceDao(Context context)
-	{
-		this.dbOpenHelper = new DBOpenHelper(context);
+	private DeviceDao(Context context){
+		mDbHelper = new DBHelper(context);
+		mDbHelper.getReadableDatabase();
 	}
 	
-	public boolean update(String memberid) 
-	{
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		db.execSQL("update tcl_weixin_device set memberid=? ",new Object[] { memberid});
-		return true;
+	public static void initDeviceDao(Context context){
+		if (mInstance == null){
+			mInstance = new DeviceDao(context);
+		}
 	}
 	
-	public String find() 
-	{
-		String memberid ;
-		// 如果只对数据进行读取，建议使用此方法
-		try {
-			SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-			Cursor cursor = db.rawQuery(
-					"select memberid from tcl_weixin_device",null);
-			if (cursor.moveToFirst())
-			{
-				memberid = cursor.getString(cursor.getColumnIndex("memberid"));
-				cursor.close();
-				return memberid;
-			}
+	public static DeviceDao getInstance(){
+		if (mInstance == null){
+			throw new NullPointerException("DeviceDao is Null, You should initialize DeviceDao first!!");
+		}
+		return mInstance;
+	}
+	
+	/**
+	 * 获取MemberId
+	 * @return
+	 */
+	public String getMemberId(){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			String memId = cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_MEMBERID));
 			cursor.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return memId;
 		}
 		return null;
-
+	}
+	
+	/**
+	 * 更新MemberId
+	 * @return
+	 */
+	public boolean updateMemberId(String memId){
+		if (TextUtils.isEmpty(memId)){
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_MEMBERID, memId);
+		if (db.update(Property.TABLE_DEVICE, values, null, null) > 0){
+			return true;
+		}
+		return false;
 	}
 }

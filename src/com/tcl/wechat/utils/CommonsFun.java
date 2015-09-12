@@ -324,9 +324,9 @@ public class CommonsFun {
 	}
 	
 	
-	public static   List<AppInfo> getSystemApp(Context mContext)
+	public static   ArrayList<AppInfo> getSystemApp(Context mContext)
 	{
-		List<AppInfo> appInfoList = new ArrayList<AppInfo>();
+		ArrayList<AppInfo> appInfoList = new ArrayList<AppInfo>();
 		if (appInfoList.size() > 0)
 		{
 			return appInfoList;

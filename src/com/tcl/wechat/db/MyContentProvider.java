@@ -13,7 +13,7 @@ import android.util.Log;
 
 public class MyContentProvider extends ContentProvider {
     private SQLiteDatabase     sqlDB;
-    private DBOpenHelper    dbHelper;
+    private DBHelper    dbHelper;
 
    /* private static class DatabaseHelper extends SQLiteOpenHelper {
         DatabaseHelper(Context context) {
@@ -62,7 +62,7 @@ public class MyContentProvider extends ContentProvider {
     
     @Override
     public boolean onCreate() {
-        dbHelper = new DBOpenHelper(getContext());
+        dbHelper = new DBHelper(getContext());
         return (dbHelper == null) ? false : true;
     }
 

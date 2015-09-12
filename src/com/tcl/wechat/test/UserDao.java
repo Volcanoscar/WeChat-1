@@ -1,4 +1,4 @@
-package com.tcl.wechat.db;
+package com.tcl.wechat.test;
 
 import java.util.ArrayList;
 
@@ -9,8 +9,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.tcl.wechat.db.interf.UserImpl;
-import com.tcl.wechat.modle.User;
+import com.tcl.wechat.db.DBHelper;
+import com.tcl.wechat.db.Property;
+import com.tcl.wechat.test.interf.UserImpl;
 
 public class UserDao implements UserImpl{
 	

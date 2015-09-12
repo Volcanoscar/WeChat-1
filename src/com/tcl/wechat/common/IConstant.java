@@ -22,4 +22,19 @@ public interface IConstant {
 	public static final String ACTION_PLAY_SOUND = "com.tcl.action.play.sound";
 	//显示图片
 	public static final String ACTION_SHOW_PIC= "com.tcl.action.show.pic";
+	
+	/**
+	 * 微信消息枚举类
+	 * @author rex.lei
+	 *
+	 */
+	public static class ChatMsgType{
+		
+		public static final String IMAGE = "image";
+		public static final String VIDEO = "video";
+		public static final String VOICE = "voice";
+		public static final String TEXT = "text";
+		public static final String BARRAGE = "barrage";
+		public static final String NOTICE = "tvprogramnotice";
+	}
 }

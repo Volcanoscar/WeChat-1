@@ -24,25 +24,53 @@ import com.tcl.wechat.modle.WeiXinMsg;
 
 public class WeiRecordDao {
 	
-	private DBHelper dbOpenHelper;
-	private String tag = "WeiRecordDao";
-
-	public WeiRecordDao(Context context)
-	{
-		this.dbOpenHelper = new DBHelper(context);
+	private static final String TAG = WeiRecordDao.class.getSimpleName();
+	
+	private DBHelper mDbHelper;
+	
+	private static WeiRecordDao mInstance;
+	
+	private WeiRecordDao(Context context) {
+		super();
+		mDbHelper = new DBHelper(context);
+		mDbHelper.getReadableDatabase();
 	}
+
+	public static void initWeiRecordDao(Context context){
+		if (mInstance == null){
+			mInstance = new WeiRecordDao(context);
+		}
+	}
+	
+	public static WeiRecordDao getInstance(){
+		if (mInstance == null){
+			throw new NullPointerException("WeiRecordDao is Null, " +
+					"You should initialize WeiRecordDao first!!");
+		}
+		return mInstance;
+	}
+	
+	
+	
+	public boolean addUserRecorder(WeiXinMsg recorder){
+		
+		
+		
+		
+		return false;
+	}
+	
 	
 	public boolean save(WeiXinMsg msg)
 	{
 		// 如果要对数据进行更改，就调用此方法得到用于操作数据库的实例,该方法以读和写方式打开数据库
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		Log.i(tag,"openid"+msg.getOpenid());
-		Log.i(tag,"getFileTime="+msg.getFileTime());
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		Log.i(TAG,"openid"+msg.getOpenid());
+		Log.i(TAG,"getFileTime="+msg.getFileTime());
 		
 		db.execSQL("insert into weiuserrecord (openid,msgtype, content ,url,format,createtime,accesstoken,mediaid,thumbmediaid,expiretime,read,filename,filesize,filetime) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 					new Object[] { msg.getOpenid(), msg.getMsgtype(),
 					msg.getContent(), msg.getUrl() , msg.getFormat(), msg.getCreatetime(), msg.getAccesstoken(), msg.getMediaid(), msg.getThumbmediaid(), msg.getExpiretime(), "false",msg.getFileName()+"",msg.getFileSize()+"",msg.getFileTime()+""});	
-		
 		return true;
 	}
 	
@@ -51,10 +79,10 @@ public class WeiRecordDao {
 		List<WeiXinMsg> msgList = new ArrayList<WeiXinMsg>();
 
 		// 如果只对数据进行读取，建议使用此方法
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.rawQuery("select * from weiuserrecord where openid=?",new String[] { openid });
 		cursor.moveToLast();
-		Log.i(tag,"cursor.getCount()"+cursor.getCount());
+		Log.i(TAG,"cursor.getCount()"+cursor.getCount());
 		if (cursor.getCount() == 0 ){
 			return null;
 		}
@@ -86,7 +114,7 @@ public class WeiRecordDao {
 		Log.i("liyulin","1111delMsg-openid="+openid+";createtime="+createtime+";url="+url);
 	
 		// 如果只对数据进行读取，建议使用此方法
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();		
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();		
 		db.delete("weiuserrecord", "openid=? and url=? and createtime=?",  new String[] { openid,url,createtime }) ;
 		
 	}
@@ -96,33 +124,33 @@ public class WeiRecordDao {
 		Log.i("liyulin","1111delMsg-openid="+openid);
 	
 		// 如果只对数据进行读取，建议使用此方法
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();		
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();		
 		db.delete("weiuserrecord", "openid=?",  new String[] { openid }) ;
 		
 	}
-	public boolean updateRead(String openid,boolean flag){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+	public boolean updateRead(String openid, boolean flag){
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		db.execSQL("update weiuserrecord set read=? where openid=?",new Object[] { flag+"",openid });
 		return true;
 	}
 	public boolean updateContent(String url,String saveurl){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		Log.i("liyulin", "updateContent:url="+url+";\nsaveurl="+saveurl);
 		db.execSQL("update weiuserrecord set content=? where url=? or thumbmediaid=?",new Object[] {saveurl ,url ,url });
 		return true;
 	}
 	public boolean updateFileName(String url,String filename){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		db.execSQL("update weiuserrecord set filename=? where url=?",new Object[] {filename ,url });
 		return true;
 	}
 	public boolean updateFileSize(String url,int size){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		db.execSQL("update weiuserrecord set filesize=? where url=?",new Object[] {size ,url });
 		return true;
 	}
 	public boolean updateFileTime(String url,int time){
-		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		db.execSQL("update weiuserrecord set filetime=? where url=?",new Object[] {time ,url });
 		return true;
 	}
@@ -131,7 +159,7 @@ public class WeiRecordDao {
 		List<WeiXinMsg> msgList = new ArrayList<WeiXinMsg>();
 
 		// 如果只对数据进行读取，建议使用此方法
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.rawQuery("select * from weiuserrecord",null);
 		while (cursor.moveToNext())
 		{
@@ -158,7 +186,7 @@ public class WeiRecordDao {
 	public String  findOldRecord(){
 		String filename = null;
 		String msgtype = "video";
-		SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.rawQuery("select * from weiuserrecord where msgtype=? ORDER BY 0+createtime ASC ",new String[] { msgtype });
 		cursor.moveToNext();
 		

@@ -5,9 +5,9 @@ public class Property {
 	public static final String DATABASE_NAME = "wecaht.db";
 	
 	/**
-	 * User数据库
+	 *  BindUser数据库
 	 */
-	public static final String TABLE_USER = "user";
+	public static final String TABLE_USER = "binduser";
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_OPENID = "openId";
 	public static final String COLUMN_USERNAME = "userName";
@@ -44,6 +44,7 @@ public class Property {
 	 * AppInfo数据库
 	 */
 	public static final String TABLE_APPINFO = "appinfo";
+	public static final String COLUMN_APP_NAME = "appName";
 	public static final String COLUMN_PACKAGE_NAME = "packageName";
 	public static final String COLUMN_VERSION_CODE = "versionCode";
 	public static final String COLUMN_VERSION_NAME = "versionName";
@@ -53,8 +54,7 @@ public class Property {
 	 * device 数据库
 	 */
 	public static final String TABLE_DEVICE = "device";
-	public static final String COLUMN_DEVICEID = "deviceId";
-	public static final String COLUMN_DEVICE_NAME = "deviceName";
+	public static final String COLUMN_MEMBERID = "memberId";
 	
 	
 	/**
@@ -108,6 +108,7 @@ public class Property {
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_APPINFO + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+			Property.COLUMN_APP_NAME + " VACHAR(50)," +
 		    Property.COLUMN_PACKAGE_NAME + " VACHAR(100)," +
 		    Property.COLUMN_VERSION_CODE + " VACHAR(100)," +
 		    Property.COLUMN_VERSION_NAME + " VACHAR(50)," +
@@ -120,8 +121,7 @@ public class Property {
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_DEVICE + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-		    Property.COLUMN_DEVICEID + " VACHAR(100)," +
-		    Property.COLUMN_DEVICE_NAME + " VACHAR(100)" + ")";
+		    Property.COLUMN_MEMBERID + " VACHAR(100)" + ")";
 	
 	public static final String CREATE_TABLE_QR_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +

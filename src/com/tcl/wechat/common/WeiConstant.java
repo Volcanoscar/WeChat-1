@@ -10,17 +10,16 @@ package com.tcl.wechat.common;
 
 import android.os.Environment;
 
-
-  
-
 /**
  * @ClassName: WeiConstant
  * @Description: weixin静态类定义
  */
 
 public class WeiConstant {
+
 	//家庭云端口号：8348
 	public static final int httpServicePort=8843;
+	
 	//广播定义
 	public static final class CommandBroadcast{
 		public static final String LOGIN_SUCCESS = "com.tcl.webchat.LOGIN_SUCCESS";
@@ -30,6 +29,7 @@ public class WeiConstant {
 		public static final String COMMAND_GET_WEIXIN_APP = "com.tcl.webchat.GET_WEIXIN_APP";
 		public static final String COMMAND_REMOTEBINDER = "com.tcl.webchat.GET_WEIXIN_REMOTEBINDER";
 	}
+	
 	//xmpp协议返回接口定义
 	public static final class CommandType{
 		public static final int COMMAND_NEWWORK_NOT_AVAILABLE  = 0;
@@ -50,7 +50,6 @@ public class WeiConstant {
 		public static final int COMMAND_BINDER_TOUI = 109;
 		public static final int COMMAND_UNBINDER_TOUI = 110;
 		public static final int COMMAND_GET_TVSTATUS = 111;
-		
 		public static final int LOGIN_GETDATA_SUCCESS = 112;		
 		public static final int FRESH_NEWS = 113;
 		public static final int LONGCONNECTION_EXIST = 114;
@@ -63,32 +62,28 @@ public class WeiConstant {
 		public static final int COMMAND_TVPROGRAMNOTICE = 121;
 		public static final int COMMAND_RESPONSEBARRRAGE = 122;
 		public static final int COMMAND_REPORTVIDEO = 123;
-		
-		
 		public static final int NOTFINDVIDEOFILE = 124;
-		
 		public static final int COMMAND_UN_BINDER_ERROR = 125;
-		
 		public static final int COMMAND_DEVICEIDNULL = 126;
 		public static final int COMMAND_MACNULL = 127;
-		
 		public static final int COMMAND_GET_WEIXIN_APP = 128;
-		
 	}
+	
 	//xmpp请求参数key
-	public final static class ParameterKey
-	{
+	public final static class ParameterKey{
+		
 		public final static String PAGE = "page";
 		public final static String STEP = "step";
 		public final static String OPEN_ID = "openid";
-
 	}
 	
-	public static final class CommandReturnType
-	{
+	public static final class CommandReturnType{
+		
 		public static final String STATUS_SUCCESS = "0";
 		public static final String STATUS_FAIL = "1";
 	}
+	
+	
 	//for ui
 	public static final int FOCUS_RESUME_TIME = 800;
 	/** 获取本地应用列表的信息 */
@@ -146,19 +141,22 @@ public class WeiConstant {
 		public static  String CURRENTMODE = "own";//启动应用启动的，比如开机向导和家庭信箱
 	}
 	public static String MAC = null;
+	
 	//根据系统内存大小配置全功能版或简化版（简化版就是去掉了讯飞的智控和识别，在微信应用里面对应，语音，直播换台，识别服务）
 	public static final class WechatConfigure{
 		public static String CurConfigure = "1";//全功能版本
 		public static final String DefaultVer = "1";//全功能版本
 		public static final String SimpleVer = "0";//简化版本
 	}
+	
 	//CFROM：表示扫码来源（两个扫码来源come from，1是开机向导，2是微信互联），值有：1,2 。
-		public static final class CFROM{
-			public static final String Guide = "1";//全功能版本
-			public static final String WeiXin = "2";//简化版本
-		}
-		//公众号的ticket
-		public static final String ticket="http://we.qq.com/d/AQCvqyC3kjCTqtsDD9oU6mKorecLxifqDhpMvrno";
+	public static final class CFROM{
+		public static final String Guide = "1";//全功能版本
+		public static final String WeiXin = "2";//简化版本
+	}
+		
+	//公众号的ticket
+	public static final String ticket="http://we.qq.com/d/AQCvqyC3kjCTqtsDD9oU6mKorecLxifqDhpMvrno";
 	
 	public static String UUID = null;
 }

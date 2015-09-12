@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.WeiUserDao;
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.WeiRemoteBind;
 import com.tcl.wechat.utils.BaseUIHandler;
 //import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -42,7 +42,7 @@ public class WeiXinRemoteBindReceiver extends BroadcastReceiver{
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
 		mContext = context;
-	    weiUserDao = new WeiUserDao(context);
+	    weiUserDao = WeiUserDao.getInstance();
 		//获取远程绑定消息
 		WeiRemoteBind weiRemoteBind = (WeiRemoteBind)intent.getExtras().getSerializable("remotebind");
 	
@@ -55,9 +55,11 @@ public class WeiXinRemoteBindReceiver extends BroadcastReceiver{
 			//收到服务器回复之后才显示提示“加入成功”
 			if(weiRemoteBind.getreply().equals("disallow"))
 				return;
-			BinderUser mBinderUser = weiUserDao.find(openid).get(0);
-			weiUserDao.setStatus(openid, "success");
-			String nameString = mBinderUser.getNickname();			
+			BindUser mBinderUser = weiUserDao.getUser(openid);
+//			weiUserDao.set(openid, "success");
+			weiUserDao.updateStatus(openid, "success");
+			
+			String nameString = mBinderUser.getNickName();	
 //			String addSucces = mContext.getString(R.string.addsuc1)+nameString+mContext.getString(R.string.addsuc2);
 			//刷新UI
 			if (mHandler != null){
@@ -65,28 +67,27 @@ public class WeiXinRemoteBindReceiver extends BroadcastReceiver{
 				mHandler.sendEmptyMessage(CommandType.COMMAND_BINDER_TOUI);
 			}
 		}else{
-			BinderUser binderUser = new BinderUser();
-			binderUser.init();
+			BindUser binderUser = new BindUser();
 			if (openid !=null){
-				binderUser.setOpenid(openid);
+				binderUser.setOpenId(openid);
 			}
 			if (nickName !=null){
-				binderUser.setNickname(nickName);
+				binderUser.setNickName(nickName);
 			}
 			if (sex !=null){
 				binderUser.setSex(sex);
 			}
 			if (headImageurl !=null){
-				binderUser.setHeadimgurl(headImageurl);
+				binderUser.setHeadimageurl(headImageurl);
 				Log.i("GetWeiXinRemoteBindReceiver","headImageurl="+headImageurl);
 			}
-			binderUser.setstatus("wait");			
+			binderUser.setStatus("wait");
 				
 			showAuthDialog(context,binderUser);
 		}
 
 	}
-	private void showAuthDialog(Context context,final BinderUser binderUser){
+	private void showAuthDialog(Context context,final BindUser binderUser){
 		Button okBt,cancelBt;
 		TextView tView;
 		RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,

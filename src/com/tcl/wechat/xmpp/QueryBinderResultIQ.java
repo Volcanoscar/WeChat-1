@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.BinderUser;
+import com.tcl.wechat.modle.BindUser;
 
 
 /**
@@ -22,7 +22,7 @@ public class QueryBinderResultIQ extends IQ {
 	
 	private final String xml;
 	private String errorcode;
-	private ArrayList<BinderUser> files = new ArrayList<BinderUser>();	
+	private ArrayList<BindUser> files = new ArrayList<BindUser>();	
 
 	public QueryBinderResultIQ(final String xml) {
 		this.xml = xml;
@@ -51,14 +51,14 @@ public class QueryBinderResultIQ extends IQ {
 	/**
 	 * @return the files
 	 */
-	public ArrayList<BinderUser> getFiles() {
+	public ArrayList<BindUser> getFiles() {
 		return files;
 	}
 
 	/**
 	 * @param files the files to set
 	 */
-	public void setFiles(ArrayList<BinderUser> files) {
+	public void setFiles(ArrayList<BindUser> files) {
 		this.files = files;
 	}
 

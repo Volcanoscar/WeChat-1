@@ -90,7 +90,7 @@ public class ParseConfigXml
 					{
 						if (value.length() == 0)
 							value = "app";
-						appinfo.setappname(value);
+						appinfo.setAppName(value);
 					}
 					else if (name.equals("appPackageName"))
 					{

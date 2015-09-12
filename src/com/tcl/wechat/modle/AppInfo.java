@@ -4,30 +4,27 @@ import java.io.Serializable;
 
 
 /**
- * @author kuanghq
+ * App应用信息
+ * @author rex.lei
  *
- */
-/**
- * @author kuanghq
- * 
  */
 public class AppInfo implements Serializable {
 
 
-	private String packageName;// APK包名
-	private String appname;//应用名称
-
-
-
-
-
-
-	public String getappname() {
-		return appname;
+	private static final long serialVersionUID = -2455950643865620100L;
+	
+	private String packageName;	// APK包名
+	private String appName;		//应用名称
+	
+	public AppInfo() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
-	public void setappname(String appname) {
-		this.appname = appname;
+	public AppInfo(String packageName, String appName) {
+		super();
+		this.packageName = packageName;
+		this.appName = appName;
 	}
 
 	public String getPackageName() {
@@ -38,6 +35,17 @@ public class AppInfo implements Serializable {
 		this.packageName = packageName;
 	}
 
-	
+	public String getAppName() {
+		return appName;
+	}
 
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
+
+	@Override
+	public String toString() {
+		return "AppInfo [packageName=" + packageName + ", appName=" + appName
+				+ "]";
+	}
 }
