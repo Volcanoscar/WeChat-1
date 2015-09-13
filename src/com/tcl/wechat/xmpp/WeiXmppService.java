@@ -193,8 +193,6 @@ public class WeiXmppService extends Service{
 			 */
 			case CommandType.COMMAND_REGISTER: 
 				Log.d(TAG, "=====================register successfully===============");
-				SharedEditer editer = new SharedEditer(WeiXmppService.this);
-				editer.putBoolean("register_flag", true);
 				//存储memberid到数据库
 				String memberid = (String)this.getData();
 				if (!TextUtils.isEmpty(memberid)){

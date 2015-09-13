@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Window;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.common.WeiConstant.CommandType;
+import com.tcl.wechat.controller.WeiXinMsgManager;
 import com.tcl.wechat.receiver.WeiXinLoginReceiver;
 import com.tcl.wechat.receiver.WeiXinNoticeReceiver;
 import com.tcl.wechat.utils.BaseUIHandler;
@@ -17,7 +19,7 @@ import com.tcl.wechat.utils.SystemShare.SharedEditer;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
-public class LoginActivity extends Activity{
+public class LoginActivity extends Activity {
 	
 	private static final String TAG = "LoginActivity";
 
@@ -25,9 +27,12 @@ public class LoginActivity extends Activity{
 	
 	private Handler timeHandler = new Handler();
 	
+	private WeiXinMsgManager mWeiXinMsgManager ;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_loading);
 		
 		initHander();
@@ -43,6 +48,8 @@ public class LoginActivity extends Activity{
 		WeiXinLoginReceiver.setHandler(uiHandler);
 		WeiXinNoticeReceiver.setHandler(uiNoticeHandler);
 //		WeiXinMsgReceiver.setHandler(uiMsgHandler);
+		
+		
 	}
 	
 	/**
@@ -75,6 +82,8 @@ public class LoginActivity extends Activity{
 	 * 进入主界面
 	 */
 	private void enterHomePage(){
+//		Intent intent = new Intent(this, MainActivity.class);
+		//for test 
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();
@@ -91,7 +100,8 @@ public class LoginActivity extends Activity{
 				enterHomePage();
 			} else {
 				//没有注册成功，则继续登录
-				WeiXmppManager.getInstance().login();
+				//WeiXmppManager.getInstance().login();
+				timeHandler.postDelayed(mUpdateTimeTask, WeiConstant.LOG_IN_TIMEOUT);
 			}
 		}
 	};

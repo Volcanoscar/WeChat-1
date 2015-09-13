@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.WeiQrDao;
@@ -90,6 +91,8 @@ public class WeiXmppManager {
 		curport = xmppPort1;
 		
 		password = "6216f8a75fd5bb3d5f22b6f9958cdede3fc086c2";
+		
+		mContext = WeChatApplication.gContext;
 	}
 	
 	public static WeiXmppManager getInstance() {
@@ -284,7 +287,7 @@ public class WeiXmppManager {
 
 		Log.d(TAG, "webchat-tct -------------register");
 
-		if (!UIUtils.isNetworkAvailable(mContext)) {
+		if (!UIUtils.isNetworkAvailable()) {
 			Log.d(TAG, "网络不可以用");
 			Toast.makeText(mContext, "no network",Toast.LENGTH_LONG).show();
 			return;
@@ -323,7 +326,6 @@ public class WeiXmppManager {
 					return;
 				}
 				
-//				WeiQrDao weiQrDao = new WeiQrDao(mContext);
 				String uuid = WeiQrDao.getInstance().getUUID();
 				Log.v(TAG, "uuid = " + uuid);
 					final String clientkeystore  = "data/data/com.tcl.music/keystore";
@@ -460,7 +462,7 @@ public class WeiXmppManager {
 	 */	
 	public void login(){
 
-		if (!UIUtils.isNetworkAvailable(mContext)){
+		if (!UIUtils.isNetworkAvailable()){
 			Toast.makeText(mContext, "no network",Toast.LENGTH_LONG).show();
 			Log.d(TAG, "网络不可以用");
 			return;
@@ -702,7 +704,7 @@ public class WeiXmppManager {
 		
 		Log.d(TAG, "开始重新login");
 		
-		if (!UIUtils.isNetworkAvailable(mContext)){
+		if (!UIUtils.isNetworkAvailable()){
 			Log.d(TAG, "网络不可以用");
 			return;
 		}

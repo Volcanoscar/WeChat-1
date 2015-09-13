@@ -24,7 +24,7 @@ public interface IConstant {
 	public static final String ACTION_SHOW_PIC= "com.tcl.action.show.pic";
 	
 	/**
-	 * 微信消息枚举类
+	 * 微信消息类
 	 * @author rex.lei
 	 *
 	 */

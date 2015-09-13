@@ -19,16 +19,12 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.modle.UserRecord;
 import com.tcl.wechat.test.RecordDao;
 import com.tcl.wechat.test.User;
 import com.tcl.wechat.test.UserDao;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
-import com.tcl.wechat.xmpp.WeiXmppManager;
-import com.tcl.wechat.xmpp.WeiXmppService;
 
 /**
  * 主界面Activity
@@ -122,6 +118,7 @@ public class MainActivity extends Activity {
 		
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
+		
 	}
 
 	/**
@@ -154,6 +151,7 @@ public class MainActivity extends Activity {
 			Log.i(TAG, "UserRecord:" + mAllUserRecords.get("" + i));
 		}
 	}
+	
 	
 	/**
 	 * 检测事件

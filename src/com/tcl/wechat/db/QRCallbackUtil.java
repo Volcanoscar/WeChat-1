@@ -76,7 +76,7 @@ public class QRCallbackUtil {
         			 Log.i(tag,"000数据库已经有二维码，直接回调给其他进程");
         			 return;
         		 }else{//没有Url，1、无网络 返回公众号  
-        			 if (!UIUtils.isNetworkAvailable(mContext)){
+        			 if (!UIUtils.isNetworkAvailable()){
         				 Bitmap bitmap =  new QRCodeUtils().createNewQR(WeiConstant.ticket,CFROM,QR_WIDTH, QR_HEIGHT,mContext); 
         				 huiCallback.callback(bitmap); 
         			 }else {//2、有网络，启动服务，轮询

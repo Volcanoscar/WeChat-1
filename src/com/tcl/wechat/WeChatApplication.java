@@ -12,11 +12,20 @@ import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.controller.DatabaseController;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
+/**
+ * WeChatApplication
+ * @author rex.lei
+ *
+ */
 public class WeChatApplication extends Application {
+
+	public static Context gContext;
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
+		gContext = this;
 		
 		//初始化数据库
 		initDateBase();
@@ -28,7 +37,13 @@ public class WeChatApplication extends Application {
 		initImageLoader(getApplicationContext());
 	}
 
-
+	/**
+	 * 初始化数据库
+	 */
+	private void initDateBase() {
+		DatabaseController.getController(getApplicationContext()).initDataBase();
+	}
+	
 	/**
 	 * 用户注册
 	 * 	 启动服务，进行用户注册
@@ -39,13 +54,6 @@ public class WeChatApplication extends Application {
 		serviceIntent.putExtra("startmode", WeiConstant.StartServiceMode.OWN);
 		serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startService(serviceIntent);
-	}
-	
-	/**
-	 * 初始化数据库
-	 */
-	private void initDateBase() {
-		DatabaseController.getController(getApplicationContext()).initDataBase();
 	}
 
 	/**
@@ -60,8 +68,7 @@ public class WeChatApplication extends Application {
 		
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
         	.defaultDisplayImageOptions(options).threadPriority(Thread.MIN_PRIORITY)
-        	.discCacheSize(10 * 1024 * 1024).threadPoolSize(10).build();
-		
+        	.discCacheSize(50 * 1024 * 1024).threadPoolSize(10).build();
 		ImageLoader.getInstance().init(config);
 	}
 }

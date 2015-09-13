@@ -28,7 +28,7 @@ public class ConnectionChangeReceiver extends BroadcastReceiver {
 	public void onReceive(Context arg0, Intent arg1) {
 		// TODO Auto-generated method stub
 		Log.d("ConnectionChangeReceiver", "网络状态改变，weixin开启服务登陆");
-		if (UIUtils.isNetworkAvailable(arg0)){
+		if (UIUtils.isNetworkAvailable()){
 			if(firstConnect){
 				firstConnect = false;
 				Log.d("ConnectionChangeReceiver", "网络连接OK");

@@ -1,11 +1,7 @@
 
 package com.tcl.wechat.xmpp;
 
-import java.util.List;
-
 import org.jivesoftware.smack.packet.IQ;
-
-import android.util.Log;
 
 /**
  * 终端获取memID后的回包

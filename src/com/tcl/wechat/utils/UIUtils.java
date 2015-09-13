@@ -18,34 +18,28 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
 
+import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.common.WeiConstant;
 
 /**
- * @author zhangjunjian
+ * 
+ * @author rex.lei
  *
  */
 public class UIUtils {
 
 	
-	public static boolean isNetworkAvailable(Context context) {
-		return getAllNetworkStates(context);
+	public static boolean isNetworkAvailable() {
+		return getAllNetworkStates();
 	}
 
-	public synchronized static boolean getAllNetworkStates(Context mContext) {
-		ConnectivityManager connec = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		if (connec == null)
+	public synchronized static boolean getAllNetworkStates() {
+		ConnectivityManager connectivityManager = (ConnectivityManager) WeChatApplication.gContext
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (connectivityManager == null){
 			return false;
-
-		/*NetworkInfo[] allinfo = connec.getAllNetworkInfo();
-		if (allinfo != null) {
-			for (NetworkInfo info : allinfo) {
-
-				if (info.isAvailable() && info.isConnected()) {
-					return true;
-				}
-			}
-		}*/
-		NetworkInfo activeInfo = connec.getActiveNetworkInfo();			
+		}
+		NetworkInfo activeInfo = connectivityManager.getActiveNetworkInfo();			
 		if (activeInfo != null && activeInfo.isConnected()
 				&& activeInfo.isAvailable()) {							
 			return true;
