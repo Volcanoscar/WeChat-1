@@ -15,13 +15,18 @@ import java.net.URL;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.Log;
 
 /**
  * 图像处理工具类
@@ -30,6 +35,8 @@ import android.text.TextUtils;
  */
 public class ImageUtil {
 
+	private static final String TAG = ImageUtil.class.getSimpleName();
+	
 	private static final int TIME_OUT = 8000;
 	private static final int BUFFER_SIZE = 1024;
 	
@@ -216,6 +223,25 @@ public class ImageUtil {
 			}
 		}
 		return bitmap;
+	}
+	
+	/**
+	 * 下载数据
+	 * @param url
+	 * @param filePath
+	 * @return
+	 */
+	public boolean downLoadAndSaveImage(String filePath, String fileName){
+		if (TextUtils.isEmpty(filePath)){
+			Log.i(TAG, "filePath is NULL");
+			return false;
+		}
+		File file = new File(filePath);
+		if (file != null && !file.exists()){
+			file.mkdirs();
+		}
+		downLoadAndSaveImage(file, fileName);
+		return false;
 	}
 	
 	/**
@@ -451,4 +477,36 @@ public class ImageUtil {
 	    Bitmap newbmp = Bitmap.createBitmap(bitmap,0, 0, w, h, matrix, true); 
 	    return newbmp; 
 	} 
+	
+	public Bitmap createCircleImage(Bitmap bitmap){  
+		if (bitmap == null){
+			Log.e(TAG, "createCircleImage ERROR, bitmap is NULL!!");
+			return null;
+		}
+		
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+		int min = Math.min(width, height);
+		
+        final Paint paint = new Paint();  
+        paint.setAntiAlias(true);  
+        Bitmap outPutBitmap = Bitmap.createBitmap(min, min, Config.ARGB_8888);  
+        /** 
+         * 产生一个同样大小的画布 
+         */  
+        Canvas canvas = new Canvas(outPutBitmap);  
+        /** 
+         * 首先绘制圆形 
+         */  
+        canvas.drawCircle(min / 2, min / 2, min / 2, paint);  
+        /** 
+         * 使用SRC_IN 
+         */  
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));  
+        /** 
+         * 绘制图片 
+         */  
+        canvas.drawBitmap(bitmap, 0, 0, paint);  
+        return outPutBitmap;  
+    }  
 }

@@ -88,7 +88,7 @@ public class ImageHttpClient {
 						}
 				 }
 				 if (bitmap == null){
-					 hander.setStatus(CommandReturnType.STATUS_FAIL);
+					 hander.setStatus(CommandReturnType.STATUS_FAILED);
 					 hander.sendEmptyMessage(CommandType.COMMAND_GET_ICON_PIC);
 				 }
 				

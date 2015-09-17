@@ -10,188 +10,238 @@ package com.tcl.wechat.receiver;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.common.WeiConstant.CommandReturnType;
 import com.tcl.wechat.common.WeiConstant.CommandType;
+import com.tcl.wechat.common.WeiConstant.SystemShared;
+import com.tcl.wechat.controller.DownLoadProxy;
+import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.listener.LoginStateListener;
 import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.utils.BaseUIHandler;
-import com.tcl.wechat.utils.CommonsFun;
+import com.tcl.wechat.utils.SystemInfoUtil;
+import com.tcl.wechat.utils.SystemShare.SharedEditer;
 import com.tcl.wechat.xmpp.InitFinish;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
-//import com.tcl.webchat.homepage.HomePageActivity;
-//import com.tcl.xian.StartandroidService.SqlCommon;
 
 /**
- * @ClassName: WeiXinLoginReceiver
+ * 微信登录成功监听器
+ * @author rex.lei
+ *
  */
-
 public class WeiXinLoginReceiver extends BroadcastReceiver{
 
 	private static final String TAG = WeiXinLoginReceiver.class.getSimpleName();
 	
-	private Context mContext ;
-	private int getData = 0;
-	public static Handler mHandler = null;
-	private static final String SET_SHARE_STYLE_NAME = "setshare_pref";
-	private Handler handler;
-	String  topActivityName;//执行关闭service的时候还需要再判断一次微信是否在前台
+	private Context mContext;
+	
+	private int mRequestCnt = 0;
+	
+	private SharedEditer mEditer ;
+	
+	private CommandHandler mCommandHandler = new CommandHandler();
+	
+	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
-		Log.i(TAG,"receive---WeiXinLoginReceiver");
+		
+		Log.i(TAG, "Received login successfully Broadcast!");
+		
 		mContext = context;
-		getData = 0;
-		handler = new MyHander();
-		//登陸成功后,获取当前绑定的用户，同时更新数据库
-		new WeiXmppCommand(new MyHander(), CommandType.COMMAND_GET_BINDER, null).execute();
-		//每次都生成一个新的二维码
-	     ifGetNetQR();
+		mEditer = new SharedEditer();
 		
-		//读取数据库，文件弹出方式
-		SharedPreferences preferences = context.getSharedPreferences(
-				SET_SHARE_STYLE_NAME, context.MODE_PRIVATE);
-		WeiConstant.SET_SHARE_STYLE = preferences.getBoolean("share", true);
+		//1、执行获取绑定用户命令
+		exeCmdToGetBindUser();
 		
-		//上报终端信息		
-		//读取数据库，本机ip，如果和上次上报的相同则不上报		
-		String localip = preferences.getString("localip", "");
-		String curip = CommonsFun.getLocalIpAddress();
-		if(!localip.equals(curip)){
-			Log.i(TAG,"receive---localip="+localip+";curip="+curip);
-			Editor editor = preferences.edit();
-			editor.putString("localip", curip);
-			editor.commit();
-			final HashMap<String, String> hashMap = new HashMap<String, String>();
-			hashMap.put("deviceid",CommonsFun.getDeviceId(mContext));
-			hashMap.put("dnum",CommonsFun.getDnum(mContext));
-			hashMap.put("huanid",CommonsFun.getHuanid(mContext));
-			hashMap.put("lanip",curip);
-			hashMap.put("messageboxid","0000000000000000");
-			hashMap.put("mac",CommonsFun.getMAC());
-			hashMap.put("version", CommonsFun.get_apkver(mContext));
-			new WeiXmppCommand(new MyHander(), CommandType.COMMAND_REPORT_DEVICEINFO, hashMap).execute();
-		}						
+		//2、执行获取二维码信息命令
+		exeCmdToGetNetQr();
+		
+		//3、 上报终端信息
+		exeCmdToReportTerminalInfo();
 	}
 	
-	//判断本地数据库是否已经有了网络二维码的地址，有就直接生成一个二维码图片，没有则从网络获取。
-		public void ifGetNetQR(){
-			 if (WeiQrDao.getInstance().getQr() != null){
-				 //	 new QRCodeUtils().createNewQR(qrurl.substring(qrurl.indexOf("ticket=")+7),WeiConstant.CFROM.WeiXin,mContext);
-			 } else{
-				 new WeiXmppCommand(new MyHander(), CommandType.COMMAND_GET_QR, null).execute();
-			 }
-		}
-		
-	/**
-	 * 登录获取用户为空，有可能有远程绑定的。10s查询数据库还是没有用户，则推出后台服务
-	 */
-	private Runnable getUserCountTimeTask = new Runnable() {     
-		
-		public void run() { 
-			topActivityName = CommonsFun.getTopActivityName(mContext);
-		    if(WeiUserDao.getInstance().getBindUserNum() == 0 && 
-		    		!topActivityName.equals(mContext.getPackageName()) &&
-		    		WeiConstant.StartServiceMode.CURRENTMODE.equals(WeiConstant.StartServiceMode.OWN)){
-		    	
-		    	Intent serviceIntent = new Intent(mContext, WeiXmppService.class);      	 			
-		    	mContext.stopService(serviceIntent); 
-		    }
-		}
-	};
-	class MyHander extends BaseUIHandler
-	{
-		@Override
-		public void handleMessage(Message msg)
-		{
-			switch (msg.what)
-			{
-				case CommandType.COMMAND_GET_TVSTATUS:
-					HashMap<String, String> hashMap_tvstatus = new HashMap<String, String>();			
-					hashMap_tvstatus = (HashMap<String, String>) msg.obj;
-					new WeiXmppCommand(null, CommandType.COMMAND_RESPONSETVSTATUS, hashMap_tvstatus).execute();
-					break;
-				case CommandType.COMMAND_GET_BINDER:
-					 Log.i(TAG,"COMMAND_GET_BINDER");
-					 if (this.getStatus().equals(CommandReturnType.STATUS_SUCCESS)){
-						 ArrayList<BindUser> usrsList = (ArrayList<BindUser>)this.getData();
-						 for(int i = 0; i< usrsList.size(); i++){
-							 Log.i(TAG,"files.get(0).headUrl=" + usrsList.get(i).getHeadimageurl());
-						 }
-						 Log.d(TAG, "当前绑定微信用户大小="+ usrsList.size());
-						 WeiUserDao.getInstance().addUserList(usrsList);
-					     //没有人绑定且当前应用不在前台，则关闭后台服务。
-						 if(usrsList.size() == 0){
-							 topActivityName = CommonsFun.getTopActivityName(mContext);
-							 Log.i(TAG, "topActivityName="+topActivityName+";mContext.getPackageName()="+mContext.getPackageName());
-							 if(topActivityName!=null&&!topActivityName.equals(mContext.getPackageName())){
-								 Log.i(TAG,"当前绑定用户为0，并且微信应用不在前台");
-								 this.removeCallbacks(getUserCountTimeTask);
-							     this.postDelayed(getUserCountTimeTask, 60000);
-							 }
-						 }
-					 }
-					 getData++;
-					 if(getData==2 && mHandler!=null){//跳转到主页
-						 mHandler.removeMessages(CommandType.LOGIN_GETDATA_SUCCESS);
-						 mHandler.sendEmptyMessage(CommandType.LOGIN_GETDATA_SUCCESS);
-					 }
-					//成功获取到用户列表后，再通知服务器，这时候可以接收离线消息了。TV掉线了，扫描绑定。这时候发很多离线消息。下次重启登录，还没有获取到列表之前，消息里面的用户会有很多NULL					
-					 //发送接收离线消息
-					InitFinish initfinish = new InitFinish( WeiXmppManager.getInstance().getConnection(), null);	
-					initfinish.sentPacket();
-					 break;
-				case CommandType.COMMAND_GET_QR:
-					 Log.i(TAG,"COMMAND_GET_QR");
-					 if (this.getStatus().equals(CommandReturnType.STATUS_SUCCESS)){
-						 String url = (String)this.getData();
-						 Log.i("liyulin","COMMAND_GET_QR--url="+url);
-						
-						 if(url != null){
-							 //插入到ContentProvider
-							// ProviderFun.insertRecord(mContext,url);
-							// getQR_url(mContext);
-							 //保存当前绑定的微信二维码
-//							 WeiQrDao weiQrDao = new WeiQrDao(mContext);
-							 String qrurl = WeiQrDao.getInstance().getUrl();
-							 Log.i("liyulin","update=qrurl="+qrurl);
-							 if (qrurl != null){
-								// Log.i("liyulin","111update=url="+url);
-//								 weiQrDao.update(url);
-								 WeiQrDao.getInstance().updateUrl(qrurl);
-							 }
-						 }
-					 }
-					 getData++;
-					 if(getData==2 && mHandler!=null){//跳转到主页
-						 mHandler.removeMessages(CommandType.LOGIN_GETDATA_SUCCESS);
-						 mHandler.sendEmptyMessage(CommandType.LOGIN_GETDATA_SUCCESS);
-					 }
-					 break;
-				default:
-					break;
-			}
 
+	/**
+	 * 执行获取绑定用户列表命令
+	 */
+	private void exeCmdToGetBindUser(){
+		
+		new WeiXmppCommand(mCommandHandler, CommandType.COMMAND_GET_BINDER, null).execute();
+	}
+	
+	/**
+	 * 执行获取网络二维码命令
+	 */
+	private void exeCmdToGetNetQr(){
+		if (WeiQrDao.getInstance().getQr() == null){
+			new WeiXmppCommand(mCommandHandler, CommandType.COMMAND_GET_QR, null).execute();
 		}
 	}
-	public  static void setHandler(BaseUIHandler Handler){
-		mHandler = (BaseUIHandler) Handler;
+	
+	/**
+	 * 上报终端信息
+	 */
+	private void exeCmdToReportTerminalInfo(){
+		mEditer = new SharedEditer(SystemShared.SHARE_TERMINAL_INFO);
+		String localIp = mEditer.getString("localip", "");
+		String curIp = SystemInfoUtil.getLocalIpAddress();
+		if (!curIp.equals(localIp)){
+			mEditer.putString("localip", curIp);
+			final HashMap<String, String> hashMap = new HashMap<String, String>();
+			hashMap.put("deviceid",SystemInfoUtil.getDeviceId());
+			hashMap.put("dnum",SystemInfoUtil.getDnum());
+			hashMap.put("huanid",SystemInfoUtil.getHuanid());
+			hashMap.put("lanip",curIp);
+			hashMap.put("messageboxid","0000000000000000");
+			hashMap.put("mac",SystemInfoUtil.getMacAddr());
+			hashMap.put("version", SystemInfoUtil.get_apkver());
+			new WeiXmppCommand(mCommandHandler, CommandType.COMMAND_REPORT_DEVICEINFO, hashMap).execute();
+		}
 	}
 	
+	/**
+	 * 上报TV状态
+	 */
+	private void exeCmdToReportTvStatus(HashMap<String, String> tvStatus){
+		new WeiXmppCommand(null, CommandType.COMMAND_RESPONSETVSTATUS, tvStatus).execute();
+	}
 	
-		          
+	/**
+	 * 监听Command执行状态，如果超时，则直接进入
+	 */
+	@SuppressLint("HandlerLeak") 
+	private class CommandHandler extends BaseUIHandler{
+		
+		@Override
+		public void handleMessage(Message msg) {
+			
+			Log.d(TAG, "CommandHandler receive:" + msg.what 
+					+ ", status:" + getStatus());
+			
+			switch (msg.what) {
+			case CommandType.COMMAND_GET_BINDER:
+				//获取用户列表成功
+				if (CommandReturnType.STATUS_SUCCESS.equals(getStatus())){
+					saveBindUser();
+				} else {
+					mRequestCnt ++;
+					if (mRequestCnt == 2){//事务处理完成
+						commandCompleted();
+					}
+				}
+				//成功获取到用户列表后，再通知服务器，这时候可以接收离线消息了。TV掉线了，扫描绑定。这时候发很多离线消息。下次重启登录，还没有获取到列表之前，消息里面的用户会有很多NULL					
+				//发送接收离线消息
+				InitFinish initfinish = new InitFinish( WeiXmppManager.getInstance().getConnection(), null);	
+				initfinish.sentPacket();
+				break;
+				
+			case CommandType.COMMAND_GET_QR:
+				if (CommandReturnType.STATUS_SUCCESS.equals(getStatus())){
+					saveQr();
+				}
+				mRequestCnt ++;
+				if(mRequestCnt == 2 ){//事务处理完成
+					commandCompleted();
+				}
+				break;
+				
+			case CommandType.COMMAND_GET_TVSTATUS:
+				HashMap<String, String> tvStatus = new HashMap<String, String>();			
+				tvStatus = (HashMap<String, String>) msg.obj;
+				exeCmdToReportTvStatus(tvStatus);
+				break;
+			default:
+				break;
+			}
+		}
+	}
 	
+	/**
+	 * 保存用户信息
+	 */
+	private void saveBindUser(){
+
+		final ArrayList<BindUser> usrsList = (ArrayList<BindUser>) mCommandHandler.getData();
+		 
+		//TODO 再次检测用户数据书否更新，如果没更新，则做存储操作
+		
+		if (usrsList == null || usrsList.isEmpty()){
+			return ;
+		}
+		 
+		if (WeiUserDao.getInstance().addUserList(usrsList)){
+			SharedEditer editer = new SharedEditer();
+			editer.putBoolean(SystemShared.KEY_REGISTENER_SUCCESS, true);
+		} else {
+			Log.e(TAG, "addUserList ERROR!!");
+			return ;
+		}
+		 
+		//下载更新用户头像
+		DownLoadProxy.getInstanc().startDownloadUserHeadIcon(usrsList);
+		
+	}
 	
+	/**
+	 * 保存二维码信息
+	 */
+	private void saveQr(){
+		final String url = (String)mCommandHandler.getData();
+		if(url != null){
+			String qrUrl = WeiQrDao.getInstance().getUrl();
+			if (qrUrl == null){
+				if (!WeiQrDao.getInstance().updateUrl(url) ){
+					Log.e(TAG, "updateQr ERROR!!");
+					return ;
+				}
+			}
+			//下载更新二维码
+			DownLoadProxy.getInstanc().startDownloadQr(qrUrl);
+		 }
+	}
+	
+	/**
+	 * 命令执行完成
+	 */
+	private void commandCompleted(){
+		if (SystemInfoUtil.isTopActivity()){
+			enter();
+		} else {
+			logout();
+		}
+	}
+	
+	/**
+	 * 登录成功进入应用
+	 */
+	private void enter(){
+		//1、已经超时进入主界面：发送广播通知应用更新主界面
+		//2、没有超时：直接通知进入
+		if (!mEditer.getBoolean(SystemShared.KEY_FLAG_ENTER, false)){
+			mEditer.putBoolean(SystemShared.KEY_FLAG_ENTER, true);
+			LoginStateListener mListener = WeiXinMsgManager.getInstance().getLoginStateListener();
+			if (mListener != null){
+				mListener.onLoginSuccess();
+			}
+		}
+	}
+	
+	/**
+	 * 退出
+	 */
+	private void logout(){
+		Intent serviceIntent = new Intent(mContext, WeiXmppService.class);      	 			
+    	mContext.stopService(serviceIntent);
+	}
 }

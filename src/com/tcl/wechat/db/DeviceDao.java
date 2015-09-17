@@ -13,6 +13,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.tcl.wechat.modle.DeviceInfo;
+
 
 /**
  * 设备表
@@ -43,6 +45,43 @@ public class DeviceDao {
 	}
 	
 	/**
+	 * 添加设备信息
+	 * @param deviceInfo
+	 * @return
+	 */
+	public boolean addDeviceInfo(DeviceInfo deviceInfo) {
+		if (deviceInfo == null){
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_DEVICEID, deviceInfo.getDeviceId());
+		values.put(Property.COLUMN_MAC, deviceInfo.getMacAddr());
+		values.put(Property.COLUMN_MEMBERID, deviceInfo.getMemberId());
+		if (db.insert(Property.TABLE_DEVICE, null, values) != -1){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 获取设备信息
+	 * @return
+	 */
+	public DeviceInfo getDeviceInfo(){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
+		if (cursor != null){
+			DeviceInfo deviceInfo = new DeviceInfo(cursor.getString(cursor.getColumnIndex(Property.COLUMN_DEVICEID)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_MAC)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_MEMBERID)));
+			cursor.close();
+			return deviceInfo;
+		}
+		return null;
+	}
+	
+	/**
 	 * 获取MemberId
 	 * @return
 	 */
@@ -50,7 +89,7 @@ public class DeviceDao {
 		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
 		if (cursor != null && cursor.moveToFirst()){
-			String memId = cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_MEMBERID));
+			String memId = cursor.getString(cursor.getColumnIndex(Property.COLUMN_MEMBERID));
 			cursor.close();
 			return memId;
 		}
@@ -73,5 +112,35 @@ public class DeviceDao {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * 获取DeviceId
+	 * @return
+	 */
+	public String getDeviceId(){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			String deviceId = cursor.getString(cursor.getColumnIndex(Property.COLUMN_DEVICEID));
+			cursor.close();
+			return deviceId;
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取MemberId
+	 * @return
+	 */
+	public String getMACAddr(){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		Cursor cursor = db.query(Property.TABLE_DEVICE, null, null, null, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			String macAddr = cursor.getString(cursor.getColumnIndex(Property.COLUMN_MAC));
+			cursor.close();
+			return macAddr;
+		}
+		return null;
 	}
 }

@@ -67,7 +67,7 @@ public class QueryBinderProvider implements IQProvider {
 					parser.next();		
 					String headimgurl = parser.getText();
 					Log.d("QueryBinderProvider", "headimgurl="+headimgurl);
-					binderUser.setHeadimageurl(headimgurl);
+					binderUser.setHeadImageUrl(headimgurl);
 				}
 				Log.i("andy","parser.getName()"+parser.getName()+"parser.getText()="+parser.getText());
 			} else if (eventType == XmlPullParser.END_TAG) {

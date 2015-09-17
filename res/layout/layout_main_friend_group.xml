@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+    <ImageView
+        android:id="@+id/myfriend_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/blue_line_02"
+        android:contentDescription="@string/contentDesc" />
+    
+    <ImageView
+        android:id="@+id/myfriend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="155dp"
+        android:layout_marginLeft="130dp"
+        android:src="@drawable/my_friend"
+        android:contentDescription="@string/contentDesc"  />
+    
+    <TextView 
+        android:id="@+id/myfriend_word"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="185dp"
+        android:layout_marginLeft="175dp"
+        android:gravity="center"
+        android:text="@string/myfriend"
+        android:textSize="28sp"
+        android:textColor="#ffffffff"
+        android:rotation="-6" />
+    
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_toRightOf="@id/myfriend"
+        android:layout_marginLeft="30dp"
+        android:orientation="horizontal" >
+
+        <HorizontalScrollView
+            android:id="@+id/horizontalSV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none" >
+
+            <com.tcl.wechat.view.MyFriendGroupView
+                android:id="@+id/friendgroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </HorizontalScrollView>
+    </LinearLayout>
+    
+<!--    	<include  -->
+<!--         android:layout_width="match_parent" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_toRightOf="@+id/myfriend_word" -->
+<!--         android:layout_marginLeft="20dp" -->
+<!--         layout="@layout/main_friend_view"/> -->
+    
+</RelativeLayout>

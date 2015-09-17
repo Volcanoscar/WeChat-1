@@ -3,13 +3,19 @@ package com.tcl.wechat.ui.activity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.QrUtil;
 import com.tcl.wechat.view.UserInfoView;
 
@@ -24,6 +30,10 @@ public class AddFriendActivity extends Activity {
 	private UserInfoView mUserInfoView;
 	private ImageView mPersonalQrImg;
 	
+	private BindUser mSystemUser ;
+	
+	private QrUtil mQrUtil ;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -36,8 +46,19 @@ public class AddFriendActivity extends Activity {
 		setContentView(R.layout.activity_qrcode);
 		
 		mContext = AddFriendActivity.this;
+		mQrUtil = new QrUtil(mContext);
 		
+		initData();
 		initView();
+	}
+
+	private void initData() {
+		// TODO Auto-generated method stub
+		if (getIntent() != null && getIntent().getExtras() != null){
+			mSystemUser = getIntent().getExtras().getParcelable("BindUser");
+		} else {
+			mSystemUser = WeiUserDao.getInstance().getAllUsers().get(0);
+		}
 	}
 
 	/**
@@ -48,6 +69,18 @@ public class AddFriendActivity extends Activity {
 		mPersonalQrImg = (ImageView) findViewById(R.id.img_personal_qrcode);
 		
 		mUserInfoView.setUserNameVisible(View.GONE);
+		
+		if (mSystemUser != null){
+			Bitmap userIcon = DataFileTools.getInstance()
+					.getBindUserIcon(mSystemUser.getHeadImageUrl());
+			mUserInfoView.setUserIcon(userIcon, false);
+			mUserInfoView.setUserNameVisible(View.VISIBLE);
+			mUserInfoView.setUserName(mSystemUser.getNickName());
+			
+			Bitmap qrBitmap = mQrUtil.createQRCode(mSystemUser.getNickName(), 
+					ImageUtil.getInstance().createCircleImage(userIcon));
+			mPersonalQrImg.setImageBitmap(qrBitmap);
+		}
 	}
 	
 	
@@ -58,8 +91,6 @@ public class AddFriendActivity extends Activity {
 		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
-		
-		new QrUtil(mContext).createQRCode(mPersonalQrImg, "WeChat", R.drawable.head_user_icon);
 	}
 
 	/**
@@ -76,9 +107,10 @@ public class AddFriendActivity extends Activity {
 		super.onPause();
 	}
 	
-	private void onsop() {
+	@Override
+	protected void onStop() {
 		// TODO Auto-generated method stub
-
+		super.onStop();
 	}
 	
 	@Override

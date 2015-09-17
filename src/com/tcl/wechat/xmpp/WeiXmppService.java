@@ -14,20 +14,22 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.common.WeiConstant.CommandBroadcast;
+import com.tcl.wechat.common.WeiConstant.CommandAction;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.AppInfoDao;
 import com.tcl.wechat.db.DeviceDao;
 import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.modle.AppInfo;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.DeviceInfo;
+import com.tcl.wechat.modle.QrInfo;
 import com.tcl.wechat.modle.WeiNotice;
-import com.tcl.wechat.modle.WeiRemoteBind;
-import com.tcl.wechat.modle.WeiXinMsg;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.receiver.ConnectionChangeReceiver;
 import com.tcl.wechat.utils.BaseUIHandler;
-import com.tcl.wechat.utils.CommonsFun;
 import com.tcl.wechat.utils.NanoHTTPD;
-import com.tcl.wechat.utils.SystemShare.SharedEditer;
+import com.tcl.wechat.utils.SystemInfoUtil;
+import com.tcl.wechat.utils.ToastUtil;
 
 /**
  * @ClassName: WeiXmppService
@@ -36,7 +38,7 @@ import com.tcl.wechat.utils.SystemShare.SharedEditer;
 public class WeiXmppService extends Service{
 	
 	
-	private static final String TAG = "WeiXmppService";
+	private static final String TAG = WeiXmppService.class.getSimpleName();
 
 	
 	private ICallback iCallback = null;
@@ -59,11 +61,10 @@ public class WeiXmppService extends Service{
 	public void onCreate() {
 		super.onCreate();
 		
-		//初始化设备信息
-		initDeviceDao();
+		initDao();
 		
 		//获取当前系统内存配置
-		CommonsFun.getConfigure();
+		SystemInfoUtil.getConfigure();
 	
 		WeiXmppManager.getInstance().setmHandler(mHandler);
 		WeiXmppManager.getInstance().setmContext(this);
@@ -88,7 +89,7 @@ public class WeiXmppService extends Service{
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		flags = START_STICKY;
 		//开启服务登陆服务器
-		if (isRegister()){
+		if (WeiXmppManager.getInstance().isRegister()){
 			WeiXmppManager.getInstance().login();
 		} else {
 			WeiXmppManager.getInstance().register();
@@ -104,6 +105,43 @@ public class WeiXmppService extends Service{
 		}
 		return super.onStartCommand(intent, flags, startId);
 	}
+	
+	/**
+	 * 实例化数据库
+	 */
+	private void initDao(){
+		if (!WeiXmppManager.getInstance().isRegister()){
+			
+			//初始化二维码数据库
+			String uuidStr = WeiQrDao.getInstance().getUUID();
+			if (TextUtils.isEmpty(uuidStr) || uuidStr.equalsIgnoreCase("")){
+				uuidStr = "";
+				UUID uuid = UUID.randomUUID();
+				String arrayStr[] = uuid.toString().split("-");
+			    for(int i = 0; i < arrayStr.length; i++){
+			    	uuidStr = uuidStr + arrayStr[i];
+			    }	
+			    QrInfo qrInfo = new QrInfo("", uuidStr);
+			    if (!WeiQrDao.getInstance().addQr(qrInfo)){
+			    	Log.e(TAG, "updateUuid ERROR!!");
+			    }
+			} 
+			
+			//初始化设备数据库
+			String macAddr = DeviceDao.getInstance().getMACAddr();
+			String deviceId = DeviceDao.getInstance().getDeviceId();
+			if (TextUtils.isEmpty(macAddr) || macAddr.equalsIgnoreCase("") ||
+					TextUtils.isEmpty(deviceId) || deviceId.equalsIgnoreCase("")){
+				macAddr = SystemInfoUtil.getMacAddr();
+				deviceId = SystemInfoUtil.getDeviceId();
+				DeviceInfo deviceInfo = new DeviceInfo(deviceId, macAddr, null);
+				if (!DeviceDao.getInstance().addDeviceInfo(deviceInfo)){
+					Log.e(TAG, "addDeviceInfo ERROR!!");
+				}
+			}
+		}
+	}
+	
 	
 	@Override
 	public void onDestroy() {
@@ -121,30 +159,11 @@ public class WeiXmppService extends Service{
 
 	
 	/**
-	 * 实例化设备数据库
-	 */
-	private void initDeviceDao(){
-		String uuidStr = null;
-		String memeberid = DeviceDao.getInstance().getMemberId();
-		Log.i(TAG, "memeberid = " + memeberid);
-		
-		//判断当前用户是否生有用户号，如有，代表老用户，uuid置为空，否则生成uuid并保存数据库；
-		if (TextUtils.isEmpty(memeberid)){
-			UUID uuid = UUID.randomUUID();
-			String arrayStr[] = uuid.toString().split("-");
-			for(int i = 0; i<arrayStr.length; i++){
-				uuidStr += arrayStr[i];
-		    }	
-			WeiQrDao.getInstance().updateUuid(uuidStr);
-		}
-	}
-	
-	/**
 	 * 添加App信息
 	 */
 	public void addAppInfo(){
 		try {
-			ArrayList<AppInfo> systemAppList = CommonsFun.getSystemApp(this);
+			ArrayList<AppInfo> systemAppList = SystemInfoUtil.getSystemApp(this);
 			if (AppInfoDao.getInstance().getAppCount() > 0){
 				return ;
 			}
@@ -162,21 +181,8 @@ public class WeiXmppService extends Service{
 	}
 	
 	/**
-	 * 判断当前用户是否注册
-	 */
-	private boolean isRegister(){
-		boolean flag = false;
-		String memberId = WeiXmppManager.getInstance().getMemberid();
-		if (!TextUtils.isEmpty(memberId)){
-			Log.i(TAG, "The memberId: " + memberId + " has been registered!");
-			return true;
-		}
-		return flag;
-	}
-	
-	/**
 	 * @Fields mHandler : 实例化一个hander,负责处理相关推送消息	
-    */
+	 */
 	private BaseUIHandler mHandler = new BaseUIHandler(){
 
 		@Override
@@ -189,31 +195,22 @@ public class WeiXmppService extends Service{
 			switch (m.what) {
 			
 			/**
-			 * 注册返回设备id
+			 * 注册成功
 			 */
 			case CommandType.COMMAND_REGISTER: 
-				Log.d(TAG, "=====================register successfully===============");
-				//存储memberid到数据库
-				String memberid = (String)this.getData();
-				if (!TextUtils.isEmpty(memberid)){
-					if (DeviceDao.getInstance().updateMemberId(memberid)){
-						WeiXmppManager.getInstance().setMemberid(memberid);
-						//注册成功并成功写入数据库后，直接登陆
-						Log.d(TAG, "=====================start login===============");
-						WeiXmppManager.getInstance().login();
-					}
-				}
+				WeiXmppManager.getInstance().login();
 				break;
 				
 			/**
-			 * 登陆成功返回
+			 * 登陆成功
 			 */
 			case CommandType.COMMAND_LOGIN: 
 				Log.d(TAG, "=====================login  successfully===============");
-				Toast.makeText(WeiXmppService.this, "WebChat Login Success", Toast.LENGTH_LONG).show();
+				ToastUtil.showToast("login  successfully");
 				
-				intent = new Intent(CommandBroadcast.LOGIN_SUCCESS);
+				intent = new Intent(CommandAction.ACTION_LOGIN_SUCCESS);
 				sendBroadcast(intent);
+				
 				//AIDL对外获取长连接回调			 
 				if (WeiXmppManager.getInstance().getConnection()!=null && iCallback !=null){
 					try {
@@ -231,11 +228,12 @@ public class WeiXmppService extends Service{
 			 */
 			case CommandType.COMMAND_GET_WEIXIN_MSG:
 				Log.d(TAG, "=====================client received message ===============");
-				WeiXinMsg weiXinMsg = (WeiXinMsg)msg.obj;
-				intent = new Intent(CommandBroadcast.GET_WEIXIN_MSG);
-				mBundle = new Bundle(); 
-				mBundle.putSerializable("weiXinMsg", weiXinMsg);
-				intent.putExtras(mBundle);
+//				Bundle b = (Bundle) msg.obj;
+//				WeiXinMsg weiXinMsg = b.getParcelable("weiXinMsg");
+				intent = new Intent(CommandAction.ACTION_RECEIVE_WEIXIN_MSG);
+//				mBundle = new Bundle(); 
+//				mBundle.putParcelable("weiXinMsg", weiXinMsg);
+				intent.putExtras((Bundle) msg.obj);
 				sendBroadcast(intent);
 				break;
 				 
@@ -245,7 +243,7 @@ public class WeiXmppService extends Service{
 			case CommandType.COMMAND_GET_WEIXIN_NOTICE:
 				 Log.d(TAG, "=====================client received Bind message ===============");
 				 WeiNotice weiNotice  = (WeiNotice)this.getData();
-				 intent = new Intent(CommandBroadcast.GET_WEIXIN_NOTICE);
+				 intent = new Intent(CommandAction.ACTION_RECEIVE_WEIXIN_NOTICE);
 				 mBundle = new Bundle(); 
 				 mBundle.putSerializable("weiNotice", weiNotice);
 				 intent.putExtras(mBundle);
@@ -257,31 +255,33 @@ public class WeiXmppService extends Service{
 			 */
 			case CommandType.COMMAND_GET_WEIXIN_CONTROL:
 				 Log.d(TAG, "=====================client received control message ===============");
-				 WeiXinMsg control  = (WeiXinMsg)this.getData();
-				 intent = new Intent(CommandBroadcast.COMMAND_GET_WEIXIN_CONTROL);
-				 mBundle = new Bundle(); 
-				 mBundle.putSerializable("control", control);
-				 intent.putExtras(mBundle);
-				 sendBroadcast(intent);
+//				 WeiXinMsg control  = (WeiXinMsg)this.getData();
+//				 intent = new Intent(CommandAction.ACTION_WEIXIN_CONTROL);
+//				 mBundle = new Bundle(); 
+//				 mBundle.putSerializable("control", control);
+//				 intent.putExtras(mBundle);
+//				 sendBroadcast(intent);
 				 break;
 			
 			case CommandType.COMMAND_GET_WEIXIN_APP:
 				Log.d(TAG, "=====================client received APP message ===============");
-				WeiXinMsg app  = (WeiXinMsg)this.getData();
-				intent = new Intent(CommandBroadcast.COMMAND_GET_WEIXIN_APP);
-				mBundle = new Bundle(); 
-				mBundle.putSerializable("app", app);
-				intent.putExtras(mBundle);
-				sendBroadcast(intent);
+//				WeiXinMsg app  = (WeiXinMsg)this.getData();
+//				intent = new Intent(CommandAction.ACTION_GET_WEIXIN_APP);
+//				mBundle = new Bundle(); 
+//				mBundle.putSerializable("app", app);
+//				intent.putExtras(mBundle);
+//				sendBroadcast(intent);
 				break;
 				 
 				 
 			case CommandType.COMMAND_REMOTEBINDER:
-				Log.d(TAG, "=====================client received remotebinder message ===============");
-				WeiRemoteBind weiRemoteBind  = (WeiRemoteBind)this.getData();
-				intent = new Intent(CommandBroadcast.COMMAND_REMOTEBINDER);
+				Log.d(TAG, "=============client received remotebinder message ===============");
+				
+				BindUser bindUser = (BindUser)this.getData();
+				Log.d(TAG, "=============bindUser：" + bindUser);
+				intent = new Intent(CommandAction.ACTION_REMOTEBINDER);
 				mBundle = new Bundle(); 
-				mBundle.putSerializable("remotebind", weiRemoteBind);
+				mBundle.putParcelable("bindUser", mBundle);
 				intent.putExtras(mBundle);
 				sendBroadcast(intent);
 				break;

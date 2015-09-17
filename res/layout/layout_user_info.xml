@@ -15,8 +15,8 @@
         custom:textSize="32sp"
         custom:textColor="@color/white"
         custom:textBackground="@android:color/transparent"
-    	custom:imageSrc="@drawable/big_big_head"
-    	custom:imageScaleType="center"/>
+    	custom:imageSrc="@drawable/default_personal_user_icon"
+    	custom:imageScaleType="centerInside"/>
  	
 <!--     <TextView  -->
 <!--         android:id="@+id/tv_personal_nickname" -->

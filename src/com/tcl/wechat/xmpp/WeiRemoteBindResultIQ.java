@@ -9,7 +9,7 @@ package com.tcl.wechat.xmpp;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.WeiRemoteBind;
+import com.tcl.wechat.modle.BindUser;
 
 /**
  * @ClassName: WeiNoticegResultIQ
@@ -19,7 +19,7 @@ public class WeiRemoteBindResultIQ extends IQ {
 	
 	private final String xml;
 	private String errorcode;
-	private WeiRemoteBind weiRemoteBind;
+	private BindUser bindUser;
   
 
 	public WeiRemoteBindResultIQ(final String xml) {
@@ -49,15 +49,15 @@ public class WeiRemoteBindResultIQ extends IQ {
 	/**
 	 * @return the WeiRemoteBind
 	 */
-	public WeiRemoteBind getWeiRemoteBind() {
-		return weiRemoteBind;
+	public BindUser getWeiRemoteBind() {
+		return bindUser;
 	}
 
 	/**
 	 * @param weiNotice the WeiRemoteBind to set
 	 */
-	public void setWeiRemoteBind(WeiRemoteBind weiRemoteBind) {
-		this.weiRemoteBind = weiRemoteBind;
+	public void setWeiRemoteBind(BindUser bindUser) {
+		this.bindUser = bindUser;
 	}
 
 	

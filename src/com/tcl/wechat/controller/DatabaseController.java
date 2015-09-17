@@ -8,7 +8,7 @@ import android.util.Log;
 import com.tcl.wechat.db.AppInfoDao;
 import com.tcl.wechat.db.DeviceDao;
 import com.tcl.wechat.db.WeiQrDao;
-import com.tcl.wechat.db.WeiRecordDao;
+import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
 
 /**
@@ -56,7 +56,7 @@ public class DatabaseController {
 		DeviceDao.initDeviceDao(mContext);
 		WeiQrDao.initWeiUserDao(mContext);
 		WeiUserDao.initWeiUserDao(mContext);
-		WeiRecordDao.initWeiRecordDao(mContext);
+		WeiMsgRecordDao.initWeiRecordDao(mContext);
 		
 		end = System.currentTimeMillis();
 		Log.d(TAG, "initDataBase end :" + new Date(end) + ",Take time：" + (end - start));

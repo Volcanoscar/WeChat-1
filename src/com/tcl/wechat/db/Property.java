@@ -2,39 +2,36 @@ package com.tcl.wechat.db;
 
 public class Property {
 
-	public static final String DATABASE_NAME = "wecaht.db";
+	public static final String DATABASE_NAME = "wechat.db";
 	
 	/**
 	 *  BindUser数据库
 	 */
-	public static final String TABLE_USER = "binduser";
+	public static final String TABLE_USER = "bindUser";
 	public static final String COLUMN_ID = "_id";
-	public static final String COLUMN_OPENID = "openId";
-	public static final String COLUMN_USERNAME = "userName";
-	public static final String COLUMN_NICKNAME = "nickName";
-	public static final String COLUMN_REMARKNAME = "remarkName";
+	public static final String COLUMN_OPENID = "openid";
+	public static final String COLUMN_NICKNAME = "nickname";
+	public static final String COLUMN_REMARKNAME = "remarkname";
 	public static final String COLUMN_USERSEX = "sex";
 	public static final String COLUMN_HEADIMAGE_URL = "headimageurl";
-	public static final String COLUMN_SIGNATURE_INFO = "signature";
-	public static final String COLUMN_NEWS_NUM = "newsNum";
+	public static final String COLUMN_NEWS_NUM = "newsnum";
 	public static final String COLUMN_STATUS = "status";
-	public static final String COLUMN_DATA1 = "data1";
-	public static final String COLUMN_DATA2 = "data2";
-	public static final String COLUMN_DATA3 = "data3";
+	public static final String COLUMN_REPLY = "reply";
 	
 	/**
 	 * UserRecord数据库
 	 */
-	public static final String TABLE_USERRECORD = "user_record";
+	public static final String TABLE_USERMSGRECORD = "userMsgRecord";
 	public static final String COLUMN_ACCESS_TOKENS = "accessToken";
-	public static final String COLUMN_MSGTYPE = "msgType";
+	public static final String COLUMN_MSGTYPE = "msg_type";
+	public static final String COLUMN_MSGID = "msgid";
 	public static final String COLUMN_CONTENT = "content";
-	public static final String COLUMN_IMAGE_URL = "imageurl";
+	public static final String COLUMN_URL = "imageurl";
 	public static final String COLUMN_FORMAT = "format";
-	public static final String COLUMN_MDDIAID = "mediaId";
-	public static final String COLUMN_HUMBMEDIAID = "humbmediaId";
-	public static final String COLUMN_CREATE_TIME = "createTime";
-	public static final String COLUMN_EXPIRETIME = "expireTime";
+	public static final String COLUMN_MDDIAID = "mediaid";
+	public static final String COLUMN_THUMBMEDIAID = "thumbmediaid";
+	public static final String COLUMN_CREATE_TIME = "create_time";
+	public static final String COLUMN_EXPIRETIME = "expire_time";
 	public static final String COLUMN_READED = "readed";
 	public static final String COLUMN_FILENAME = "fileName";
 	public static final String COLUMN_FILESIZE = "fileSize";
@@ -43,24 +40,26 @@ public class Property {
 	/**
 	 * AppInfo数据库
 	 */
-	public static final String TABLE_APPINFO = "appinfo";
-	public static final String COLUMN_APP_NAME = "appName";
-	public static final String COLUMN_PACKAGE_NAME = "packageName";
-	public static final String COLUMN_VERSION_CODE = "versionCode";
-	public static final String COLUMN_VERSION_NAME = "versionName";
+	public static final String TABLE_APPINFO = "appInfo";
+	public static final String COLUMN_APP_NAME = "appname";
+	public static final String COLUMN_PACKAGE_NAME = "packagename";
+	public static final String COLUMN_VERSION_CODE = "versioncode";
+	public static final String COLUMN_VERSION_NAME = "versionname";
 	public static final String COLUMN_MD5 = "md5";
 	
 	/**
 	 * device 数据库
 	 */
-	public static final String TABLE_DEVICE = "device";
-	public static final String COLUMN_MEMBERID = "memberId";
+	public static final String TABLE_DEVICE = "deviceInfo";
+	public static final String COLUMN_DEVICEID = "deviceid";
+	public static final String COLUMN_MAC = "mac";
+	public static final String COLUMN_MEMBERID = "memberid";
 	
 	
 	/**
 	 * QR二维码数据库
 	 */
-	public static final String TABLE_QR = "qrinfo";
+	public static final String TABLE_QR = "qrInfo";
 	public static final String COLUMN_QR_URL = "url";
 	public static final String COLUMN_UUID = "uuid";
 	
@@ -69,68 +68,58 @@ public class Property {
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_USER + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-            Property.COLUMN_OPENID + " VACHAR(100)," +
-            Property.COLUMN_USERNAME + " VACHAR(100)," +
-            Property.COLUMN_NICKNAME + " VACHAR(100)," +
-            Property.COLUMN_REMARKNAME+ " VACHAR(100)," +
-            Property.COLUMN_USERSEX + " VACHAR(50)," + 
-            Property.COLUMN_HEADIMAGE_URL + " VACHAR(500)," +
-            Property.COLUMN_SIGNATURE_INFO + " TEXT," +
-            Property.COLUMN_NEWS_NUM + " VACHAR(100)," +
-            Property.COLUMN_STATUS + " VACHAR(50)," +
-            Property.COLUMN_DATA1 + " VACHAR(100)," +
-            Property.COLUMN_DATA2 + " VACHAR(100)," +
-            Property.COLUMN_DATA3 + " VACHAR(100)" + ")";
+            Property.COLUMN_OPENID + " VACHAR(128)," +
+            Property.COLUMN_NICKNAME + " VACHAR(128)," +
+            Property.COLUMN_REMARKNAME+ " VACHAR(128)," +
+            Property.COLUMN_USERSEX + " VACHAR(64)," + 
+            Property.COLUMN_HEADIMAGE_URL + " TEXT," +
+            Property.COLUMN_NEWS_NUM + " VACHAR(128)," +
+            Property.COLUMN_STATUS + " VACHAR(64)," +
+            Property.COLUMN_REPLY + " VACHAR(64)" + ")";
 	
 	public static final String CREATE_TABLE_USERRECORD_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +
-			Property.TABLE_USERRECORD + "(" +
+			Property.TABLE_USERMSGRECORD + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-            Property.COLUMN_OPENID + " VACHAR(100)," +
-            Property.COLUMN_ACCESS_TOKENS + " VACHAR(100)," +
-            Property.COLUMN_MSGTYPE + " VACHAR(50)," +
+            Property.COLUMN_OPENID + " VACHAR(128)," +
+            Property.COLUMN_ACCESS_TOKENS + " VACHAR(128)," +
+            Property.COLUMN_MSGID + " VACHAR(128)," +
+            Property.COLUMN_MSGTYPE + " VACHAR(64)," +
             Property.COLUMN_CONTENT + " TEXT," +
-            Property.COLUMN_IMAGE_URL + " TEXT," + 
-            Property.COLUMN_FORMAT + " VACHAR(50)," +
-            Property.COLUMN_MDDIAID + " VACHAR(100)," +
-            Property.COLUMN_HUMBMEDIAID + " VACHAR(500)," +
-            Property.COLUMN_CREATE_TIME + " REAL," +
-            Property.COLUMN_EXPIRETIME + " REAL," +
-            Property.COLUMN_READED + " VACHAR(20)," +
+            Property.COLUMN_URL + " TEXT," + 
+            Property.COLUMN_FORMAT + " VACHAR(64)," +
+            Property.COLUMN_MDDIAID + " VACHAR(128)," +
+            Property.COLUMN_THUMBMEDIAID + " TEXT," +
+            Property.COLUMN_CREATE_TIME + " VACHAR(32)," +
+            Property.COLUMN_EXPIRETIME + " VACHAR(32)," +
+            Property.COLUMN_READED + " VACHAR(32)," +
             Property.COLUMN_FILENAME + " TEXT," + 
             Property.COLUMN_FILESIZE + " INTEGER," +
-            Property.COLUMN_FILETIME + " REAL," +
-            Property.COLUMN_DATA1 + " VACHAR(100)," +
-            Property.COLUMN_DATA2 + " VACHAR(100)," +
-            Property.COLUMN_DATA3 + " VACHAR(100)" + ")";
+            Property.COLUMN_FILETIME + " REAL" + ")";
 	
 	public static final String CREATE_TABLE_APPINFO_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_APPINFO + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 			Property.COLUMN_APP_NAME + " VACHAR(50)," +
-		    Property.COLUMN_PACKAGE_NAME + " VACHAR(100)," +
-		    Property.COLUMN_VERSION_CODE + " VACHAR(100)," +
-		    Property.COLUMN_VERSION_NAME + " VACHAR(50)," +
-		    Property.COLUMN_MD5+ " TEXT," +
-		    Property.COLUMN_DATA1 + " VACHAR(100)," +
-		    Property.COLUMN_DATA2 + " VACHAR(100)," +
-		    Property.COLUMN_DATA3 + " VACHAR(100)" + ")";
+		    Property.COLUMN_PACKAGE_NAME + " VACHAR(128)," +
+		    Property.COLUMN_VERSION_CODE + " VACHAR(128)," +
+		    Property.COLUMN_VERSION_NAME + " VACHAR(64)," +
+		    Property.COLUMN_MD5 + " TEXT " + ")";
 	
 	public static final String CREATE_TABLE_DEVICE_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_DEVICE + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-		    Property.COLUMN_MEMBERID + " VACHAR(100)" + ")";
+			Property.COLUMN_DEVICEID + " VACHAR(128)," +
+			Property.COLUMN_MAC + " VACHAR(64)," +
+		    Property.COLUMN_MEMBERID + " VACHAR(128)" + ")";
 	
 	public static final String CREATE_TABLE_QR_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +
 			Property.TABLE_QR + "(" +
 			Property.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 		    Property.COLUMN_QR_URL + " TEXT," +
-		    Property.COLUMN_UUID + " VACHAR(100)," +
-		    Property.COLUMN_DATA1 + " VACHAR(100)," +
-		    Property.COLUMN_DATA2 + " VACHAR(100)," +
-		    Property.COLUMN_DATA3 + " VACHAR(100)" + ")";
+		    Property.COLUMN_UUID + " VACHAR(128)" + ")";
 	
 }

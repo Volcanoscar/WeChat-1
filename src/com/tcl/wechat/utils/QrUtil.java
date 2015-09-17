@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.widget.ImageView;
 
 import com.tcl.wechat.encoder.QRCodeCreator;
 
@@ -28,8 +27,8 @@ public class QrUtil {
 	 * @param img
 	 * @param content
 	 */
-	public void createQRCode(ImageView img, String content){
-		createQRCode(img, content, null);
+	public Bitmap createQRCode(String content){
+		return createQRCode( content, null);
 	}
 	
 	/**
@@ -37,26 +36,24 @@ public class QrUtil {
 	 * @param content
 	 * @param resId
 	 */
-	public void createQRCode(ImageView img, String content, int resId){
-		if (img == null){
-			return ;
-		}
+	public Bitmap createQRCode(String content, int resId){
 		//获取个人图像
 		Bitmap icon = BitmapFactory.decodeResource(
 				mResources, resId);
-		createQRCode(img, content, icon);
+		return createQRCode(content, icon);
 	}
 	
 	/**
 	 * 生成二维码名片
 	 * @param content
 	 */
-	public void createQRCode(ImageView img, String content, Bitmap centerIcon){
+	public Bitmap createQRCode(String content, Bitmap centerIcon){
+		
 		//产生二维码名片
-		Bitmap qRCodeBitmap = QRCodeCreator.create(content, 450);
+		Bitmap qRCodeBitmap = QRCodeCreator.create(content, 600);
 		
 		//二维码进行缩放
-		centerIcon = ImageUtil.getInstance().zoomBitmap(centerIcon,50, 50);
+		centerIcon = ImageUtil.getInstance().zoomBitmap(centerIcon,60, 60);
 		
 		//合并二维码与个人图像
 		Bitmap bitmap = Bitmap.createBitmap(
@@ -75,6 +72,6 @@ public class QrUtil {
  					(qRCodeBitmap.getHeight() - centerIcon.getHeight()) / 2, 
  					null);
  		}
-		img.setImageBitmap(bitmap);
+ 		return bitmap;
 	}
 }

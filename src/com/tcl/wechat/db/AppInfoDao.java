@@ -44,7 +44,7 @@ public class AppInfoDao
 		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.query(Property.TABLE_APPINFO, null, null, null, null, null, null);
 		if (cursor != null ){
-			int count = cursor.getColumnCount();
+			int count = cursor.getCount();
 			cursor.close();
 			return count;
 		}
@@ -84,7 +84,7 @@ public class AppInfoDao
 		String[] selectionArgs = new String[]{packageName};
 		Cursor cursor = db.query(Property.TABLE_APPINFO, null, selection, selectionArgs, null, null, null);
 		if (cursor != null && cursor.moveToFirst()){
-			String appName = cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_PACKAGE_NAME));
+			String appName = cursor.getString(cursor.getColumnIndex(Property.COLUMN_PACKAGE_NAME));
 			cursor.close();
 			return appName;
 		}

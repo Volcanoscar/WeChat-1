@@ -6,6 +6,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 
+
 /**
  * 根据消息的不同类型，绘制不同的控件
  * 	主要适用于Launcher 和 家庭留言板首页消息提示框使用

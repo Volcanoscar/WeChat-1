@@ -5,6 +5,16 @@
     <string name="main_title">微信留言板</string>
     <string name="reply">&#160;回&#160;&#160;复&#160;</string>
     
+    <string name="notwork_not_available">网络不可用!</string>
+    <string name="register">开始注册用户</string>
+    <string name="register_success">注册成功</string>
+    <string name="register_failed">注册失败</string>
+    <string name="login">开始登陆&#160;</string>
+    <string name="login_success">登录成功</string>
+    <string name="login_failed">登录失败</string>
+    
+    
+    
     <!-- 主界面 -->
     <string name="add">添加</string>
     <string name="myfriend">我的好友</string>

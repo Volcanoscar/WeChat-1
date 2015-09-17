@@ -1,24 +1,16 @@
 package com.tcl.wechat.utils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.style.ImageSpan;
 import android.util.Log;
 
 
 public class ExpressionUtil {
 	
-	private  final static String TAG = "ExpressUtil";
+	private  final static String TAG = ExpressionUtil.class.getSimpleName();
 	
 	/**
 	 * 对spanableString进行正则判断，如果符合要求，则以表情图片代替

@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.tcl.wechat.modle.BindUser;
-import com.tcl.wechat.modle.WeiXinMsg;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
 
 
 public class ProviderFun {
@@ -99,9 +99,9 @@ public class ProviderFun {
 	 public static List<BindUser> getUserList(Context mContext){
 		return WeiUserDao.getInstance().getAllUsers();
 	 }
-	 public static List<WeiXinMsg> getRecordList(Context mContext) 
+	 public static List<WeiXinMsgRecorder> getRecordList(Context mContext) 
 		{
-			List<WeiXinMsg> msgList = new ArrayList<WeiXinMsg>();
+			List<WeiXinMsgRecorder> msgList = new ArrayList<WeiXinMsgRecorder>();
 			 try {
 					Cursor c = mContext.getContentResolver().query(MyUsers.CONTENT_RECORD, null, null,
 					     null, null);
@@ -111,11 +111,11 @@ public class ProviderFun {
 						return null;
 					}
 					do{
-						WeiXinMsg object = new WeiXinMsg();
+						WeiXinMsgRecorder object = new WeiXinMsgRecorder();
 						object.setOpenid(c.getString(c.getColumnIndex("openid")));
 						object.setMsgtype(c.getString(c.getColumnIndex("msgtype")));
 						object.setContent(c.getString(c.getColumnIndex("content")));
-						object.setUrl(c.getString(c.getColumnIndex("url")));
+						object.setUrl(c.getString(c.getColumnIndex("imageurl")));
 						object.setFormat(c.getString(c.getColumnIndex("format")));
 						object.setCreatetime(c.getString(c.getColumnIndex("createtime")));
 						object.setAccesstoken(c.getString(c.getColumnIndex("accesstoken")));

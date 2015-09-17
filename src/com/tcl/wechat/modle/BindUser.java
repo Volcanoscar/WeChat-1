@@ -1,24 +1,31 @@
-/* 
-* -------------------------------------------------------------
- * Copyright (c) 2011 TCL, All Rights Reserved.
- * ---------------------------------------------------------
- * @author:zhangjunjian
- * @version V1.0
- */
 package com.tcl.wechat.modle;
 
-/**
- * @ClassName: BinderUser
- */
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class BindUser {
+/**
+ * 绑定用户
+ * @author rex.lei
+ *
+ */
+public class BindUser implements Parcelable{
 	
-	private String openId;		//用户编号
-	private String userName;	//用户账号
+	private String openId;		//微信用户标识
 	private String nickName;	//用户昵称
 	private String remarkName;	//备注名称
-	private String sex ;		//用户性别
-	private String headimageurl;//用户头像存储地址
+	/**
+	 * 性别，1 :男
+	 * 		2 :女
+	 *      0 :未知,标识公众号
+	 */
+	private String sex ;		
+	
+	/**
+	 * 用户头像
+	 * 		最后一个数值代表正方形头像大小（有0、46、64、96、132数值可选，0代表640*640正方形头像），用户没有头像时该项为空
+	 * 		比如：http://wx.qlogo.cn/mmopen/Vw948POqJQ8qP7qIhH4/0
+	 */
+	private String headImageUrl;//用户头像存储地址
 	private String newsNum;		//消息个数
 	/**
 	 * success 绑定成功，收到请求绑定
@@ -27,23 +34,76 @@ public class BindUser {
 	 */
 	private String status;
 	
+	/**
+	 * 服务器回复
+	 * 		disallow：不允许用户加入
+	 * 		allow：
+	 */
+	private String reply;
+	
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(openId);
+		dest.writeString(nickName);
+		dest.writeString(remarkName);
+		dest.writeString(sex);
+		dest.writeString(headImageUrl);
+		dest.writeString(newsNum);
+		dest.writeString(status);
+		dest.writeString(reply);
+	}
+	
+	public static Parcelable.Creator<BindUser> CREATOR = new Creator<BindUser>() {
+
+		@Override
+		public BindUser createFromParcel(Parcel source) {
+			// TODO Auto-generated method stub
+			return new BindUser(source);
+		}
+
+		@Override
+		public BindUser[] newArray(int size) {
+			// TODO Auto-generated method stub
+			return new BindUser[size];
+		}
+	};
+	
 	
 	public BindUser() {
 		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	public BindUser(Parcel source) {
+		super();
+		this.openId = source.readString();
+		this.nickName = source.readString();
+		this.remarkName = source.readString();
+		this.sex = source.readString();
+		this.headImageUrl = source.readString();
+		this.newsNum = source.readString();
+		this.status = source.readString();
+		this.reply = source.readString();
 	}
 
-	public BindUser(String openId, String userName, String nickName,
-			String remarkName, String sex, String headimageurl, String newsNum,
-			String status) {
+	public BindUser(String openId, String nickName, String remarkName,
+			String sex, String headImageUrl, String newsNum, String status,
+			String reply) {
 		super();
 		this.openId = openId;
-		this.userName = userName;
 		this.nickName = nickName;
 		this.remarkName = remarkName;
 		this.sex = sex;
-		this.headimageurl = headimageurl;
+		this.headImageUrl = headImageUrl;
 		this.newsNum = newsNum;
 		this.status = status;
+		this.reply = reply;
 	}
 
 	public String getOpenId() {
@@ -52,14 +112,6 @@ public class BindUser {
 
 	public void setOpenId(String openId) {
 		this.openId = openId;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
 	}
 
 	public String getNickName() {
@@ -86,12 +138,12 @@ public class BindUser {
 		this.sex = sex;
 	}
 
-	public String getHeadimageurl() {
-		return headimageurl;
+	public String getHeadImageUrl() {
+		return headImageUrl;
 	}
 
-	public void setHeadimageurl(String headimageurl) {
-		this.headimageurl = headimageurl;
+	public void setHeadImageUrl(String headImageUrl) {
+		this.headImageUrl = headImageUrl;
 	}
 
 	public String getNewsNum() {
@@ -110,11 +162,19 @@ public class BindUser {
 		this.status = status;
 	}
 
+	public String getReply() {
+		return reply;
+	}
+
+	public void setReply(String reply) {
+		this.reply = reply;
+	}
+
 	@Override
 	public String toString() {
-		return "BinderUser [openId=" + openId + ", userName=" + userName
-				+ ", nickName=" + nickName + ", remarkName=" + remarkName
-				+ ", sex=" + sex + ", headimageurl=" + headimageurl
-				+ ", newsNum=" + newsNum + ", status=" + status + "]";
+		return "BindUser [openId=" + openId + ", nickName=" + nickName
+				+ ", remarkName=" + remarkName + ", sex=" + sex
+				+ ", headImageUrl=" + headImageUrl + ", newsNum=" + newsNum
+				+ ", status=" + status + ", reply=" + reply + "]";
 	}
 }

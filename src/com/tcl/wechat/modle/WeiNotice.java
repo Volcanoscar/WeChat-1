@@ -15,6 +15,8 @@ import java.io.Serializable;
 
 public class WeiNotice implements Serializable{
 	
+	private static final long serialVersionUID = 3904919754698238665L;
+	
 	/**事件类型包括绑定（bind）、解除绑定（unbind）*/
 	private String event;
 	/**微信用户标识*/

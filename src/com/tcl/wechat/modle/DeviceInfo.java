@@ -7,17 +7,19 @@ package com.tcl.wechat.modle;
  */
 public class DeviceInfo {
 	private String deviceId;
-	private String deviceName;
+	private String macAddr;
+	private String memberId;
 	
-	private DeviceInfo() {
+	public DeviceInfo() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	
-	private DeviceInfo(String deviceId, String deviceName) {
+
+	public DeviceInfo(String deviceId, String macAddr, String memberId) {
 		super();
 		this.deviceId = deviceId;
-		this.deviceName = deviceName;
+		this.macAddr = macAddr;
+		this.memberId = memberId;
 	}
 
 	public String getDeviceId() {
@@ -28,17 +30,25 @@ public class DeviceInfo {
 		this.deviceId = deviceId;
 	}
 
-	public String getDeviceName() {
-		return deviceName;
+	public String getMacAddr() {
+		return macAddr;
 	}
 
-	public void setDeviceName(String deviceName) {
-		this.deviceName = deviceName;
+	public void setMacAddr(String macAddr) {
+		this.macAddr = macAddr;
+	}
+
+	public String getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
 	}
 
 	@Override
 	public String toString() {
-		return "DeviceInfo [deviceId=" + deviceId + ", deviceName="
-				+ deviceName + "]";
+		return "DeviceInfo [deviceId=" + deviceId + ", macAddr=" + macAddr
+				+ ", memberId=" + memberId + "]";
 	}
 }

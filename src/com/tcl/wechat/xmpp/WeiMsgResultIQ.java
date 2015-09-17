@@ -9,7 +9,7 @@ package com.tcl.wechat.xmpp;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.WeiXinMsg;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
 
 /**
  * @ClassName: WeiMsgResultIQ
@@ -19,7 +19,7 @@ public class WeiMsgResultIQ extends IQ {
 	
 	private final String xml;
 	private String errorcode;
-	private WeiXinMsg weiXinMsg;
+	private WeiXinMsgRecorder weiXinMsg;
   
 
 	public WeiMsgResultIQ(final String xml) {
@@ -49,14 +49,14 @@ public class WeiMsgResultIQ extends IQ {
 	/**
 	 * @return the weiXinMsg
 	 */
-	public WeiXinMsg getWeiXinMsg() {
+	public WeiXinMsgRecorder getWeiXinMsg() {
 		return weiXinMsg;
 	}
 
 	/**
 	 * @param weiXinMsg the weiXinMsg to set
 	 */
-	public void setWeiXinMsg(WeiXinMsg weiXinMsg) {
+	public void setWeiXinMsg(WeiXinMsgRecorder weiXinMsg) {
 		this.weiXinMsg = weiXinMsg;
 	}
 

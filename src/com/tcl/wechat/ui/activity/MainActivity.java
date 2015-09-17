@@ -3,11 +3,14 @@ package com.tcl.wechat.ui.activity;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,45 +19,59 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.modle.UserRecord;
-import com.tcl.wechat.test.RecordDao;
-import com.tcl.wechat.test.User;
-import com.tcl.wechat.test.UserDao;
+import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.db.WeiMsgRecordDao;
+import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.view.MyFriendGroupView;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 
 /**
  * 主界面Activity
  * @author rex.lei
+ * 
+ * 	//TODO  加入检测更新机制
  *
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements WeiConstant{
 
 	private static final String TAG = "MainActivity";
 	
+	private static final int MSG_UPDATE_SYSTEMUSER = 0x01;//更新系统用户头像
+	private static final int MSG_UPDATE_FRIENDLIST = 0x02;//更新用户列表信息
+	
 	private Context mContext;
 	
-	private UserInfoView mUserInfo;
+	private UserInfoView mSystemUserInfo;
 	private UserInfoView mAddFriend;
 	private TextView mMyFriendWord;
 	private TextView mMyFamilyBoardWord;
 	
-	/**
-	 * 好友模块
-	 */
-	private ArrayList<User> mAllUsers;
+	private MyFriendGroupView mFriendGroupView;
+	private HorizontalScrollView mHorizontalScrollView;
 	
 	/**
-	 * 留言板模块
+	 * 系统用户
 	 */
-	private HashMap<String, ArrayList<UserRecord>> mAllUserRecords;
+	private BindUser mSystemUser;
+	/**
+	 * 绑定好友用户列表
+	 */
+	private ArrayList<BindUser> mAllFirendUsers;
 	
 	
+	/**
+	 * 工具类
+	 */
+	private DataFileTools mDataFileTools;
 	
-	private Handler timeHandler = new Handler();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +85,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		mContext = MainActivity.this;
+		mDataFileTools = DataFileTools.getInstance();
 		
-//		initData();
+		initData();
 		initView();
 	}
 	
@@ -81,76 +99,206 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+
+	/**
+	 * 初始化数据
+	 */
 	private void initData() {
-		Log.i(TAG, "initData-->>");
-		test();
+		
+		registerBroadcast();
+		
+		//加载信息
+		loadBindUserData();
+		
+		//加载留言板信息
+		loadMsgBoardData();
+		
+	}
+	
+	/**
+	 * 注册广播
+	 */
+	private void registerBroadcast() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(CommandAction.ACTION_UPDATE_BINDUSER);
+		registerReceiver(receiver, filter);
+	}
+	
+	/**
+	 * 广播接收器
+	 */
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (CommandAction.ACTION_UPDATE_BINDUSER.equals(action)){
+				//更新绑定用户
+				updateUserInfo();
+			}
+		}
+	};
+	
+	/**
+	 * 更新用户信息
+	 */
+	private void updateUserInfo() {
+		mHandler.sendEmptyMessage(MSG_UPDATE_SYSTEMUSER);
+		mHandler.sendEmptyMessage(MSG_UPDATE_FRIENDLIST);
+	}
+	
+	/**
+	 * 更新用户头像
+	 */
+	private void updateUserIcon(){
+		
+		if (mSystemUser != null){
+			Bitmap userIcon = mDataFileTools.getBindUserIcon(mSystemUser.getHeadImageUrl());
+			mSystemUserInfo.setUserIcon(userIcon, true);
+			
+			if (mSystemUser.getRemarkName() != null){
+				mSystemUserInfo.setUserName(mSystemUser.getRemarkName());
+			} else {
+				mSystemUserInfo.setUserName(mSystemUser.getNickName());
+				WeiUserDao.getInstance().updateRemarkName(mSystemUser.getOpenId(), 
+						mSystemUser.getNickName());
+			}
+		}
 	}
 
-	private void initView() {
-		mUserInfo = (UserInfoView) findViewById(R.id.user_info);
-		mAddFriend = (UserInfoView) findViewById(R.id.add_fiend);
+	/**
+	 * 加载绑定用户信息
+	 */
+	private void loadBindUserData() {
+		ArrayList<BindUser> allUsers = WeiUserDao.getInstance().getAllUsers();
 		
-		mUserInfo.setUserIconClickListener(new UserIconClickListener() {
+//		//for test:
+//		BindUser bindUser = new BindUser("oUOM9wQ-iKPxMarfsO6vTdpMWK2Q", 
+//				"TCL系统账号", 
+//				"TCL系统账号", 
+//				"0", 
+//				"http://wechat.dev.tventry.com/wechatwebservice/images/tg_logo.jpg", 
+//				null, 
+//				null, 
+//				null);
+//		for (int i = 1; i < 11; i++) {
+//			allUsers.add(bindUser);
+//		}
+//		
+		
+		if (allUsers == null || allUsers.isEmpty()){
+			Log.d(TAG, "NO BindUser!!");
+			return ;
+		}
+		
+		mSystemUser = allUsers.get(0);
+		mAllFirendUsers = new ArrayList<BindUser>();
+		if (allUsers.size() > 0){
+			for (int i = 1; i < allUsers.size(); i++) {
+				mAllFirendUsers.add(allUsers.get(i));
+			}
+		}
+		
+		Log.i(TAG, "mSystemUser:" + mSystemUser);
+		Log.i(TAG, "mAllFirendUsers:" + mAllFirendUsers.toString());
+		
+	}
+	
+	/**
+	 *加载留言板信息 
+	 */
+	private void loadMsgBoardData() {
+		/*if (mAllFirendUsers == null ){
+			return ;
+		}
+		mAllMsgRecords = new HashMap<String, ArrayList<WeiXinMsgRecorder>>();
+		int userCount = mAllFirendUsers.size();
+		for (int i = 0; i < userCount; i++) {
+			String openId = mAllFirendUsers.get(i).getOpenId();
+			ArrayList<WeiXinMsgRecorder> recorders = WeiMsgRecordDao.getInstance()
+					.getUserRecorder(openId);
+			mAllMsgRecords.put(openId, recorders);
+		}*/
+		
+	}
+
+	/**
+	 * 加载View
+	 */
+	private void initView() {
+		mSystemUserInfo = (UserInfoView) findViewById(R.id.uv_system_user_info);
+		mAddFriend = (UserInfoView) findViewById(R.id.uv_add_fiend);
+		
+		mSystemUserInfo.setUserIconClickListener(new UserIconClickListener() {
 			
 			@Override
 			public void onClick(View view) {
-				Intent intent = new Intent(mContext, PersonalInfoActivity.class);
-				startActivity(intent);
+				if (mSystemUser != null){
+					Intent intent = new Intent(mContext, PersonalInfoActivity.class);
+					intent.putExtra("BindUser", mSystemUser);
+					startActivity(intent);
+				}
 			}
 		});
-		mUserInfo.setUserIcon(BitmapFactory.decodeResource(getResources(), 
-				R.drawable.big_head));
-		mUserInfo.setUserName("Rex");
 		
 		mAddFriend.setUserIconClickListener(new UserIconClickListener() {
 			
 			@Override
 			public void onClick(View view) {
 				// TODO Auto-generated method stub
-				Log.i(TAG, "onClick To AddFriend-->>");
 				Intent intent = new Intent(mContext, AddFriendActivity.class);
+				intent.putExtra("BindUser", mSystemUser);
 				startActivity(intent);
 			}
 		});
 		
+		
+
+		/**
+		 * 好友列表布局
+		 */
+		mFriendGroupView = (MyFriendGroupView) findViewById(R.id.friendgroup);
+		mHorizontalScrollView = (HorizontalScrollView) findViewById(R.id.horizontalSV);
+		mFriendGroupView.setScrollView(mHorizontalScrollView);
+		if (mAllFirendUsers != null && !mAllFirendUsers.isEmpty()){
+			mFriendGroupView.setData(mAllFirendUsers);
+		}
+		//更新用户信息
+		updateUserIcon();
+		
+		
+		/**
+		 * 留言板布局
+		 */
 		mMyFriendWord = (TextView)findViewById(R.id.myfriend_word);
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
 		
+		
+		
+		
+		//字体
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
-		
 	}
 
-	/**
-	 * 请求用户数据
-	 */
-	private void test() {
+	
+	@SuppressLint("HandlerLeak") 
+	private Handler mHandler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			Log.i(TAG, "handleMessage:" + MSG_UPDATE_SYSTEMUSER);
+			switch (msg.what) {
+			case MSG_UPDATE_SYSTEMUSER:
+				//重新加载一次用户信息，防止在网络不通的情况下，获取用户信息失败;或者用户信息已更新
+				loadBindUserData();
+				updateUserIcon();
+				break;
 
-		// TODO Auto-generated method stub
-		UserDao userDao = UserDao.getInstance(mContext);
-//		for (int i = 0; i < 5; i++) {
-//			User user = new User("" + i, "adjhk" + i, null, null, "男", null, null, null, null);
-//			userDao.addUser(user);
-//		}
-		mAllUsers = userDao.getAllUsers();
-		
-		
-		RecordDao recordDao = RecordDao.getInstance(mContext);
-//		for (int i = 0; i < 5; i++) {
-//			UserRecord record = new UserRecord("" + i, null, "0", getResources().getString(R.string.test),
-//					null, null, null, null, 0 ,0, null, null, 0, 0);
-//			recordDao.addRecord(record);
-//		}
-		mAllUserRecords = new HashMap<String, ArrayList<UserRecord>>();
-		for (int i = 0; i < mAllUsers.size(); i++) {
-			mAllUserRecords.put(mAllUsers.get(i).getOpenId(), recordDao.getAllUserRecord(mAllUsers.get(i).getOpenId()));
-		}
-		
-		Log.i(TAG, "users:" + mAllUsers);
-		for (int i = 0; i < mAllUserRecords.size(); i++) {
-			Log.i(TAG, "UserRecord:" + mAllUserRecords.get("" + i));
-		}
-	}
+			default:
+				break;
+			}
+			
+		};
+	};
 	
 	
 	/**

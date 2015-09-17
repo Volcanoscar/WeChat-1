@@ -7,21 +7,20 @@
     android:orientation="horizontal" >
     
     <com.tcl.wechat.view.UserInfoView
-		android:id="@+id/user_info"
+		android:id="@+id/uv_system_user_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_gravity="center"
         android:paddingLeft="20dp"
-        custom:textTitle="HHAH"
+        custom:textTitle=""
         custom:textSize="16sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
-        custom:imageSrc="@drawable/big_head"
-        custom:imageBackground="@drawable/add_bg"
+        custom:imageSrc="@drawable/head_user_icon"
         custom:imageScaleType="centerInside"/>
     
     <com.tcl.wechat.view.UserInfoView 
-        android:id="@+id/add_fiend"
+        android:id="@+id/uv_add_fiend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_gravity="center"
@@ -30,8 +29,7 @@
         custom:textSize="14sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/add_friend"
-        custom:imageSrc="@drawable/add"
-        custom:imageBackground="@drawable/add_bg"
+        custom:imageSrc="@drawable/add_friend_pressed"
         custom:imageScaleType="centerInside"/>
    
 </LinearLayout>

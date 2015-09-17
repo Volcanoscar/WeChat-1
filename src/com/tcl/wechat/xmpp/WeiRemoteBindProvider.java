@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import android.util.Log;
 
-import com.tcl.wechat.modle.WeiRemoteBind;
+import com.tcl.wechat.modle.BindUser;
 
 /**
  * @ClassName: WeiNoticeMsgProvider
@@ -24,7 +24,7 @@ public class WeiRemoteBindProvider implements IQProvider {
 	
 	public IQ parseIQ(XmlPullParser parser) throws Exception {
 		WeiRemoteBindResultIQ iq = new WeiRemoteBindResultIQ("");
-		WeiRemoteBind weiRemoteBind = new WeiRemoteBind();
+		BindUser bindUser = new BindUser();
 		iq.setType(Type.RESULT);
 		boolean done = false;
 		while (!done) {
@@ -39,34 +39,34 @@ public class WeiRemoteBindProvider implements IQProvider {
 				}else if (parser.getName().equals("memberid")){
 					parser.next();		
 					String memberid = parser.getText();
-					weiRemoteBind.setmemberid(memberid);
+//					TODO bindUser.setMemberId(memberid);
 				}else if (parser.getName().equals("openid")){
 					parser.next();		
 					String openid = parser.getText();
-					weiRemoteBind.setOpenid(openid);
+					bindUser.setOpenId(openid);
 				}else if (parser.getName().equals("nickname")){
 					parser.next();		
 					String nickname = parser.getText();
-					weiRemoteBind.setNickname(nickname);
+					bindUser.setNickName(nickname);
 				}else if (parser.getName().equals("sex")){
 					parser.next();		
 					String sex = parser.getText();
-					weiRemoteBind.setSex(sex);
+					bindUser.setSex(sex);
 					Log.d("WeiRemoteBindProvider", "sex"+sex);
 				}else if (parser.getName().equals("headimgurl")){
 					parser.next();		
 					String headimgurl = parser.getText();
-					weiRemoteBind.setHeadimgurl(headimgurl);
+					bindUser.setHeadImageUrl(headimgurl);  
 					Log.d("WeiRemoteBindProvider", "headimgurl"+headimgurl);
 				}else if (parser.getName().equals("reply")){
 					parser.next();		
 					String reply = parser.getText();
-					weiRemoteBind.setreply(reply);
+					bindUser.setReply(reply);
 					Log.d("WeiRemoteBindProvider", "reply"+reply);
 				}
 			} else if (eventType == XmlPullParser.END_TAG) {
 				if (parser.getName().equals("remotebind")) {
-					iq.setWeiRemoteBind(weiRemoteBind);
+					iq.setWeiRemoteBind(bindUser);
 					done = true;
 				}
 			}

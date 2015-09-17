@@ -1,16 +1,18 @@
 package com.tcl.wechat.ui.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.view.UserInfoView;
 
 /**
@@ -21,8 +23,9 @@ import com.tcl.wechat.view.UserInfoView;
 public class PersonalInfoActivity extends Activity{
 	
 	private UserInfoView mUserInfoView ;
-	
 	private EditText mEditUserNameEdt;
+	
+	private BindUser mSystemUser ;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,16 +38,30 @@ public class PersonalInfoActivity extends Activity{
         setContentView(R.layout.activity_personal_info);
         
         
-        
+        initData();
         initView();
 	}
 	
+	private void initData() {
+		//现从传递过来的Extra 获取数据，如果获取失败，则从数据库读取
+		if (getIntent() != null && getIntent().getExtras() != null){
+			mSystemUser = getIntent().getExtras().getParcelable("BindUser");
+		} else {
+			mSystemUser = WeiUserDao.getInstance().getAllUsers().get(0);
+		}
+	}
+
 	private void initView() {
-		// TODO Auto-generated method stub
+		
+		
 		mUserInfoView = (UserInfoView) findViewById(R.id.uv_personal_icon);
-		mUserInfoView.setUserName("HAHA");
 		
-		
+		if (mSystemUser != null){
+			Bitmap userIcon = DataFileTools.getInstance()
+					.getBindUserIcon(mSystemUser.getHeadImageUrl());
+			mUserInfoView.setUserIcon(userIcon, false);
+			mUserInfoView.setUserName(mSystemUser.getRemarkName());
+		}
 	}
 
 	@Override

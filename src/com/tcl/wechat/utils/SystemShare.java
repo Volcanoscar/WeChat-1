@@ -1,7 +1,11 @@
 package com.tcl.wechat.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.tcl.wechat.WeChatApplication;
+import com.tcl.wechat.common.WeiConstant.SystemShared;
 
 /**
  * 本地数据存储帮助类
@@ -25,22 +29,19 @@ public class SystemShare {
 	
 	public static class SharedEditer {
 		
+		private Context mContext = WeChatApplication.gContext;
+		
 		private SharedPreferences mPreferences = null;
 		private SharedPreferences.Editor mEditor = null;
-		private static final String shareFildName = "detaultPreferences";
 		
-		private SharedEditer() {
-			super();
-			// TODO Auto-generated constructor stub
-		}
-
-		public SharedEditer(Context context){
-			this(context, shareFildName);
+		public SharedEditer(){
+			this(SystemShared.DEFAULT_NAME);
 		}
 		
-		public SharedEditer(Context context, String fileName) {
+		@SuppressLint("CommitPrefEdits") 
+		public SharedEditer(String fileName) {
 			super();
-			mPreferences = context.getSharedPreferences(fileName, 
+			mPreferences = mContext.getSharedPreferences(fileName, 
 					Context.MODE_PRIVATE);
 			mEditor = mPreferences.edit();
 		}

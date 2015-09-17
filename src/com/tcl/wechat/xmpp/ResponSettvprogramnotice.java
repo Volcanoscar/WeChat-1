@@ -28,7 +28,7 @@ public class ResponSettvprogramnotice {
 	
 
 	public void sentPacket(){
-//result是应答用的,set是主动发用的,暂时共用，都为set
+		//result是应答用的,set是主动发用的,暂时共用，都为set
 		new Thread(new Runnable() {
 			
 			@Override

@@ -34,8 +34,7 @@ public class LSMemIDResultIQ extends IQ {
 	*/
 	
 	public String getMemberid() {
-		return "senge";
-//		return memberid;
+		return memberid;
 	}
 
 	/**
@@ -43,8 +42,7 @@ public class LSMemIDResultIQ extends IQ {
 	*/
 	
 	public void setMemberid(String memberid) {
-		this.memberid = "senge";
-//		this.memberid = memberid;
+		this.memberid = memberid;
 	}
 
 	@Override

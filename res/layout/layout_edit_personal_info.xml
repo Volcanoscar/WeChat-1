@@ -26,13 +26,13 @@
         android:id="@+id/img_edit_user_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/big_big_head"
+        android:src="@drawable/default_edit_user_icon"
         android:layout_centerInParent="true"
         android:contentDescription="@string/contentDesc"/>
     
      <EditText
 	    android:id="@+id/edt_user_name"
-	    android:layout_width="300dp"
+	    android:layout_width="400dp"
 	    android:layout_height="45dp"
 	    android:layout_marginTop="50dp"
 	    android:layout_centerHorizontal="true"

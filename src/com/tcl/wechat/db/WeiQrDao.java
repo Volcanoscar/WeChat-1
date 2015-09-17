@@ -53,7 +53,7 @@ public class WeiQrDao {
 		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		Cursor cursor = db.query(Property.TABLE_QR, null, null, null, null, null, null);
 		if (cursor != null ){
-			if (cursor.getColumnCount() > 0){
+			if (cursor.getCount() > 0){
 				cursor.close();
 				return true;
 			}
@@ -77,7 +77,6 @@ public class WeiQrDao {
 			return false;
 		}
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
-		
 		ContentValues values = new ContentValues();
 		values.put(Property.COLUMN_QR_URL, qrInfo.getUrl());
 		values.put(Property.COLUMN_UUID, qrInfo.getUuid());
@@ -113,8 +112,8 @@ public class WeiQrDao {
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		Cursor cursor = db.query(Property.TABLE_QR, null, null, null, null, null, null);
 		if (cursor != null && cursor.moveToFirst()){
-			QrInfo qrInfo = new QrInfo(cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_QR_URL)), 
-					cursor.getColumnName(cursor.getColumnIndex(Property.COLUMN_UUID)));
+			QrInfo qrInfo = new QrInfo(cursor.getString(cursor.getColumnIndex(Property.COLUMN_QR_URL)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_UUID)));
 			cursor.close();
 			return qrInfo;
 		}
@@ -182,6 +181,7 @@ public class WeiQrDao {
 	 * @return
 	 */
 	public boolean updateUuid(String uuid){
+		Log.i(TAG, "updateUuid:" + uuid);
 		if (TextUtils.isEmpty(uuid)){
 			return false;
 		}

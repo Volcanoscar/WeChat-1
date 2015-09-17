@@ -13,7 +13,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.tcl.wechat.common.WeiConstant.CommandType;
-import com.tcl.wechat.db.WeiRecordDao;
+import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.WeiNotice;
@@ -31,7 +31,7 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
 		
-		WeiRecordDao weiRecordDao = WeiRecordDao.getInstance();
+		WeiMsgRecordDao weiRecordDao = WeiMsgRecordDao.getInstance();
 		//获取服务器推送绑定或解绑定的微信用户
 		WeiNotice weiNotice = (WeiNotice)intent.getExtras().getSerializable("weiNotice");
 		Log.d("GetWeiXinNoticeReceiver", "收到绑定通知,event:"+weiNotice.getEvent());
@@ -60,7 +60,7 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 			binderUser.setSex(sex);
 		}
 		if (headImageurl !=null){
-			binderUser.setHeadimageurl(headImageurl);
+			binderUser.setHeadImageUrl(headImageurl);
 		}
 		//更新数据库微信用户
 		if (event.equals("bind")){
@@ -72,7 +72,7 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 		}else if (event.equals("unbind")){
 			WeiUserDao.getInstance().deleteUser(binderUser);
 			//删除此用户分享的记录
-			weiRecordDao.delMsg(binderUser.getOpenId());
+			weiRecordDao.deleteUserRecorder(binderUser.getOpenId());
 			if (mHandler != null){
 				mHandler.sendEmptyMessage(CommandType.COMMAND_UNBINDER_TOUI);
 			}

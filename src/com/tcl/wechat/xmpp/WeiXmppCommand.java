@@ -45,13 +45,6 @@ public class WeiXmppCommand {
 	 */
 	public void execute(){
 		
-		
-/*		if (!UIUtils.isNetworkAvailable(uIHandler.getActivity())){
-			Log.d(tag, "网络不可以用");
-			uIHandler.sendEmptyMessage(CommandType.COMMAND_NEWWORK_NOT_AVAILABLE);
-			return;
-		}*/
-		
 		if(!WeiXmppManager.getInstance().isConnected()){
 			Log.d(tag, "当前微信未连接");
 			if(uIHandler==null)

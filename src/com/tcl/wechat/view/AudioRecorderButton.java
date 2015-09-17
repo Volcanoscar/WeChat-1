@@ -235,18 +235,18 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 			mCurrentState = state;
 			switch (state) {
 			case STATE_NORMAL:
-				setBackgroundResource(R.drawable.sound_reply);
+				setBackgroundResource(R.drawable.msg_sound_reply);
 				break;
 				
 			case STATE_RECORDING:
-				setBackgroundResource(R.drawable.sound_reply_pressed);
+				setBackgroundResource(R.drawable.msg_sound_reply_pressed);
 				if (bRecording){
 					mDialogManager.recording();
 				}
 				break;
 				
 			case STATE_WANT_TO_CANCEL:
-				setBackgroundResource(R.drawable.sound_reply_pressed);
+				setBackgroundResource(R.drawable.msg_sound_reply_pressed);
 				mDialogManager.wanToCancel();
 				break;
 

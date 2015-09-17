@@ -147,37 +147,37 @@
         <!-- 获取微信消息接收器 -->
         <receiver android:name="com.tcl.wechat.receiver.WeiXinMsgReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.GET_WEIXIN_MSG" />
+                <action android:name="com.tcl.wechat.ACTION_RECEIVE_WEIXIN_MSG" />
             </intent-filter>
         </receiver> 
         
         <receiver android:name="com.tcl.wechat.receiver.WeiXinNoticeReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.GET_WEIXIN_NOTICE" />
+                <action android:name="com.tcl.wechat.ACTION_RECEIVE_WEIXIN_NOTICE" />
             </intent-filter>
         </receiver> 
         
         <receiver android:name="com.tcl.wechat.receiver.WeiXinRemoteBindReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.GET_WEIXIN_REMOTEBINDER"/>
+                <action android:name="com.tcl.wechat.ACTION_REMOTEBINDER"/>
             </intent-filter>
         </receiver> 
         
-        <receiver android:name="com.tcl.wechat.receiver.GetWeiXinControlReceiver" >
+        <receiver android:name="com.tcl.wechat.receiver.WeiXinControlReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.GET_WEIXIN_CONTROL" />
+                <action android:name="com.tcl.wechat.ACTION_WEIXIN_CONTROL" />
             </intent-filter>
         </receiver> 
         
         <receiver android:name="com.tcl.wechat.receiver.WeiXinLoginReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.LOGIN_SUCCESS"/>
+                <action android:name="com.tcl.wechat.ACTION_LOGIN_SUCCESS"/>
             </intent-filter>
         </receiver> 
         
         <receiver android:name="com.tcl.wechat.receiver.GetWeiXinAppReceiver" >
             <intent-filter>
-                <action android:name="com.tcl.webchat.GET_WEIXIN_APP" />
+                <action android:name="com.tcl.wechat.ACTION_GET_WEIXIN_APP" />
             </intent-filter>
         </receiver> 
         

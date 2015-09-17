@@ -19,6 +19,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
 
@@ -36,13 +37,15 @@ public class UserInfoView extends LinearLayout{
 	private int mTextColor;
 	private Drawable mTextBg;
 	private Bitmap mBitmap;
-	private Drawable mImgDrawable;
+//	private Drawable mImgDrawable;
 	
 	private View mView;
 	private ImageView mUserIconImg;
 	private ImageView mOnlineFlagImg;
 	private ImageView mDeleteFlagImg;
 	private EditText mUserNameEdt;
+	
+	private boolean bEditable = false;
 	
 	/**
 	 * 点击监听事件
@@ -73,18 +76,21 @@ public class UserInfoView extends LinearLayout{
 		mTextBg = ta.getDrawable(R.styleable.userImageView_textBackground);
 		mBitmap = BitmapFactory.decodeResource(getResources(), 
 				ta.getResourceId(R.styleable.userImageView_imageSrc, 0));
-		mImgDrawable = ta.getDrawable(R.styleable.userImageView_imageBackground);
+//		mImgDrawable = ta.getDrawable(R.styleable.userImageView_imageBackground);
 		ta.recycle();
 		
 		mUserIconImg = (ImageView) mView.findViewById(R.id.user_icon);
 		mOnlineFlagImg = (ImageView) mView.findViewById(R.id.img_online_flag);
 		mDeleteFlagImg = (ImageView) mView.findViewById(R.id.img_delete_flag);
 		mUserNameEdt = (EditText) mView.findViewById(R.id.user_name);
+		LinearLayout layout = (LinearLayout) mView.findViewById(R.id.user_icon_layout);
+		LayoutParams params = (LayoutParams) layout.getLayoutParams();
+		params.width = mBitmap.getWidth();
+		params.height = mBitmap.getHeight();
 		
 		mUserIconImg.setImageBitmap(mBitmap);
-		mUserIconImg.setBackground(mImgDrawable);
-		mUserIconImg.setPadding(3, 3, 3, 3);
 		mUserIconImg.setScaleType(ScaleType.CENTER_INSIDE);
+		mUserIconImg.setBackgroundResource(R.drawable.user_icon_bg);
 		
 		mUserNameEdt.setText(mTextTitle);
 		mUserNameEdt.setTextSize(mTextSize);
@@ -101,14 +107,17 @@ public class UserInfoView extends LinearLayout{
 				}
 			}
 		});
+		
 		mUserIconImg.setOnLongClickListener(new OnLongClickListener() {
 			
 			@Override
 			public boolean onLongClick(View v) {
-				mDeleteFlagImg.setVisibility(VISIBLE);
-				if (mEditListener != null){
-					mEditListener.onDeleteUserEvent();
-					return true;
+				if (bEditable){
+					mDeleteFlagImg.setVisibility(VISIBLE);
+					if (mEditListener != null){
+						mEditListener.onDeleteUserEvent();
+						return true;
+					}
 				}
 				return false;
 			}
@@ -118,9 +127,10 @@ public class UserInfoView extends LinearLayout{
 			
 			@Override
 			public boolean onLongClick(View v) {
-				mUserNameEdt.setFocusable(true);
-				mUserNameEdt.setFocusableInTouchMode(true);
-				
+				if (bEditable) {
+					mUserNameEdt.setFocusable(true);
+					mUserNameEdt.setFocusableInTouchMode(true);
+				}
 				return false;
 			}
 		});
@@ -133,11 +143,34 @@ public class UserInfoView extends LinearLayout{
 	}
 	
 	/**
+	 * 设置头像是否可编辑
+	 * @param editable
+	 */
+	public void setUserIconEditable(boolean editable){
+		this.bEditable = editable;
+	}
+	
+	/**
 	 * 设置用户图像
 	 * @param bitmap
 	 */
 	public void setUserIcon(Bitmap bitmap){
-		mUserIconImg.setImageBitmap(bitmap);
+		setUserIcon(bitmap, false);
+	}
+	
+	/**
+	 * 设置用户图像
+	 * @param bitmap
+	 * @param hasBg 是否设置背景
+	 */
+	public void setUserIcon(Bitmap bitmap, boolean hasBg){
+		Bitmap userIcon = ImageUtil.getInstance().createCircleImage(bitmap);
+		mUserIconImg.setImageBitmap(userIcon);
+		if (hasBg){
+			mUserIconImg.setBackgroundResource(R.drawable.user_icon_bg);
+		} else {
+			mUserIconImg.setBackgroundColor(Color.TRANSPARENT);
+		}
 	}
 	
 	/**
@@ -146,7 +179,16 @@ public class UserInfoView extends LinearLayout{
 	 */
 	public void setUserIcon(int resId){
 		Bitmap icon = BitmapFactory.decodeResource(getResources(), resId);
-		mUserIconImg.setImageBitmap(icon);
+		setUserIcon(icon, false);
+	}
+	
+	/**
+	 * 设置用户图像
+	 * @param resId
+	 */
+	public void setUserIcon(int resId, boolean hasBg){
+		Bitmap icon = BitmapFactory.decodeResource(getResources(), resId);
+		setUserIcon(icon, hasBg);
 	}
 	
 	/**

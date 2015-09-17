@@ -1,5 +1,61 @@
 package com.tcl.wechat.utils;
 
+import android.content.Context;
+import android.widget.Toast;
+
+import com.tcl.wechat.WeChatApplication;
+
+/**
+ * Toast帮助类
+ * @author rex.lei
+ *
+ */
 public class ToastUtil {
+	
+	private static Context mContext = WeChatApplication.gContext;
+	
+	/**
+	 * 开关标志
+	 */
+	private static boolean bSwitchFlag = true;
+	
+	/**
+	 * 非强制显示Toast
+	 * @param message
+	 */
+	public static void showToast(String message){
+		
+		if (bSwitchFlag) {
+			Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	/**
+	 * 非强制显示Toast
+	 * @param resId
+	 */
+	public static void showToast(int resId){
+		if (bSwitchFlag) {
+			Toast.makeText(mContext, mContext.getResources().getString(resId), 
+					Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	/**
+	 * 强制显示Toast
+	 * @param message
+	 */
+	public static void showToastForced(String message){
+		Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
+	}
+	
+	/**
+	 * 强制显示Toast
+	 * @param resId
+	 */
+	public static void showToastForced(int resId){
+		Toast.makeText(mContext, mContext.getResources().getString(resId), 
+				Toast.LENGTH_LONG).show();
+	}
 
 }

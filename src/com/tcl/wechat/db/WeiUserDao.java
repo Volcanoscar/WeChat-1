@@ -102,7 +102,7 @@ public class WeiUserDao {
 		if (bindUser == null){
 			return false;
 		}
-		
+		Log.i(TAG, "bindUser:" + bindUser.toString());
 		//如果当前已经存在该绑定的用户则不再插入数据库
 		if (bindUserIsExist(bindUser.getOpenId())){
 			Log.e(TAG, "User already exist!");
@@ -119,11 +119,10 @@ public class WeiUserDao {
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
-		values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
 		values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
 		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
 		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
-		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
 		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
 		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
 		if (db.insert(Property.TABLE_USER, null, values) != -1){
@@ -132,45 +131,69 @@ public class WeiUserDao {
 		return false;
 	}
 	
+	/**
+	 * 批量添加数据
+	 * @param userList
+	 * @return
+	 * @ 
+	 * Notice:批量添加数据，会清空原有的所有数据
+	 */
 	public Boolean addUserList(ArrayList<BindUser> userList){
 		if (userList == null || userList.isEmpty()){
 			Log.i(TAG, "userList is NULL!!");
 			return false ;
 		}
-		boolean bRet = false;
+		boolean bRet = true;
 		int addedUserCnt = 0;
 		//插入新用户
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		//开始事务
+		db.beginTransaction();
 		for (int i = 0; i < userList.size(); i++) {
 			BindUser bindUser = userList.get(i);
 			
-			//如果当前已经存在该绑定的用户则不再插入数据库
+			//如果当前已经存在则直接更新即可
 			if (bindUserIsExist(bindUser.getOpenId())){
 				Log.e(TAG, "User already exist! openId = " + bindUser.getOpenId());
+				
+				if (updateUser(bindUser)){
+					addedUserCnt ++;
+					bRet &= true;
+				} else {
+					bRet &= false;
+				}
 				continue;
 			}
 			
 			//用户未绑定，不能添加数据可
 			if (!userIsBound(bindUser)){
 				Log.e(TAG, "User is not bound!! openId = " + bindUser.getOpenId());
-				continue;
+//				continue;
 			}
 			
 			ContentValues values = new ContentValues();
 			values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
-			values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
 			values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
 			values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
 			values.put(Property.COLUMN_USERSEX, bindUser.getSex());
-			values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+			values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
 			values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
 			values.put(Property.COLUMN_STATUS, bindUser.getStatus());
+			values.put(Property.COLUMN_REPLY, bindUser.getReply());
 			if (db.insert(Property.TABLE_USER, null, values) != -1){
 				addedUserCnt ++;
 				bRet &= true;
+			} else {
+				bRet &= false;
 			}
 		}
 		Log.i(TAG, "success:" + addedUserCnt + ",failure:" + (userList.size() - addedUserCnt));
+		
+		//提交事务
+		db.setTransactionSuccessful(); // 设置事务处理成功，不设置会自动回滚不提交
+		db.endTransaction(); 		   // 处理完成
+		db.close();
+		
 		return bRet;
 	}
 	
@@ -194,17 +217,18 @@ public class WeiUserDao {
 		Cursor cursor = db.query(Property.TABLE_USER, null, selection, selectionArgs , null, null, orderBy );
 		if (cursor != null && cursor.moveToFirst()){
 			user = new BindUser(openid,
-						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NICKNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
 			cursor.close();
 		}
 		return user;
 	}
+	
 	
 	/**
 	 * 获取所用用户信息
@@ -218,13 +242,13 @@ public class WeiUserDao {
 		if (cursor != null){
 			while (cursor.moveToNext()) {
 				BindUser user = new BindUser(cursor.getString(cursor.getColumnIndex(Property.COLUMN_OPENID)),
-						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NICKNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
+						cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
 				userList.add(user);
 			}
 			cursor.close();
@@ -272,17 +296,23 @@ public class WeiUserDao {
 		if (bindUser == null || !bindUserIsExist(bindUser.getOpenId())){
 			return false;
 		}
+
+		if (bindUserIsExist(bindUser.getOpenId())){
+			if (bindUser.getRemarkName() == null){
+				bindUser.setRemarkName(bindUser.getNickName());
+			} 
+		}
 		
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
-		values.put(Property.COLUMN_USERNAME, bindUser.getUserName());
 		values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
 		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
 		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
-		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadimageurl());
+		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
 		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
 		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
+		values.put(Property.COLUMN_REPLY, bindUser.getReply());
 		String whereClause = Property.COLUMN_OPENID + "=?";
 		String[] whereArgs = new String[]{bindUser.getOpenId()};
 		if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){
@@ -290,8 +320,28 @@ public class WeiUserDao {
 		}
 		return false;
 	}
-
 	
+	/**
+	 * 更新用户备注名称
+	 * @param openid
+	 * @param remarkName
+	 * @return
+	 */
+	public boolean updateRemarkName(String openid, String remarkName){
+		if (remarkName == null || !bindUserIsExist(openid)){
+			return false;
+		}
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_REMARKNAME, remarkName);
+		String whereClause = Property.COLUMN_OPENID + "=?";
+		String[] whereArgs = new String[]{openid};
+		if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * 获取消息个数
 	 * @param openid
@@ -384,8 +434,6 @@ public class WeiUserDao {
 	 * @return
 	 */
 	public boolean updateStatus(String openid, String status){
-		
-		//TODO 因为status是字符，在此要判断输入是否合法
 		
 		//openid 是否合法
 		if (TextUtils.isEmpty(openid)){

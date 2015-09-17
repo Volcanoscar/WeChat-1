@@ -11,64 +11,50 @@
         android:layout_height="45dp" 
         custom:topBarTitle="@string/add_friend"/>
     
-    <RelativeLayout
+    <LinearLayout 
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="left">
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        
         <com.tcl.wechat.view.UserInfoView 
             android:id="@+id/uv_personal_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
             custom:textBackground="@drawable/big_head_word"
-        	custom:imageSrc="@drawable/big_head"
-        	custom:imageScaleType="center"/>
-        <TextView 
-            android:id="@+id/tv_personal_nickname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/uv_personal_icon"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="10dp"
-            android:text="昵称:Rex"
-            android:textColor="#ffffffff"
-            android:textSize="28sp"/>
-        <TextView
-            android:id="@+id/tv_personal_username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" 
-            android:layout_toRightOf="@id/uv_personal_icon"
-            android:layout_below="@id/tv_personal_nickname"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="50dp"
-            android:text="账号：rex.lei@tcl.com"
-            android:textColor="#65ffffff"
-            android:textSize="22sp"/>
-    </RelativeLayout>
-    
-	<RelativeLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="0dp" 
-	    android:layout_weight="1"
-	    android:gravity="center">
-	    <ImageView
-	        android:id="@+id/img_personal_qrcode"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_centerInParent="true"
-	        android:scaleType="matrix"
-	        android:background="@color/white"
-	        android:contentDescription="@string/contentDesc"/>
-	    <TextView 
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_below="@id/img_personal_qrcode"
-	        android:layout_marginTop="20dp"
-	        android:gravity="center"
-	        android:text="@string/add_friend_hint"
-	        android:textSize="18sp"
-	        android:textColor="#AAffffff"/>
-	</RelativeLayout>   
+        	custom:imageSrc="@drawable/default_personal_user_icon"
+        	custom:imageScaleType="centerInside"/>
+        
+        <RelativeLayout
+		    android:layout_width="0dp"
+		    android:layout_height="match_parent" 
+		    android:layout_weight="2"
+		    android:gravity="center">
+		    <ImageView
+		        android:id="@+id/img_personal_qrcode"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_centerInParent="true"
+		        android:scaleType="matrix"
+		        android:background="@color/white"
+		        android:contentDescription="@string/contentDesc"/>
+		    <TextView 
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_below="@id/img_personal_qrcode"
+		        android:layout_marginTop="20dp"
+		        android:gravity="center"
+		        android:text="@string/add_friend_hint"
+		        android:textSize="18sp"
+		        android:textColor="#AAffffff"/>
+		</RelativeLayout> 
+        
+		<View 
+		    android:layout_width="0dp"
+		    android:layout_height="match_parent"
+		    android:layout_weight="1"/>
+    </LinearLayout>
 </LinearLayout>

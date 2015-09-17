@@ -8,13 +8,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
-import com.tcl.wechat.modle.WeiXinMsg;
+import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.ui.activity.ChatActivity;
 
 /**
@@ -59,7 +62,7 @@ public class WeiXinNotifier {
 	 * @param weiXinMsg 通知消息实体类
 	 */
 	@SuppressLint("NewApi") 
-	public void notify(WeiXinMsg weiXinMsg){
+	public void notify(WeiXinMsgRecorder weiXinMsg){
 		Log.i(TAG, "notify!!");
 		
 		if (weiXinMsg == null){
@@ -93,7 +96,15 @@ public class WeiXinNotifier {
 		if (mNewNum > 1){
 			contentBuffer.append("[").append(mNewNum).append("]");
 		}
-		contentBuffer.append(weiXinMsg.getnickname()).append(":");
+		Bitmap userIcon = null;
+		String userName = null;
+		BindUser bindUser =  WeiUserDao.getInstance().getUser(weiXinMsg.getOpenid());
+		if (bindUser != null){
+			userIcon = DataFileTools.getInstance().getBindUserCircleIcon(bindUser.getHeadImageUrl());
+			userName = WeiUserDao.getInstance().getUser(weiXinMsg.getOpenid()).getNickName();
+		}
+		
+		contentBuffer.append(userName).append("：");
 		String contentText = "" ;
 		if (ChatMsgType.TEXT.equals(weiXinMsg.getMsgtype())){
 			contentText = weiXinMsg.getContent();
@@ -111,11 +122,11 @@ public class WeiXinNotifier {
 		 */
 		Notification.Builder builder = new Notification.Builder(mContext);
 		builder.setSmallIcon(R.drawable.ic_launcher)//设置状态栏里面的图标（小图标） 　　　　　　　　　　　　　　　　　　　　
-				.setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.head_user_icon))//下拉下拉列表里面的图标（大图标） 　　　　　　　
-				.setTicker(contentText) //设置状态栏的显示的信息  
+				.setLargeIcon(userIcon)		//下拉下拉列表里面的图标（大图标） 　　　　　　　
+				.setTicker(contentText) 	//设置状态栏的显示的信息  
 				.setWhen(System.currentTimeMillis())//设置时间发生时间  
-				.setAutoCancel(true)//设置可以清除  
-				.setContentTitle(weiXinMsg.getnickname())//设置下拉列表里的标题  
+				.setAutoCancel(true)		//设置可以清除  
+				.setContentTitle(userName)	//设置下拉列表里的标题  
 				.setContentText(contentBuffer.toString())
 				.setDefaults(Notification.DEFAULT_SOUND)
 				.setContentIntent(pendingContentIntent)

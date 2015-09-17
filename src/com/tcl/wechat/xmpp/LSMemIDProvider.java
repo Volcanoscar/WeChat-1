@@ -5,9 +5,6 @@ import org.jivesoftware.smack.packet.IQ.Type;
 import org.jivesoftware.smack.provider.IQProvider;
 import org.xmlpull.v1.XmlPullParser;
 
-
-import android.util.Log;
-
 /**
  * 终端注册认证，获取memID的回包provider
  * @author junjian

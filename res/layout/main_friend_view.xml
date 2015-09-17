@@ -3,44 +3,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:baselineAligned="true"
+    android:background="@color/grey"
     android:orientation="horizontal" >
     
     
     <!-- 建议将这些布局放在一个自定义 View里面处理 
     	设置图像、名称、及滑动事件处理-->
-    <include 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="80dp"
-        layout="@layout/main_friend01_view"/>	
+<!--     <include  -->
+<!--         android:layout_width="0dp" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_weight="1" -->
+<!--         android:layout_marginTop="80dp" -->
+<!--         layout="@layout/layout_friend_view1"/>	 -->
         
-    <include 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="90dp"
-        layout="@layout/main_friend01_view"/>
+<!--     <include  -->
+<!--         android:layout_width="0dp" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_weight="1" -->
+<!--         android:layout_marginTop="90dp" -->
+<!--         layout="@layout/layout_friend_view2"/> -->
     
-    <include 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="110dp"
-        layout="@layout/main_friend01_view"/>
+<!--     <include  -->
+<!--         android:layout_width="0dp" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_weight="1" -->
+<!--         android:layout_marginTop="110dp" -->
+<!--         layout="@layout/layout_friend_view3"/> -->
     
-    <include 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="75dp"
-        layout="@layout/main_friend01_view"/>
+<!--     <include  -->
+<!--         android:layout_width="0dp" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_weight="1" -->
+<!--         android:layout_marginTop="75dp" -->
+<!--         layout="@layout/layout_friend_view4"/> -->
     
-    <include 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="30dp"
-        layout="@layout/main_friend01_view"/>
+<!--     <include  -->
+<!--         android:layout_width="0dp" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_weight="1" -->
+<!--         android:layout_marginTop="30dp" -->
+<!--         layout="@layout/layout_friend_view5"/> -->
     
 </LinearLayout>

@@ -15,22 +15,31 @@ import android.os.Environment;
  * @Description: weixin静态类定义
  */
 
-public class WeiConstant {
+public interface WeiConstant {
 
 	//家庭云端口号：8348
 	public static final int httpServicePort=8843;
 	
-	//广播定义
-	public static final class CommandBroadcast{
-		public static final String LOGIN_SUCCESS = "com.tcl.webchat.LOGIN_SUCCESS";
-		public static final String GET_WEIXIN_MSG = "com.tcl.webchat.GET_WEIXIN_MSG";
-		public static final String GET_WEIXIN_NOTICE = "com.tcl.webchat.GET_WEIXIN_NOTICE";
-		public static final String COMMAND_GET_WEIXIN_CONTROL = "com.tcl.webchat.GET_WEIXIN_CONTROL";
-		public static final String COMMAND_GET_WEIXIN_APP = "com.tcl.webchat.GET_WEIXIN_APP";
-		public static final String COMMAND_REMOTEBINDER = "com.tcl.webchat.GET_WEIXIN_REMOTEBINDER";
+	/**
+	 * Action 定义
+	 */
+	public static final class CommandAction{
+		public static final String ACTION_LOGIN_SUCCESS = "com.tcl.wechat.ACTION_LOGIN_SUCCESS";
+		public static final String ACTION_RECEIVE_WEIXIN_MSG = "com.tcl.wechat.ACTION_RECEIVE_WEIXIN_MSG";
+		public static final String ACTION_RECEIVE_WEIXIN_NOTICE = "com.tcl.wechat.ACTION_RECEIVE_WEIXIN_NOTICE";
+		public static final String ACTION_WEIXIN_CONTROL = "com.tcl.wechat.ACTION_WEIXIN_CONTROL";
+		public static final String ACTION_GET_WEIXIN_APP = "com.tcl.wechat.ACTION_GET_WEIXIN_APP";
+		public static final String ACTION_REMOTEBINDER = "com.tcl.wechat.ACTION_REMOTEBINDER";
+		
+		
+		public static final String ACTION_UPDATE_BINDUSER = "com.tcl.wechat.UPDATE_BINDUSER";
+		public static final String ACTION_DOWNLOAD_SERVICE = "com.tcl.wechat.DOWNLOAD_SERVICE";
 	}
 	
-	//xmpp协议返回接口定义
+	/**
+	 * xmpp协议返回接口定义
+	 *
+	 */
 	public static final class CommandType{
 		public static final int COMMAND_NEWWORK_NOT_AVAILABLE  = 0;
 		public static final int COMMAND_NEWWORK_UNCONNECTED = 1;
@@ -69,20 +78,37 @@ public class WeiConstant {
 		public static final int COMMAND_GET_WEIXIN_APP = 128;
 	}
 	
-	//xmpp请求参数key
+	/**
+	 * xmpp请求参数key
+	 *
+	 */
 	public final static class ParameterKey{
-		
 		public final static String PAGE = "page";
 		public final static String STEP = "step";
 		public final static String OPEN_ID = "openid";
 	}
 	
+	/**
+	 * 请求状态
+	 */
 	public static final class CommandReturnType{
-		
 		public static final String STATUS_SUCCESS = "0";
-		public static final String STATUS_FAIL = "1";
+		public static final String STATUS_FAILED = "1";
 	}
 	
+	/**
+	 * SharedPreferences名称
+	 *
+	 */
+	public static final class SystemShared{
+		public static final String DEFAULT_NAME = "detaultTypeValue";
+		public static final String SHARE_TERMINAL_INFO = "terminal_info";
+		
+		//已经注册，用户等信息也保存完成
+		public static final String KEY_REGISTENER_SUCCESS = "flag_registered";
+		//是否已经进入聊天主界面
+		public static final String KEY_FLAG_ENTER = "flag_enter";
+	}
 	
 	//for ui
 	public static final int FOCUS_RESUME_TIME = 800;
@@ -106,9 +132,14 @@ public class WeiConstant {
 	/**
 	 * 设置弹幕显示开关，默认true,显示弹幕；false 不显示弹幕
 	 */
-	
 	public static boolean SETUP_DANMU = true;
 	
+	/**
+	 * 进入主应用标志位
+	 * 	false：未进入
+	 * 	true：已经进入
+	 */
+	public static boolean ENTER_MAIN_VIEW = false;
 	
 	public class Constant {
 		public static final String TV_TUNE_CHANNEL = "012300";
@@ -120,8 +151,6 @@ public class WeiConstant {
 	//视频文件存储路径。
 	public static String DOWN_LOAD_FLASH_PATH = "/data/data/com.tcl.wechat"+"/"+"cache";
 
- 
-
 	public static String WEIXIN_WEB = "http://file.api.weixin.qq.com"; 
 	
 	public static final int LOG_IN_TIMEOUT = 10000;
@@ -129,18 +158,18 @@ public class WeiConstant {
 	public static final int TIME_OUT = 10000;
 
 	//广播定义
-		public static final class PlayStyle{
-			public static final String CLICK_TO_PLAY = "CLICK_TO_PLAY";
-			public static final String REALTIME_SHARE_PLAY = "REALTIME_SHARE_PLAY";
-
-		}
+	public static final class PlayStyle{
+		public static final String CLICK_TO_PLAY = "CLICK_TO_PLAY";
+		public static final String REALTIME_SHARE_PLAY = "REALTIME_SHARE_PLAY";
+	}
+	
 	//后台服务启动模式定义
 	public static final class StartServiceMode{
 		public static final String OWN = "own";//应用自身启动
 		public static final String OTHERS = "others";//启动应用启动的，比如开机向导和家庭信箱
 		public static  String CURRENTMODE = "own";//启动应用启动的，比如开机向导和家庭信箱
 	}
-	public static String MAC = null;
+	
 	
 	//根据系统内存大小配置全功能版或简化版（简化版就是去掉了讯飞的智控和识别，在微信应用里面对应，语音，直播换台，识别服务）
 	public static final class WechatConfigure{

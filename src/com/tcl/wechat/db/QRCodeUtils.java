@@ -16,7 +16,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.utils.CommonsFun;
+import com.tcl.wechat.utils.SystemInfoUtil;
 
   
   
@@ -39,13 +39,13 @@ public class QRCodeUtils {
 		Log.i(tag,"uuid="+uuid);
 		StringBuilder sb = new StringBuilder();  
 		sb.append(url).append("#");
-		sb.append(CommonsFun.getSn()).append("|");
-		sb.append(CommonsFun.getDeviceId(mContext)).append("|");
-		sb.append(CommonsFun.getMAC()).append("|");
-		sb.append( CommonsFun.getSoftVersion()).append("|");
-		sb.append(CommonsFun.getUbootVersion()).append("|");//Uboot version
+		sb.append(SystemInfoUtil.getSn()).append("|");
+		sb.append(SystemInfoUtil.getDeviceId()).append("|");
+		sb.append(SystemInfoUtil.getMacAddr()).append("|");
+		sb.append( SystemInfoUtil.getSoftVersion()).append("|");
+		sb.append(SystemInfoUtil.getUbootVersion()).append("|");//Uboot version
 	
-		sb.append(CommonsFun.getBootTimes(mContext)).append("|");
+		sb.append(SystemInfoUtil.getBootTimes(mContext)).append("|");
 		sb.append(uuid).append("|");
 		//CFROM：表示扫码来源（两个扫码来源come from，1是开机向导，2是微信互联），值有：1,2 。
 		//生成一个二维码图片给微信自己用
