@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="155dp"
-        android:layout_marginLeft="130dp"
+        android:layout_marginLeft="150dp"
         android:src="@drawable/my_friend"
         android:contentDescription="@string/contentDesc"  />
     
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="185dp"
-        android:layout_marginLeft="175dp"
+        android:layout_marginLeft="195dp"
         android:gravity="center"
         android:text="@string/myfriend"
         android:textSize="28sp"
@@ -39,7 +39,6 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:layout_toRightOf="@id/myfriend"
-        android:layout_marginLeft="30dp"
         android:orientation="horizontal" >
 
         <HorizontalScrollView

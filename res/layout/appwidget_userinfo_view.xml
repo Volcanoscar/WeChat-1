@@ -11,7 +11,7 @@
       	android:layout_marginTop="10dp"
       	android:layout_marginLeft="35dp"
       	android:contentDescription="@string/contentDesc"
-      	android:src="@drawable/head_user_icon"/>
+      	android:src="@drawable/default_user_icon"/>
 	
 	<TextView 
 	    android:id="@+id/tv_user_name"

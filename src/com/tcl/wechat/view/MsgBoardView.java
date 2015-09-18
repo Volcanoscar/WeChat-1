@@ -1,6 +1,7 @@
 package com.tcl.wechat.view;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.utils.DateUtil;
 import com.tcl.wechat.view.page.TextPageView;
 
 /**
@@ -25,6 +27,8 @@ import com.tcl.wechat.view.page.TextPageView;
 public class MsgBoardView extends LinearLayout{
 
 	private static final String TAG = MsgBoardView.class.getSimpleName();
+	
+	private static final String DATA_FORMAT = "mm:ss";
 	
 	private Context mContext;
 	
@@ -42,6 +46,9 @@ public class MsgBoardView extends LinearLayout{
 	
 	private ArrayList<WeiXinMsgRecorder> mUserRecorders;
 	
+	
+	private DateUtil mDateUtil;
+	
 	public MsgBoardView(Context context) {
 		this(context, null);
 	}
@@ -50,6 +57,8 @@ public class MsgBoardView extends LinearLayout{
 		super(context, attrs);
 		mContext = context;
 		mDataFileTools = DataFileTools.getInstance();
+		mUserRecorders = new ArrayList<WeiXinMsgRecorder>();
+		mDateUtil = new DateUtil(DATA_FORMAT);
 	}
 	
 	public void setupView(int screen){
@@ -61,6 +70,10 @@ public class MsgBoardView extends LinearLayout{
 		mMsgPageViewPg = (TextPageView) mView.findViewById(R.id.tv_familboard_msg);
 		mUserInfoViewUv = (UserInfoView) mView.findViewById(R.id.uv_familboard_userinfo);
 		mMsgReceiveTimeTv = (TextView) mView.findViewById(R.id.tv_msgreceive_time);
+		
+		mUserInfoViewUv.setUserNameBackGround(false);
+		mUserInfoViewUv.setTextSize(22);
+		mUserInfoViewUv.setFont("fonts/oop.TTF");
 	}
 	
 	/**
@@ -68,16 +81,12 @@ public class MsgBoardView extends LinearLayout{
 	 * @param bindUser 用户信息
 	 * @param recorders 消息记录
 	 */
-	public void addData(BindUser bindUser, ArrayList<WeiXinMsgRecorder> recorders){
+	public void addData(BindUser bindUser, WeiXinMsgRecorder recorder){
 		if (bindUser == null){
 			return ;
 		}
-		mUserRecorders = recorders;
 		
-		int size = recorders.size();
-		WeiXinMsgRecorder laststRecorder = recorders.get(size -1);
-		
-		upadteView(bindUser, laststRecorder);
+		upadteView(bindUser, recorder);
 	}
 	
 	/**
@@ -105,20 +114,28 @@ public class MsgBoardView extends LinearLayout{
 		//更新用户信息
 		Bitmap userIcon = mDataFileTools.getBindUserCircleIcon(bindUser.getHeadImageUrl());
 		String userName = bindUser.getRemarkName();
-		mUserInfoViewUv.setUserIcon(userIcon);
-		mUserInfoViewUv.setUserName(userName);
+		
+		if (userIcon != null && userName != null){
+			mUserInfoViewUv.setUserIcon(userIcon, true);
+			mUserInfoViewUv.setUserName(userName);
+		}
 		
 		//更新消息信息
 		if (recorder == null ){
 			return ;
 		}
 		
+		Log.i(TAG, "recorder:" + recorder.toString());
 		String msgType = recorder.getMsgtype();
+		Log.i(TAG, "Msgtype:" + msgType);
 		
 		if (ChatMsgType.TEXT.equals(msgType)){
 			
 			mMsgPageViewPg.setMessageInfo(mContext, recorder.getContent());
-			mMsgReceiveTimeTv.setText(recorder.getCreatetime());
+			
+			String date = recorder.getCreatetime();
+			mMsgReceiveTimeTv.setText(mDateUtil.getTime(date));
+			
 		} else if (ChatMsgType.VOICE.equals(msgType)){
 			 
 		} else if (ChatMsgType.VIDEO.equals(msgType)){
@@ -127,5 +144,4 @@ public class MsgBoardView extends LinearLayout{
 			
 		}
 	}
-
 }

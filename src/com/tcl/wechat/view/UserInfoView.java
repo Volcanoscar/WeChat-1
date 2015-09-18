@@ -6,12 +6,11 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -46,6 +45,8 @@ public class UserInfoView extends LinearLayout{
 	private EditText mUserNameEdt;
 	
 	private boolean bEditable = false;
+	
+	private String tag = "";
 	
 	/**
 	 * 点击监听事件
@@ -115,7 +116,7 @@ public class UserInfoView extends LinearLayout{
 				if (bEditable){
 					mDeleteFlagImg.setVisibility(VISIBLE);
 					if (mEditListener != null){
-						mEditListener.onDeleteUserEvent();
+						mEditListener.onDeleteUserEvent(getTag());
 						return true;
 					}
 				}
@@ -136,11 +137,6 @@ public class UserInfoView extends LinearLayout{
 		});
 	}
 	
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		Log.i(TAG, "action:" + event.getAction());
-		return super.onTouchEvent(event);
-	}
 	
 	/**
 	 * 设置头像是否可编辑
@@ -165,7 +161,9 @@ public class UserInfoView extends LinearLayout{
 	 */
 	public void setUserIcon(Bitmap bitmap, boolean hasBg){
 		Bitmap userIcon = ImageUtil.getInstance().createCircleImage(bitmap);
-		mUserIconImg.setImageBitmap(userIcon);
+		if (userIcon != null){
+			mUserIconImg.setImageBitmap(userIcon);
+		}
 		if (hasBg){
 			mUserIconImg.setBackgroundResource(R.drawable.user_icon_bg);
 		} else {
@@ -208,6 +206,53 @@ public class UserInfoView extends LinearLayout{
 	}
 	
 	/**
+	 * 设置用户名称是否有背景
+	 * @param hasBg
+	 */
+	public void setUserNameBackGround(boolean hasBg){
+		if (!hasBg){
+			mUserNameEdt.setBackgroundColor(Color.TRANSPARENT);
+		}
+	}
+	
+	/**
+	 * 设置昵称字体大小
+	 */
+	public void setTextSize(float size){
+		mUserNameEdt.setTextSize(size);
+	}
+	
+	/**
+	 * 设置昵称字体颜色
+	 * @param color
+	 */
+	public void setTextColor(int color){
+		mUserNameEdt.setTextColor(color);
+	}
+	
+	/**
+	 * 设置昵称字体样式
+	 * @param tv
+	 * @param fontpath
+	 */
+	public void setFont(String fontpath) {
+		try {
+			Typeface typeFace = Typeface.createFromAsset(getContext().getAssets(), fontpath);
+			mUserNameEdt.setTypeface(typeFace);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void invalidate() {
+		// TODO Auto-generated method stub
+		mUserNameEdt.setFocusable(false);
+		mUserNameEdt.setFocusableInTouchMode(false);
+		mDeleteFlagImg.setVisibility(GONE);
+	}
+	
+	/**
 	 * 设置用户在线状态
 	 * @param isOnLine 是否在线， 默认离线
 	 */
@@ -230,5 +275,20 @@ public class UserInfoView extends LinearLayout{
 			mDeleteFlagImg.setVisibility(GONE);
 		}
 	}
-	
+
+	/**
+	 * 设置Tag标签
+	 * @return
+	 */
+	public String getTag() {
+		return tag;
+	}
+
+	/**
+	 * 获取Tag标签
+	 * @param tag
+	 */
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
 }

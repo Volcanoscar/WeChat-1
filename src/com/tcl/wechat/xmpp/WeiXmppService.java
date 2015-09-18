@@ -18,7 +18,9 @@ import com.tcl.wechat.common.WeiConstant.CommandAction;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.db.AppInfoDao;
 import com.tcl.wechat.db.DeviceDao;
+import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiQrDao;
+import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.AppInfo;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.DeviceInfo;
@@ -283,6 +285,14 @@ public class WeiXmppService extends Service{
 				mBundle = new Bundle(); 
 				mBundle.putParcelable("bindUser", mBundle);
 				intent.putExtras(mBundle);
+				sendBroadcast(intent);
+				break;
+				
+			case CommandType.COMMAND_UN_BINDER:
+				String openId = (String) msg.obj;
+				WeiUserDao.getInstance().deleteUser(openId);
+				WeiMsgRecordDao.getInstance().deleteUserRecorder(openId);
+				intent = new Intent(CommandAction.ACTION_UPDATE_BINDUSER);
 				sendBroadcast(intent);
 				break;
 				

@@ -16,7 +16,7 @@
         custom:textSize="16sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
-        custom:imageSrc="@drawable/head_user_icon"
+        custom:imageSrc="@drawable/default_sys_user_icon"
         custom:imageScaleType="centerInside"/>
     
     <com.tcl.wechat.view.UserInfoView 
@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_gravity="center"
-        android:paddingLeft="20dp"
+        android:paddingLeft="30dp"
         custom:textTitle=""
         custom:textSize="14sp"
         custom:textColor="#ff000000"

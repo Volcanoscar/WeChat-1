@@ -258,6 +258,25 @@ public class WeiUserDao {
 	
 	/**
 	 * 删除用户
+	 * @param openId
+	 * @return
+	 */
+	public boolean deleteUser(String openId){
+		if (!bindUserIsExist(openId)){
+			return false ;
+		}
+		
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		String whereClause = Property.COLUMN_OPENID + "=?";
+		String[] whereArgs = new String[]{openId};
+		if (db.delete(Property.TABLE_USER, whereClause, whereArgs) > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 删除用户
 	 * @param user
 	 * @return
 	 */

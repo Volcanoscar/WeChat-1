@@ -16,6 +16,7 @@ import org.jivesoftware.smack.packet.IQ.Type;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.provider.ProviderManager;
 
+import android.R.transition;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -68,14 +69,21 @@ public class WeiXmppManager {
 	private String token = "";
 	
 	
-	private  XMPPConnection mXmppConnect = null;
-	private  BaseUIHandler mHandler = null;
-	private  Boolean loginFlag = false;
-	private  Boolean registerFlag = false;
+	private XMPPConnection mXmppConnect = null;
+	private BaseUIHandler mHandler = null;
+	private boolean loginFlag = false;
+	private boolean registerFlag = false;
 	
-	private static PacketListener authPacketListener=null,loginPacketListener = null,weiMsgPacketListener = null,
-			weiNoticePacketListener = null,weiRemoteBindPacketListener = null,weiControlPacketListener=null,
-			weiAppPacketListener = null,serviceMsgPacketListener;
+	private static PacketListener authPacketListener=null,
+			loginPacketListener = null,
+			weiMsgPacketListener = null,
+			weiNoticePacketListener = null,
+			weiRemoteBindPacketListener = null,
+			weiControlPacketListener=null,
+			weiAppPacketListener = null,
+			serviceMsgPacketListener = null,
+			weiunberUserListener = null;
+	
 	private Boolean reconnError  = false;
 	private Thread reconnctionThtread = null;
 	private Handler timeHandler = new Handler();
@@ -183,6 +191,7 @@ public class WeiXmppManager {
 		weiControlPacketListener=null;
 		weiAppPacketListener = null;
 		serviceMsgPacketListener=null;
+		weiunberUserListener = null;
 		Getqr.initPacketListener();
 		QueryBinder.initPacketListener();
 		Unbind.initPacketListener();
@@ -666,7 +675,7 @@ public class WeiXmppManager {
 									Log.d(TAG, "Sending an access request：" + content);
 									
 									String content2 = "<tvreplymsg xmlns=\"tcl:hc:portal\">" 
-											+ "<tousername>oUOM9wYh_y1zwTXnkE6QS06opLxw</tousername>" 
+											+ "<tousername>oUOM9wX-QpvuslXkOa7prGP29VHY</tousername>" 
 											+ "<fromusername>gh_2fbda9db206f</fromusername>"
 											+ "<createtime>1442451291</createtime>"
 											+ "<msgtype>voice</msgtype>"
@@ -678,13 +687,24 @@ public class WeiXmppManager {
 									mXmppConnect.sendPacket(userLoginIQ);
 									
 									/*String content2 = "<getaccesstoken xmlns=\"tcl:hc:portal\">" 
-									+ "</getaccesstoken>";*/
+									+ "</getaccesstoken>";
 							
-									/*userLoginIQ = new UserLoginIQ(content2);
+									userLoginIQ = new UserLoginIQ(content2);
 									userLoginIQ.setType(IQ.Type.SET);
-									mXmppConnect.sendPacket(userLoginIQ);
-									Log.d(TAG, "Sending an access request：" + content2);*/
+									mXmppConnect.sendPacket(userLoginIQ);*/
 									
+									
+									/*
+									String content2 = "<unbind xmlns=\"tcl:hc:wechat\">" +
+											"<openid>oUOM9wYh_y1zwTXnkE6QS06opLxw</openid>" +
+											"<deviceid>gh_2fbda9db206f</deviceid>" + 
+											"</unbind>";
+									
+									userLoginIQ = new UserLoginIQ(content2);
+									userLoginIQ.setType(IQ.Type.SET);
+									
+									mXmppConnect.sendPacket(userLoginIQ);*/
+									Log.d(TAG, "Sending an access request：" + content2);
 									return;
 								}
 			
@@ -927,15 +947,121 @@ public class WeiXmppManager {
 	}
 	
 	 private Runnable mUpdateTimeTask = new Runnable() {     
+		public void run() { 
+			loginFlag = false;
+			/*if (mHandler != null){
+				Message msg = mHandler.obtainMessage(); 
+				msg.what = WeiConstant.LOG_IN_TIMEOUT;
+				mHandler.sendMessage(msg);	
+			}*/
+		}
+	 };
+	 
+	 /**
+	  * 客户端解绑操作
+	  */
+	 public void unbind(final BindUser bindUser ){
+		 Log.d(TAG, "=====================start unbind===============");
+		 if (bindUser == null){
+			 Log.w(TAG, "unbind user is NULL!!");
+			 return ;
+		 }
+		 if (!UIUtils.isNetworkAvailable()){
+			 Log.i(TAG, "Network is not available!!");
+			 ToastUtil.showToastForced("Network is not available");
+			 return;
+		 }
+		
+		 ToastUtil.showToast("start unbind");
+		
+		 new Thread(new Runnable() { 
 			
-			public void run() { 
-				loginFlag = false;
-				/*if (mHandler != null){
-					Message msg = mHandler.obtainMessage(); 
-					msg.what = WeiConstant.LOG_IN_TIMEOUT;
-					mHandler.sendMessage(msg);	
-				}*/
+			 @Override
+			 public void run() {
+				 // TODO Auto-generated method stub	
+				 SmackConfiguration.setPacketReplyTimeout(10000);
+
+				 XMPPConnection connect = getXMPPConnection();
+				 try {
+					 connect.connect();
+				 } catch (XMPPException e) {
+					 e.printStackTrace();
+					 connect.disconnect();
+					 Log.d(TAG, "==================connect failed!!===============");
+				 }
+				 //连接登录服务
+				 if (connect.isConnected()){
+					
+					 Log.d(TAG, "=====================connected===============");
+					 Log.d(TAG, "Server has been connected!");
+					
+					 addUnbindListener(connect, bindUser);
+					
+					 String content = "<unbind xmlns=\"tcl:hc:wechat\">" +
+							"<openid>" + 
+							bindUser.getOpenId() + 
+							"</openid>" +
+							"<deviceid>" + 
+							DeviceDao.getInstance().getDeviceId() +
+							"</deviceid>" + 
+							"</unbind>";
+					
+					 IQ userUnbindIQ  = new UnbindResultIQ(content);
+					 userUnbindIQ.setType(IQ.Type.SET);
+					
+					 mXmppConnect.sendPacket(userUnbindIQ);
+					 Log.d(TAG, "Sending an access request：" + content);
+					 return;
+				}
 			}
-		};
-	
+		}).start();
+	 }
+
+	private void addUnbindListener(final XMPPConnection connection, final BindUser bindUser) {
+		ProviderManager.getInstance().addIQProvider("unbind", "tcl:hc:wechat", new UnbindProvider());
+		PacketFilter filter = new PacketTypeFilter(LSLoginResultIQ.class);		
+		connection.addPacketListener(weiunberUserListener = new PacketListener() {
+			
+			@Override
+			public void processPacket(Packet packet) {
+				UnbindResultIQ packageIq = (UnbindResultIQ) packet;
+				Log.i(TAG, "Registration result:" + packageIq.toXML());
+				
+				try {
+					if (packageIq instanceof UnbindResultIQ){
+						
+						UnbindResultIQ unbindResultIQ = (UnbindResultIQ) packet;
+						String openId = unbindResultIQ.getopenid();
+						String errorCode = unbindResultIQ.getErrorcode();
+						Log.i(TAG, "openId=" + openId + ",errorCode=" + errorCode);
+						
+						if (openId != null && openId.equals(bindUser.getOpenId())){
+							//注册成功
+							Log.d(TAG, "=====================Unbind successfully===============");
+							ToastUtil.showToast("Unbind successfully");
+							
+						}else{
+							Log.e(TAG, "updateMemberId Failed!!");
+							mHandler.sendEmptyMessage(CommandType.COMMAND_UN_BINDER_ERROR);
+							return ;
+						}
+						
+						if (mHandler != null && errorCode != null && errorCode.equalsIgnoreCase("0")){
+							Message msg = mHandler.obtainMessage();
+							msg.what = CommandType.COMMAND_UN_BINDER;
+							msg.obj = openId;
+							mHandler.sendMessage(msg);
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (connection != null){
+						connection.disconnect();
+					}
+				}
+			}
+		}, filter);
+			
+	}
 }

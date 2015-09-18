@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,10 +16,14 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.controller.ActivityManager;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.ui.activity.DelUserActivity;
 import com.tcl.wechat.utils.DensityUtil;
+import com.tcl.wechat.view.listener.UserInfoEditListener;
+import com.tcl.wechat.xmpp.WeiXmppManager;
 
 /**
  * 我的好友视图类
@@ -35,6 +41,8 @@ public class MyFriendGroupView extends LinearLayout {
 	
 	private ArrayList<BindUser> mAllBindUsers;
 	
+	private ArrayList<UserInfoView> mAllUserViews;
+	
 	private DataFileTools mDataFileTools;
 	
 	private final int USER_TAB_WIDTH = 200;
@@ -47,6 +55,9 @@ public class MyFriendGroupView extends LinearLayout {
 	private int[] track = new int[]{95, 110, 140, 90, 60};
 	
 	private HorizontalScrollView mHorizontalScrollView = null;
+	
+	private ActivityManager mActivityManager;
+	
 	
 	public MyFriendGroupView(Context context) {
 		this(context, null);
@@ -61,7 +72,12 @@ public class MyFriendGroupView extends LinearLayout {
 		mContext = context;
 		mDataFileTools = DataFileTools.getInstance();
         mInflater = LayoutInflater.from(context);
+        mAllUserViews = new ArrayList<UserInfoView>();
+        mAllBindUsers = new ArrayList<BindUser>();
         
+        mActivityManager = ActivityManager.getInstance();
+        
+        mActivityManager.setUserInfoEditListener(mEditListener);
 	}
 	
 	public void setData(ArrayList<BindUser> users) {
@@ -71,9 +87,6 @@ public class MyFriendGroupView extends LinearLayout {
 		
 		mAllBindUsers = users;
 		Log.i(TAG, "mAllBindUsers:" + mAllBindUsers.toString());
-		for (int i = 0; i < 10; i++) {
-			mAllBindUsers.add(users.get(2));
-		}
 		
 		for (int i = 0; i < mAllBindUsers.size(); i++) {
 			BindUser bindUser = mAllBindUsers.get(i);
@@ -90,14 +103,8 @@ public class MyFriendGroupView extends LinearLayout {
 			return ;
 		}
 		
-//		Log.i(TAG, "updateUser:" + bindUser.toString());
-//		
-//		Log.i(TAG, "HeadImageUrl:" + bindUser.getHeadImageUrl());
-//		
-//		Log.i(TAG, "Tag:" + userInfoView.getTag());
-		
 		if (bindUser.getHeadImageUrl() != null){
-			if (bindUser.getHeadImageUrl().equals(userInfoView.getTag())){
+			if (bindUser.getOpenId().equals(userInfoView.getTag())){
 				Bitmap userIcon = mDataFileTools.getBindUserIcon(bindUser.getHeadImageUrl());
 				userInfoView.setUserIcon(userIcon, true);
 			}
@@ -110,6 +117,17 @@ public class MyFriendGroupView extends LinearLayout {
 					bindUser.getNickName());
 		}
 	}
+	
+	private void updateAllUser(){
+		Log.i(TAG, "updateAllUser");
+		//更新界面
+		int size = mAllUserViews.size();
+		for (int i = 0; i < size; i++) {
+			UserInfoView uv = mAllUserViews.get(i);
+			uv.invalidate();
+		}
+	}
+	
 	
 	private void addUserColumn(BindUser bindUser, int position){
 		if (bindUser == null){
@@ -130,7 +148,14 @@ public class MyFriendGroupView extends LinearLayout {
 		View childView = mInflater.inflate(R.layout.layout_friend_view, null);
 		UserInfoView userInfoView = (UserInfoView) childView.findViewById(R.id.user_info);
 		userInfoView.setUserIconEditable(true);
-		userInfoView.setTag(bindUser.getHeadImageUrl());
+		userInfoView.setTag(bindUser.getOpenId());
+		
+		//添加好友编辑监听
+		userInfoView.setUserInfoEditListener(mEditListener);
+		
+		//添加视图列表
+		mAllUserViews.add(userInfoView);
+		
 		updateUser(userInfoView, bindUser);
 		
 		return childView;
@@ -180,5 +205,65 @@ public class MyFriendGroupView extends LinearLayout {
 	public void setScrollView(HorizontalScrollView scrollView){
         mHorizontalScrollView = scrollView;
     }
+	
+	/**
+	 * 根据OpenId获取User
+	 * @param openid
+	 */
+	private BindUser getBindUser(String openid){
+		if (TextUtils.isEmpty(openid)){
+			return null;
+		}
+		for (int i = 0; i < mAllBindUsers.size(); i++) {
+			BindUser bindUser = mAllBindUsers.get(i);
+			if (openid.equals(bindUser.getOpenId())){
+				return bindUser;
+			}
+		}
+		return null;
+	}
 
+	/**
+	 * 用户编辑监听器
+	 */
+	private UserInfoEditListener mEditListener = new UserInfoEditListener() {
+		
+		@Override
+		public void onEditUserNameEvent() {
+			
+		}
+
+		@Override
+		public void onDeleteUserEvent(String eventTag) {
+			// TODO Auto-generated method stub
+			String openid = eventTag;
+			BindUser bindUser = getBindUser(openid);
+			Intent intent = new Intent(mContext, DelUserActivity.class);
+			intent.putExtra("bindUser", bindUser);
+			mContext.startActivity(intent);
+		}
+
+		@Override
+		public void onCancleEditUser() {
+			//更新UI状态
+			updateAllUser();
+		}
+
+		@Override
+		public void onConfirmEditUser(BindUser user) {
+			// TODO Auto-generated method stub
+			//1、发送删除用户请求
+			WeiXmppManager manager = WeiXmppManager.getInstance();
+			manager.unbind(user);
+			
+			//2、等待时间，完成后。
+			
+			
+			//3、更新UI状态. TODO 不用再次更新，删除用户完成后，更新。
+//			updateAllUser();
+		}
+		
+	};
+	
 }
+

@@ -1,7 +1,6 @@
 package com.tcl.wechat.ui.activity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,10 +23,8 @@ import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.view.MyFriendGroupView;
 import com.tcl.wechat.view.UserInfoView;
@@ -46,6 +43,9 @@ public class MainActivity extends Activity implements WeiConstant{
 	
 	private static final int MSG_UPDATE_SYSTEMUSER = 0x01;//更新系统用户头像
 	private static final int MSG_UPDATE_FRIENDLIST = 0x02;//更新用户列表信息
+	private static final int MSG_UNBINDER_USER     = 0x03;//用户解除绑定
+	private static final int MSG_BINDER_USER       = 0x04;//用户绑定
+	
 	
 	private Context mContext;
 	
@@ -81,7 +81,6 @@ public class MainActivity extends Activity implements WeiConstant{
         getWindow().setBackgroundDrawable(null);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        
 		setContentView(R.layout.activity_main);
 		
 		mContext = MainActivity.this;
@@ -110,9 +109,6 @@ public class MainActivity extends Activity implements WeiConstant{
 		//加载信息
 		loadBindUserData();
 		
-		//加载留言板信息
-		loadMsgBoardData();
-		
 	}
 	
 	/**
@@ -132,10 +128,13 @@ public class MainActivity extends Activity implements WeiConstant{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
+			//用户解绑或者绑定
 			if (CommandAction.ACTION_UPDATE_BINDUSER.equals(action)){
-				//更新绑定用户
-				updateUserInfo();
-			}
+				//更新用户列表
+				
+				//如果解绑，同时更新留言板
+			} 
+			
 		}
 	};
 	
@@ -171,21 +170,7 @@ public class MainActivity extends Activity implements WeiConstant{
 	 */
 	private void loadBindUserData() {
 		ArrayList<BindUser> allUsers = WeiUserDao.getInstance().getAllUsers();
-		
-//		//for test:
-//		BindUser bindUser = new BindUser("oUOM9wQ-iKPxMarfsO6vTdpMWK2Q", 
-//				"TCL系统账号", 
-//				"TCL系统账号", 
-//				"0", 
-//				"http://wechat.dev.tventry.com/wechatwebservice/images/tg_logo.jpg", 
-//				null, 
-//				null, 
-//				null);
-//		for (int i = 1; i < 11; i++) {
-//			allUsers.add(bindUser);
-//		}
-//		
-		
+
 		if (allUsers == null || allUsers.isEmpty()){
 			Log.d(TAG, "NO BindUser!!");
 			return ;
@@ -198,30 +183,8 @@ public class MainActivity extends Activity implements WeiConstant{
 				mAllFirendUsers.add(allUsers.get(i));
 			}
 		}
-		
-		Log.i(TAG, "mSystemUser:" + mSystemUser);
-		Log.i(TAG, "mAllFirendUsers:" + mAllFirendUsers.toString());
-		
 	}
 	
-	/**
-	 *加载留言板信息 
-	 */
-	private void loadMsgBoardData() {
-		/*if (mAllFirendUsers == null ){
-			return ;
-		}
-		mAllMsgRecords = new HashMap<String, ArrayList<WeiXinMsgRecorder>>();
-		int userCount = mAllFirendUsers.size();
-		for (int i = 0; i < userCount; i++) {
-			String openId = mAllFirendUsers.get(i).getOpenId();
-			ArrayList<WeiXinMsgRecorder> recorders = WeiMsgRecordDao.getInstance()
-					.getUserRecorder(openId);
-			mAllMsgRecords.put(openId, recorders);
-		}*/
-		
-	}
-
 	/**
 	 * 加载View
 	 */
@@ -274,8 +237,6 @@ public class MainActivity extends Activity implements WeiConstant{
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
 		
 		
-		
-		
 		//字体
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
@@ -292,6 +253,7 @@ public class MainActivity extends Activity implements WeiConstant{
 				loadBindUserData();
 				updateUserIcon();
 				break;
+				
 
 			default:
 				break;

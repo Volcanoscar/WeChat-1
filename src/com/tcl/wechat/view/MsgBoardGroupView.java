@@ -7,11 +7,11 @@ import java.util.HashMap;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.tcl.wechat.R;
 import com.tcl.wechat.controller.WeiXinMsgManager;
 import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.db.WeiMsgRecordDao;
@@ -31,32 +31,38 @@ public class MsgBoardGroupView extends LinearLayout{
 	private Context mContext;
 	private LayoutInflater mInflater;
 	
-	private View mMainView;
-	
-	/**
-	 * 聊天用户列表
-	 */
-	private ArrayList<BindUser> mAllBindUsers;
-	
+	private static int mOnLineChatUserCnt = 0;
 	/**
 	 * 所有消息记录
 	 */
 	private ArrayList<WeiXinMsgRecorder> mAllMsgRecords;
 	
 	/**
-	 * 消息分类
+	 * 保存每个用户的最新消息
 	 */
-	private HashMap<String, ArrayList<WeiXinMsgRecorder>> mMsgRecorderMap;
+	private HashMap<String, WeiXinMsgRecorder> mLastestMsgRecorderMap;
 	
-	private final int USER_TAB_WIDTH = 200;
+	/**
+	 * 用户列表
+	 */
+	private HashMap<String, BindUser> mAllBindUserMap;
+	
+	/**
+	 * 用户视图排序
+	 */
+	private HashMap<String, MsgBoardView> mMsgBoardViewMap ;
+	
+	
+	private final int USER_TAB_WIDTH = 400;
 
-	private final int USER_TAB_HEIGHT = 200;
+	private final int USER_TAB_HEIGHT = 400;
 	
 	private WeiXinMsgManager mWeiXinMsgManager;
 	
-	private HashMap<String, BindUser> mBindUserMap;
-	
-	private HashMap<String, MsgBoardView> mMsgBoardViewMap;
+	/*
+	 * 轨迹，根据移动的leftMargn来确定
+	 */
+	private int[] track = new int[]{0, 0, 0, 0, 0}; 
 	
 	private WeiUserDao mWeiUserDao = WeiUserDao.getInstance();
 	private WeiMsgRecordDao mWeiMsgRecordDao = WeiMsgRecordDao.getInstance();
@@ -77,14 +83,12 @@ public class MsgBoardGroupView extends LinearLayout{
 		mInflater = LayoutInflater.from(context);
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		
-		mAllBindUsers = new ArrayList<BindUser>();
-		mMsgRecorderMap = new HashMap<String, ArrayList<WeiXinMsgRecorder>>();
-		mBindUserMap = new HashMap<String, BindUser>();
+		mAllMsgRecords = new ArrayList<WeiXinMsgRecorder>();
+		mLastestMsgRecorderMap = new HashMap<String, WeiXinMsgRecorder>();
+		mAllBindUserMap = new HashMap<String, BindUser>();
 		mMsgBoardViewMap = new HashMap<String, MsgBoardView>();
-		mAllMsgRecords = mWeiMsgRecordDao.getAllUserRecorder();
 		
-		//加载视图
-		mMainView = inflate(context, R.layout.layout_main_friend_group, this);
+		//加载数据
 		loadMsgBoardData();
 		
 		//设置监听器
@@ -96,31 +100,27 @@ public class MsgBoardGroupView extends LinearLayout{
 	 */
 	private void loadMsgBoardData(){
 		
+		mAllMsgRecords = mWeiMsgRecordDao.getAllUserRecorder();
+		
 		if (mAllMsgRecords == null && mAllMsgRecords.isEmpty()){
 			return ;
 		}
+		//反转
+		Collections.reverse(mAllMsgRecords);
 		
 		for (WeiXinMsgRecorder recorder : mAllMsgRecords) {
-			if (!mAllBindUsers.contains(recorder)){
-				BindUser bindUser = mWeiUserDao.getUser(recorder.getOpenid());
-				mAllBindUsers.add(bindUser);
-				mBindUserMap.put(recorder.getOpenid(), bindUser);
+			String openid = recorder.getOpenid();
+			if (!mLastestMsgRecorderMap.containsKey(openid)){
+				mLastestMsgRecorderMap.put(openid, recorder);
+				
+				BindUser bindUser = mWeiUserDao.getUser(openid);
+				if (bindUser != null){
+					mAllBindUserMap.put(openid, bindUser);
+				}
+				
+				addUserColumn(bindUser, mOnLineChatUserCnt);
+				mOnLineChatUserCnt ++;
 			}
-		}
-		
-		if (mAllBindUsers == null && mAllBindUsers.isEmpty()){
-			return ;
-		}
-		
-		//反转，最新用户放在第一位
-		Collections.reverse(mAllBindUsers);
-		int userCount = mAllBindUsers.size();
-		for (int i = 0; i < userCount; i++) {
-			BindUser bindUser = mAllBindUsers.get(i);
-			String openid = bindUser.getOpenId();
-			mMsgRecorderMap.put(openid, mWeiMsgRecordDao.getUserRecorder(openid));
-
-			addUserColumn(bindUser, i);
 		}
 	}
 	
@@ -131,8 +131,8 @@ public class MsgBoardGroupView extends LinearLayout{
 		int width = DensityUtil.dip2px(mContext, USER_TAB_WIDTH);
         int height = DensityUtil.dip2px(mContext,USER_TAB_HEIGHT);
         
-        View view = setUpView(bindUser, position + 1);
-        attachChildViewToParent(view, position, width, height, 100 , 100);
+        View view = setUpView(bindUser, position);
+        attachChildViewToParent(view, position, width, height, 65 , 0);
         
 	}
 	
@@ -147,9 +147,8 @@ public class MsgBoardGroupView extends LinearLayout{
 		
 		//方法二
 		MsgBoardView childView = new MsgBoardView(mContext);
-		childView.addData(bindUser, mMsgRecorderMap.get(bindUser.getOpenId()));
-		
 		childView.setupView(position % 4);
+		childView.addData(bindUser, mLastestMsgRecorderMap.get(bindUser.getOpenId()));
 		
 		mMsgBoardViewMap.put(bindUser.getOpenId(), childView);
 		
@@ -176,6 +175,10 @@ public class MsgBoardGroupView extends LinearLayout{
 		Log.i(TAG, "leftMargin:" + leftMargin + ", topMargin:" + topMargin);
 		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width,
                 height);
+		params.width = 0;
+		params.height = LayoutParams.MATCH_PARENT;
+		params.weight = 1;
+		params.gravity = Gravity.CENTER_HORIZONTAL;
 		params.leftMargin = leftMargin;
 		params.topMargin = topMargin;
         
@@ -187,13 +190,38 @@ public class MsgBoardGroupView extends LinearLayout{
 		@Override
 		public void onNewMessage(WeiXinMsgRecorder recorder) {
 			Log.i(TAG, "receive new message!");
-			String msgType = recorder.getMsgtype();
 			
-			Log.i(TAG, "WeiXinMsgRecorder：" + recorder.toString());
+			if (recorder == null){
+				return ;
+			}
 			
-			MsgBoardView msgBoardView = mMsgBoardViewMap.get(recorder.getOpenid());
-			BindUser bindUser = mBindUserMap.get(recorder.getOpenid());
-			msgBoardView.receiveNewMessage(bindUser, recorder);
+			/**
+			 * 收到新消息
+			 * 1、用户视图重新排序
+			 */
+			
+			String openId = recorder.getOpenid();
+			
+			if (mLastestMsgRecorderMap.containsKey(openId)){
+				mLastestMsgRecorderMap.remove(openId);
+			}
+			mLastestMsgRecorderMap.put(openId, recorder);
+			
+			/**
+			 * 2、如果是新用户，要添加视图
+			 */
+			BindUser bindUser = mAllBindUserMap.get(openId);
+			if (bindUser == null){//新聊天用户
+				bindUser = mWeiUserDao.getUser(openId);
+				addUserColumn(bindUser, mOnLineChatUserCnt);
+		        mOnLineChatUserCnt ++;
+			} 
+			//3、 排序
+			
+			
+			//4、消息通知
+			mMsgBoardViewMap.get(openId).receiveNewMessage(bindUser, recorder);
+			
 		}
 	};
 }
