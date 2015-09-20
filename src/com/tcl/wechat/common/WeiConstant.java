@@ -34,6 +34,10 @@ public interface WeiConstant {
 		
 		public static final String ACTION_UPDATE_BINDUSER = "com.tcl.wechat.UPDATE_BINDUSER";
 		public static final String ACTION_DOWNLOAD_SERVICE = "com.tcl.wechat.DOWNLOAD_SERVICE";
+		
+		public static final String ACTION_APPWIDGET_UPDATE = "android.appwidget.action.APPWIDGET_UPDATE";
+		
+		public static final String ACTION_MSG_UPDATE = "android.appwidget.action.MSG_UPDATE";
 	}
 	
 	/**

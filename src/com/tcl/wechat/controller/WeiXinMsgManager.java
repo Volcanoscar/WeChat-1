@@ -2,13 +2,16 @@ package com.tcl.wechat.controller;
 
 import java.util.ArrayList;
 
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.action.player.DownloadManager;
 import com.tcl.wechat.action.player.listener.DownloadStateListener;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.common.WeiConstant.CommandAction;
 import com.tcl.wechat.controller.listener.BindListener;
 import com.tcl.wechat.controller.listener.LoginStateListener;
 import com.tcl.wechat.controller.listener.NetChangedListener;
@@ -87,12 +90,24 @@ public class WeiXinMsgManager {
 		
 		//1、消息提示
 		mWeiXinNotifier.notify(weiXinMsg);
+		notifyAppWidget(weiXinMsg);
+		
 		
 		//2、接收消息
 		receive(weiXinMsg);
 		
 		//3、 保存消息至数据库
 		save(weiXinMsg);
+	}
+	
+	/**
+	 * 通知AppWidget
+	 */
+	private void notifyAppWidget(WeiXinMsgRecorder weiXinMsg){
+		Intent intent = new Intent();
+		intent.setAction(CommandAction.ACTION_MSG_UPDATE);
+		intent.putExtra("WeiXinMsgRecorder", weiXinMsg);
+		WeChatApplication.gContext.sendBroadcast(intent);
 	}
 	
 	/**

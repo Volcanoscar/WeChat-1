@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class DateUtil {
 	
-	private String format = "yyyy-MM-dd";
+	private static String format = "yyyy-MM-dd";
 	
 	
 	public DateUtil() {
@@ -25,7 +25,7 @@ public class DateUtil {
 	 * @param date
 	 * @return
 	 */
-    public String ConverToString(Date date){  
+    public static String ConverToString(Date date){  
         DateFormat df = new SimpleDateFormat(format);  
           
         return df.format(date);  
@@ -35,7 +35,7 @@ public class DateUtil {
      * @param strDate
      * @return
      */
-    public Date ConverToDate(String strDate) {  
+    public static Date ConverToDate(String strDate) {  
         try {
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");  
 			return df.parse(strDate);
@@ -46,7 +46,7 @@ public class DateUtil {
         return null;
     }  
     
-    public String getTime(String time){
+    public static String getTime(String time){
     	int start = time.lastIndexOf(":");
 		int end = time.length();
 		String second = time.substring(start + 1, end);

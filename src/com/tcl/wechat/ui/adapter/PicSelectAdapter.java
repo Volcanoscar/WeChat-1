@@ -39,7 +39,7 @@ public class PicSelectAdapter extends CommonAdapter<String>{
 		//设置no_pic
 		helper.setImageResource(R.id.id_item_image, R.drawable.pictures_no);
 		//设置no_selected
-				helper.setImageResource(R.id.id_item_select,
+		helper.setImageResource(R.id.id_item_select,
 						R.drawable.picture_unselected);
 		//设置图片
 		helper.setImageByUrl(R.id.id_item_image, mDirPath + "/" + item);

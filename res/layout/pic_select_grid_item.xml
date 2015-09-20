@@ -6,7 +6,7 @@
     <ImageView
         android:id="@+id/id_item_image"
         android:layout_width="fill_parent"
-        android:layout_height="100dp"
+        android:layout_height="188dp"
         android:background="@drawable/pictures_no"
         android:scaleType="centerCrop"
         android:contentDescription="@string/contentDesc" />

@@ -10,17 +10,17 @@
         android:cacheColorHint="@android:color/transparent"
         android:clipChildren="true"
         android:gravity="center"
-        android:horizontalSpacing="3dip"
+        android:horizontalSpacing="3dp"
         android:listSelector="@android:color/transparent"
-        android:numColumns="5"
+        android:numColumns="10"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="3dip" >
+        android:verticalSpacing="3dp" >
     </GridView>
 
     <RelativeLayout
         android:id="@+id/layout_bottom_view"
         android:layout_width="match_parent"
-        android:layout_height="50dip"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:background="#e0000000"
         android:clickable="true" >
@@ -32,13 +32,13 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:gravity="center_vertical"
-            android:paddingLeft="10dip"
+            android:paddingLeft="10dp"
             android:text="@string/all_pictures"
             android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/id_total_count"
-            android:layout_width="50dip"
+            android:layout_width="50dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
