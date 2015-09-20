@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="120dp"
-        android:layout_marginLeft="80dp"
+        android:layout_marginLeft="70dp"
         android:text="@string/familyboard"
         android:textColor="@color/white" 
         android:textSize="36sp"

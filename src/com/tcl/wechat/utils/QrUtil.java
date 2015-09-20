@@ -43,6 +43,7 @@ public class QrUtil {
 		return createQRCode(content, icon);
 	}
 	
+	
 	/**
 	 * 生成二维码名片
 	 * @param content
@@ -53,6 +54,34 @@ public class QrUtil {
 		Bitmap qRCodeBitmap = QRCodeCreator.create(content, 600);
 		
 		//二维码进行缩放
+		centerIcon = ImageUtil.getInstance().zoomBitmap(centerIcon,60, 60);
+		
+		//合并二维码与个人图像
+		Bitmap bitmap = Bitmap.createBitmap(
+				qRCodeBitmap.getWidth(),
+				qRCodeBitmap.getHeight(), 
+				qRCodeBitmap.getConfig());
+		
+		Canvas canvas = new Canvas(bitmap);
+		//二维码
+ 		canvas.drawBitmap(qRCodeBitmap, 0, 0, null);
+ 		
+ 		if (centerIcon != null){
+ 			//personIcon绘制在二维码中央
+ 			canvas.drawBitmap(centerIcon, 
+ 					(qRCodeBitmap.getWidth() - centerIcon.getWidth()) / 2, 
+ 					(qRCodeBitmap.getHeight() - centerIcon.getHeight()) / 2, 
+ 					null);
+ 		}
+ 		return bitmap;
+	}
+	
+	public Bitmap mixtrixBitmap(Bitmap qRCodeBitmap, Bitmap centerIcon){
+		
+		//二维码进行缩放
+		qRCodeBitmap = ImageUtil.getInstance().zoomBitmap(qRCodeBitmap, 600, 600);
+		
+		//用户头像缩放
 		centerIcon = ImageUtil.getInstance().zoomBitmap(centerIcon,60, 60);
 		
 		//合并二维码与个人图像

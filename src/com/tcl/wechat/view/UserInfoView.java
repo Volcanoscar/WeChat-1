@@ -31,6 +31,9 @@ public class UserInfoView extends LinearLayout{
 
 	private static final String TAG = "UserInfoView";
 	
+	private static final int DEFULT_WIDTH = 100;
+	private static final int DEFULT_HEIGHT = 100;
+	
 	private String mTextTitle;
 	private float mTextSize;
 	private int mTextColor;
@@ -86,6 +89,7 @@ public class UserInfoView extends LinearLayout{
 		mUserNameEdt = (EditText) mView.findViewById(R.id.user_name);
 		LinearLayout layout = (LinearLayout) mView.findViewById(R.id.user_icon_layout);
 		LayoutParams params = (LayoutParams) layout.getLayoutParams();
+		
 		params.width = mBitmap.getWidth();
 		params.height = mBitmap.getHeight();
 		

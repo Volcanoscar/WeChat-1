@@ -162,7 +162,7 @@ public class WeiMsgRecordDao {
 	 * @return
 	 */
 	public ArrayList<WeiXinMsgRecorder> getUserRecorder(String openid){
-		if (bindUserIsExist(openid)){
+		if (!bindUserIsExist(openid)){
 			Log.e(TAG, "BinderUser not exist!!");
 			return null;
 		}
@@ -192,7 +192,7 @@ public class WeiMsgRecordDao {
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME)) , 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILESIZE)) , 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILETIME)) , 
-						"");
+						"", true);
 				recorders.add(recorder);
 			}
 			cursor.close();
@@ -228,7 +228,7 @@ public class WeiMsgRecordDao {
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME)) , 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILESIZE)) , 
 						cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILETIME)) , 
-						"");
+						"", true);
 				recorders.add(recorder);
 			}
 			cursor.close();

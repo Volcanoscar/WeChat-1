@@ -2,8 +2,12 @@ package com.tcl.wechat.controller;
 
 import java.util.ArrayList;
 
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.action.player.DownloadManager;
+import com.tcl.wechat.action.player.listener.DownloadStateListener;
+import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.controller.listener.BindListener;
 import com.tcl.wechat.controller.listener.LoginStateListener;
@@ -48,6 +52,7 @@ public class WeiXinMsgManager {
 	
 	private WeiXinNotifier mWeiXinNotifier = WeiXinNotifier.getInstance();
 	
+	private DownloadManager downloadManager = DownloadManager.getInstace();
 	
 	private static class WeiXinMsgManagerInstance{
 		private static final WeiXinMsgManager mInstance = new WeiXinMsgManager();
@@ -105,12 +110,47 @@ public class WeiXinMsgManager {
 		/*if(!SystemReflect.getProperties(SYS_SCAN_STATE, "off").equals("on")){
 			
 		}*/
+		//1、下载数据
+		if (isNeedDownload(recorder)){
+			download(recorder);
+		}
 		
+		//2、通知用户
 		for (NewMessageListener listener : newMsgListeners) {
 			listener.onNewMessage(recorder);
 		}
 	}
 	
+	private boolean isNeedDownload(WeiXinMsgRecorder recorder){
+		if (recorder == null || TextUtils.isEmpty(recorder.getMsgtype())){
+			return false;
+		}
+		String type = recorder.getMsgtype();
+		if (ChatMsgType.IMAGE.equals(type) || 
+				ChatMsgType.VIDEO.equals(type) || 
+				ChatMsgType.VOICE.equals(type)){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 下载文件
+	 */
+	private void download(WeiXinMsgRecorder recorder){
+		
+		String urlStr = recorder.getUrl();
+		
+		if (TextUtils.isEmpty(urlStr)){
+			return ;
+		}
+		
+		String type = recorder.getMsgtype();
+		
+		downloadManager.setDownloadStateListener(mListener);
+		downloadManager.startToDownload(urlStr, type);
+		
+	}	
 	/**
 	 * 保存用户微信消息
 	 * @param weiXinMsg
@@ -200,4 +240,31 @@ public class WeiXinMsgManager {
 	private void receiveNoticeMsg(WeiXinMsgRecorder weiXinMsg){
 		Log.i(TAG, "received NoticeMsg");
 	}
+	
+	private DownloadStateListener mListener = new DownloadStateListener() {
+		
+		@Override
+		public void startDownLoad() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onProgressUpdate(int progress) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onDownLoadError(int errorCode) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onDownLoadCompleted() {
+			// TODO Auto-generated method stub
+			
+		}
+	};
 }

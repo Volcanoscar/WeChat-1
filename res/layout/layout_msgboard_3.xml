@@ -10,19 +10,26 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="140dp"
         android:background="@drawable/main_familyboard_bg_3">
-        <com.tcl.wechat.view.page.TextPageView 
-            android:id="@+id/tv_familboard_msg"
-            android:layout_width="280dp"
+        <FrameLayout
+            android:id="@+id/layout_familboard_msg"
+           	android:layout_width="320dp"
             android:layout_height="180dp"
-            android:layout_centerHorizontal="true"
             android:layout_marginTop="120dp"
-            android:padding="3dp"
             android:background="#45F0F0F0"
-            android:maxLines="6"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="22sp"
-            android:rotation="11"/>
+            android:layout_centerHorizontal="true">
+            <com.tcl.wechat.view.page.TextPageView 
+	            android:id="@+id/tv_familboard_msg"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:gravity="center"
+	            android:padding="3dp"
+	            android:background="#45F0F0F0"
+	            android:maxLines="6"
+	            android:text=""
+	            android:textColor="@color/black"
+	            android:textSize="22sp"
+	            android:rotation="11"/>
+        </FrameLayout>
     </RelativeLayout>
     
      <com.tcl.wechat.view.UserInfoView
@@ -55,8 +62,7 @@
          android:layout_height="wrap_content"
          android:layout_alignParentLeft="true"
          android:layout_marginTop="420dp"
-         android:background="@drawable/familyborad_reply3_selector"
-         android:onClick="onBtnReplyClick"/>
+         android:background="@drawable/familyborad_reply3_selector"/>
     
     <TextView 
         android:id="@+id/tv_msgreceive_time"

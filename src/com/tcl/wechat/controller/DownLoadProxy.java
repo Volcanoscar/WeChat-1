@@ -112,8 +112,7 @@ public class DownLoadProxy {
 			
 			@Override
 			public void run() {
-				String cachePath = DataFileTools.getInstance().getCachePath();
-				
+				String cachePath = DataFileTools.getInstance().getRecordImagePath();
 				if (cachePath == null){
 					return ;
 				}

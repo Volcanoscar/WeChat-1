@@ -12,7 +12,10 @@ import android.util.Log;
 
 import com.tcl.wechat.action.player.listener.DownloadState;
 import com.tcl.wechat.action.player.listener.DownloadStateListener;
+import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.utils.MD5Util;
 
 public class DownloadThread extends Thread { 
    
@@ -21,17 +24,27 @@ public class DownloadThread extends Thread {
 	private static final int TIME_OUT = 8000;
 	private static final int BUFFER_SIZE = 1024;
 	
+	
 	private String mFileName; 
     private String mDownloadUrl; 
+    private String mType ;
     private DownloadStateListener mDownloadListener;
     
     private DataFileTools mFileTools = DataFileTools.getInstance();
     
-   
-	public DownloadThread(String downloadUrl, DownloadStateListener listener) { 
+	public DownloadThread(String downloadUrl, String type, DownloadStateListener listener) { 
 	    mDownloadUrl = downloadUrl; 
 	    mDownloadListener = listener;
-	    mFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+	    mType = type;
+//	    mFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+	    if (ChatMsgType.VOICE.equals(type)){
+	    	mFileName = MD5Util.hashKeyForDisk(downloadUrl) + WeiConstant.SUFFIX_AUDIO;
+	    } else if (ChatMsgType.VIDEO.equals(type)){
+	    	mFileName = MD5Util.hashKeyForDisk(downloadUrl) + WeiConstant.SUFFIX_VIDEO;
+	    } else {
+	    	mFileName = MD5Util.hashKeyForDisk(downloadUrl);
+	    }
+	    
 	} 
 	
 	/**
@@ -41,8 +54,16 @@ public class DownloadThread extends Thread {
 	private File getSaveFilePath(){
 		File file = null;
 		try {
-			if (mFileTools.getRecordVideoPath() != null){
+			if (ChatMsgType.VOICE.equals(mType)){
+				file = new File(mFileTools.getRecordAudioPath());
+			} else if (ChatMsgType.VIDEO.equals(mType)) {
 				file = new File(mFileTools.getRecordVideoPath());
+			} else if (ChatMsgType.IMAGE.equals(mType)){
+				file = new File(mFileTools.getRecordImagePath());
+			}else {
+				file = new File(mFileTools.getCachePath());
+			}
+			if (file != null ){
 				if (!file.exists()){
 					file.mkdirs();
 				}

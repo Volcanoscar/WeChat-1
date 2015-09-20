@@ -66,7 +66,7 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 		mDialogManager = new RecorderDialogManager(getContext());
 		mAudioManager = RecorderAudioManager.getInstance();
 		
-		mAudioManager.setFilePath(DataFileTools.getInstance().getRecordSoundPath());
+		mAudioManager.setFilePath(DataFileTools.getInstance().getRecordAudioPath());
 		mAudioManager.setAudioStateListener(this);
 		
 		setOnLongClickListener(new View.OnLongClickListener() {

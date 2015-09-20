@@ -47,8 +47,9 @@ public class WeiXmppCommand {
 		
 		if(!WeiXmppManager.getInstance().isConnected()){
 			Log.d(tag, "当前微信未连接");
-			if(uIHandler==null)
+			if(uIHandler==null){
 				return;
+			}
 			uIHandler.sendEmptyMessage(CommandType.COMMAND_NEWWORK_UNCONNECTED);
 			if(this.type == CommandType.COMMAND_UN_BINDER)
 				uIHandler.sendEmptyMessage(CommandType.COMMAND_UN_BINDER_ERROR);

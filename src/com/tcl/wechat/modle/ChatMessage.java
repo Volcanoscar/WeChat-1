@@ -22,66 +22,6 @@ public class ChatMessage {
 	private ChatMsgSource source;
 	private ChatMsgType type;
 	
-	public ChatMessage() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public ChatMessage(String userName, Object message, String time,
-			ChatMsgSource source, ChatMsgType type) {
-		super();
-		this.userName = userName;
-		this.message = message;
-		this.time = time;
-		this.source = source;
-		this.type = type;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public Object getMessage() {
-		return message;
-	}
-
-	public void setMessage(Object message) {
-		this.message = message;
-	}
-
-	public String getTime() {
-		return time;
-	}
-
-	public void setTime(String time) {
-		this.time = time;
-	}
-
-	public ChatMsgSource getSource() {
-		return source;
-	}
-
-	public void setSource(ChatMsgSource source) {
-		this.source = source;
-	}
-
-	public ChatMsgType getType() {
-		return type;
-	}
-
-	public void setType(ChatMsgType type) {
-		this.type = type;
-	}
-
-	@Override
-	public String toString() {
-		return "ChatMessage [userName=" + userName + ", message=" + message
-				+ ", time=" + time + ", source=" + source + ", type=" + type
-				+ "]";
-	}
+	
 	
 }

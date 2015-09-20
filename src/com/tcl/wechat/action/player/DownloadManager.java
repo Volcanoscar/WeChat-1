@@ -16,12 +16,6 @@ public class DownloadManager {
 	
 	private static DownloadManager mInstance;
 	
-	/**
-	 * 下次次数，如如果3次未下载成功，则不去下载
-	 */
-	private int mDownLoadNum = 3;
-	
-	private String mDownloadUrl;
 	
 	/**
 	 * 下载状态监听器
@@ -51,15 +45,28 @@ public class DownloadManager {
 		if (TextUtils.isEmpty(urlStr)){
 			return ;
 		}
-		mDownloadUrl = urlStr;
-		download(mDownloadUrl, mListener);
+		download(urlStr, null, mListener);
+	}
+	
+	/**
+	 * 开始下载文件
+	 * @param urlStr 文件Url
+	 * @param type 文件类型
+	 */
+	public void startToDownload(String urlStr, String type){
+		Log.i(TAG, "start to download file :" + urlStr);
+		if (TextUtils.isEmpty(urlStr)){
+			return ;
+		}
+		download(urlStr, type, mListener);
 	}
 	
 	/**
 	 * 下载文件
 	 * @param url 文件url地址
 	 */
-	private void download(String url, DownloadStateListener listener){
-		new DownloadThread(url, listener).start();
+	private void download(String url, String type, DownloadStateListener listener){
+		new DownloadThread(url, type, listener).start();
 	}
+	
 }

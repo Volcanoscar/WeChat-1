@@ -16,10 +16,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -460,9 +458,32 @@ public class ImageUtil {
 	}
 	
 	/**
-	 * Bitmap 缩放
+	 * 缩放，等比例缩放，不改变原图形状
 	 * @param bitmap
 	 * @param width
+	 * @return
+	 */
+	public Bitmap zoomBitmap(Bitmap bitmap, int width){
+		if (bitmap == null){
+			return null;
+		}
+		 int w = bitmap.getWidth(); 
+		 int h = bitmap.getHeight(); 
+		 
+		 //取最大压缩系数
+		 int min = Math.max(w, w);
+		 float ratio = ((float) width / min); 
+		 Matrix matrix = new Matrix(); 
+		 matrix.postScale(ratio, ratio); 
+		 Bitmap newbmp = Bitmap.createBitmap(bitmap,0, 0, w, h, matrix, true); 
+		 return newbmp; 
+	}
+	
+	
+	/**
+	 * Bitmap 缩放
+	 * @param bitmap
+	 * @param width 
 	 * @param height
 	 * @return 缩放后的Bitmap对象
 	 */

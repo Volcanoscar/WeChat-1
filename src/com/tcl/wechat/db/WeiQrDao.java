@@ -7,6 +7,7 @@
  */
 package com.tcl.wechat.db;
 
+import android.app.DownloadManager.Request;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -116,6 +117,18 @@ public class WeiQrDao {
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_UUID)));
 			cursor.close();
 			return qrInfo;
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取二维码Url
+	 * @return
+	 */
+	public String getQrUrl(){
+		QrInfo qrInfo = getQr();
+		if (qrInfo != null){
+			return qrInfo.getUrl();
 		}
 		return null;
 	}

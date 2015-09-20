@@ -17,6 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.ui.activity.ChatActivity;
 
 /**
@@ -25,23 +27,25 @@ import com.tcl.wechat.ui.activity.ChatActivity;
  *
  */
 @SuppressLint("NewApi") 
-public class TextPageView extends LinearLayout implements OnPageChangeListener, OnClickListener{
+public class TextPageView extends LinearLayout{
 
 	private static final String TAG = TextPageView.class.getSimpleName();
 	/**
 	 * 每一页字符个数
 	 */
-	private static final int PAGE_CHAT_COUNT = 80;
+	private static final int PAGE_CHAT_COUNT = 50;
+	
+	private Context mContext;
 	
 	private View mView;
 	private TextView mPageNumTv;
-	private ViewPager mPageMsgInfo;
+	private ViewPager mMsgPageView;
 	private TextPageAdapter mAdapter;
 	private ArrayList<ReadView> mReadViews ;
 	
 	private int mPageCount = 0;
 	private int position = -1;
-	private String mMsgInfoStr;
+	private WeiXinMsgRecorder mMsgRecorder;
 	private String mFontPath = "fonts/oop.TTF";
 	
 	public TextPageView(Context context) {
@@ -55,44 +59,68 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener, 
 
 	public TextPageView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		setOnClickListener(this);
+		mContext = context;
 	}
 
 	private void init(Context context){
+		mContext = context;
 		mView = inflate(context, R.layout.layout_text_page, this);
-		mPageMsgInfo = (ViewPager) mView.findViewById(R.id.page_msg_info);
+		mMsgPageView = (ViewPager) mView.findViewById(R.id.page_msg_info);
 		mPageNumTv = (TextView) mView.findViewById(R.id.tv_page_num);
 		
-		mPageCount = getPageCount(); 
+		if (mMsgRecorder == null){
+			return ;
+		}
+		
+		if (ChatMsgType.TEXT.equals(mMsgRecorder.getMsgtype())){
+			initTextPageView(context);
+		} 
+	}
+	
+	/**
+	 * 文本信息初始化
+	 */
+	private void initTextPageView(Context context){
+		if (mMsgRecorder == null){
+			return ;
+		}
+		String msgContent = mMsgRecorder.getContent();
+		Log.i(TAG, "TextMsg content:" + msgContent);
+		
+		mPageCount = getPageCount(msgContent); 
 		Log.i(TAG, "mPageCount:" + mPageCount);
+		
 		if (mPageCount == 1){
 			mPageNumTv.setVisibility(View.GONE);
 		}
+		
 		mReadViews = new ArrayList<ReadView>();
-		if (!TextUtils.isEmpty(mMsgInfoStr)){
+		
+		if (!TextUtils.isEmpty(msgContent)){
 			for (int i = 0; i < mPageCount; i++) {
 				ReadView readView = new ReadView(context);
-				readView.setText(getCurrentPageMessage(i));
-				readView.setTextSize(24);
+				readView.setText(getCurrentPageMessage(msgContent, i));
+				readView.setTextSize(28);
 				readView.setTextColor(Color.BLACK);
 				readView.setFont(mFontPath);
+				readView.setFocusable(false);
+				readView.setFocusableInTouchMode(false);
 				mReadViews.add(readView);
 			} 
 		}
 		mAdapter = new TextPageAdapter(mReadViews);
-		mPageMsgInfo.setAdapter(mAdapter);
-		mPageMsgInfo.setOnPageChangeListener(this);
+		mMsgPageView.setAdapter(mAdapter);
+//		mMsgPageView.setOnPageChangeListener(pageChangeListener);
+		mMsgPageView.addOnPageChangeListener(pageChangeListener);
 	}
 	
-	
-	
-	private int getPageCount(){
-		if (TextUtils.isEmpty(mMsgInfoStr)){
+	private int getPageCount(String msgInfoStr){
+		if (TextUtils.isEmpty(msgInfoStr)){
 			return 0;
 		}
 		
-		int count = (int)(mMsgInfoStr.length() /  PAGE_CHAT_COUNT);
-		if ((mMsgInfoStr.length() %  PAGE_CHAT_COUNT) != 0){
+		int count = (int)(msgInfoStr.length() /  PAGE_CHAT_COUNT);
+		if ((msgInfoStr.length() %  PAGE_CHAT_COUNT) != 0){
 			count ++;
 		}
 		return count;
@@ -111,7 +139,7 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener, 
 	 * @param curIndex
 	 * @return
 	 */
-	private String getCurrentPageMessage(int curIndex){
+	private String getCurrentPageMessage(String mMsgInfoStr, int curIndex){
 		position = curIndex * PAGE_CHAT_COUNT;
 		if (isLastPage(curIndex)){
 			return mMsgInfoStr.substring(position, mMsgInfoStr.length());
@@ -135,8 +163,8 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener, 
 	 * 添加数据,提供外部接口
 	 * @param message
 	 */
-	public void setMessageInfo(Context context,String message){
-		mMsgInfoStr = message;
+	public void setMessageInfo(Context context, WeiXinMsgRecorder recorder){
+		mMsgRecorder = recorder;
 		init(context);
 	}
 	
@@ -145,8 +173,8 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener, 
 	 * @param message
 	 * @param fontPath 字体路径
 	 */
-	public void setMessageInfo(Context context,String message, String fontPath){
-		mMsgInfoStr = message;
+	public void setMessageInfo(Context context, WeiXinMsgRecorder recorder, String fontPath){
+		mMsgRecorder = recorder;
 		mFontPath = fontPath;
 		init(context);
 	}
@@ -159,28 +187,26 @@ public class TextPageView extends LinearLayout implements OnPageChangeListener, 
 		mFontPath = fontPath;
 	}
 	
-	@Override
-	public void onPageScrollStateChanged(int arg0) {
-		// TODO Auto-generated method stub
+	
+	private OnPageChangeListener pageChangeListener = new OnPageChangeListener() {
 		
-	}
-
-	@Override
-	public void onPageScrolled(int arg0, float arg1, int arg2) {
-		// TODO Auto-generated method stub
-		setPageIndicator(arg0);
-	}
-
-	@Override
-	public void onPageSelected(int arg0) {
-		// TODO Auto-generated method stub
+		@Override
+		public void onPageSelected(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
 		
-	}
-
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		Intent intent = new Intent(getContext(), ChatActivity.class);
-		getContext().startActivity(intent);
-	}
+		@Override
+		public void onPageScrolled(int arg0, float arg1, int arg2) {
+			// TODO Auto-generated method stub
+			Log.i(TAG, "onPageScrolled ");
+			setPageIndicator(arg0);
+		}
+		
+		@Override
+		public void onPageScrollStateChanged(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
 }

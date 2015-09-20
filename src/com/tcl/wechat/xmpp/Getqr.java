@@ -67,11 +67,11 @@ public class Getqr {
 									if(p instanceof GetQrResultIQ){							
 									
 										GetQrResultIQ getQrResultIQ = (GetQrResultIQ) p;
-										String err = getQrResultIQ.getErrorcode();
+										String errCode = getQrResultIQ.getErrorcode();
 										String url = getQrResultIQ.getUrl();
 										if (mHandler != null){
 											mHandler.setData(url);
-											mHandler.setStatus(err);
+											mHandler.setStatus(errCode);
 											mHandler.sendEmptyMessage(CommandType.COMMAND_GET_QR);
 										}
 									}

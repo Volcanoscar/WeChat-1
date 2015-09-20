@@ -229,6 +229,30 @@ public class WeiUserDao {
 		return user;
 	}
 	
+	/**
+	 * 获取系统用户信息
+	 * @return
+	 */
+	public BindUser getSystemUser(){
+		BindUser user = null;
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		String selection = Property.COLUMN_ID + "=?";
+		String[] selectionArgs = new String[]{"1"};
+		Cursor cursor = db.query(Property.TABLE_USER, null, selection, selectionArgs, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			user = new BindUser(cursor.getString(cursor.getColumnIndex(Property.COLUMN_OPENID)),
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_NICKNAME)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+			cursor.close(); 
+		}
+		return user;
+	}
+	
 	
 	/**
 	 * 获取所用用户信息

@@ -72,6 +72,13 @@ public class WeiXinMsgRecorder implements Parcelable {
 	
 	/** 离线消息*/
 	private String offlinemsg;
+	
+	/**
+	 * 消息来源
+	 * 	true：接收到的消息
+	 * 	false:发送出去的消息
+	 */
+	private boolean isReceived;
 
 	public WeiXinMsgRecorder() {
 		super();
@@ -96,6 +103,7 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.fileSize = source.readString();
 		this.fileTime = source.readString();
 		this.offlinemsg = source.readString();
+		this.isReceived = (source.readByte() == 1) ? true : false;
 	}
 	
 	public WeiXinMsgRecorder(String openid, String accesstoken,
@@ -103,7 +111,7 @@ public class WeiXinMsgRecorder implements Parcelable {
 			String format, String createtime, String expiretime,
 			String mediaid, String thumbmediaid, String read,
 			String fileName, String fileSize, String fileTime, 
-			String offlinemsg) {
+			String offlinemsg, boolean isReceived) {
 		super();
 		this.openid = openid;
 		this.accesstoken = accesstoken;
@@ -121,6 +129,7 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.fileSize = fileSize;
 		this.fileTime = fileTime;
 		this.offlinemsg = offlinemsg;
+		this.isReceived = isReceived;
 	}
 
 	public String getOpenid() {
@@ -251,15 +260,25 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.offlinemsg = offlinemsg;
 	}
 	
+	
+	public boolean isReceived() {
+		return isReceived;
+	}
+
+	public void setReceived(boolean isReceived) {
+		this.isReceived = isReceived;
+	}
+
 	@Override
 	public String toString() {
-		return "WeiXinMsg [openid=" + openid + ", msgtype=" + msgtype
+		return "WeiXinMsgRecorder [openid=" + openid + ", msgtype=" + msgtype
 				+ ", msgid=" + msgid + ", content=" + content + ", url=" + url
 				+ ", format=" + format + ", accesstoken=" + accesstoken
 				+ ", createtime=" + createtime + ", expiretime=" + expiretime
 				+ ", mediaid=" + mediaid + ", thumbmediaid=" + thumbmediaid
-				+ ", read=" + read + ", fileName=" + fileName + ", fileSize=" + fileSize
-				+ ", fileTime=" + fileTime + ", offlinemsg=" + offlinemsg + "]";
+				+ ", read=" + read + ", fileName=" + fileName + ", fileSize="
+				+ fileSize + ", fileTime=" + fileTime + ", offlinemsg="
+				+ offlinemsg + ", isReceived=" + isReceived + "]";
 	}
 
 	@Override
@@ -286,6 +305,7 @@ public class WeiXinMsgRecorder implements Parcelable {
 		dest.writeString(fileSize);
 		dest.writeString(fileTime);
 		dest.writeString(offlinemsg);
+		dest.writeByte((byte)(isReceived ? 1 : 0));
 	}
 	
 	public static Parcelable.Creator<WeiXinMsgRecorder> CREATOR = new Creator<WeiXinMsgRecorder>(){

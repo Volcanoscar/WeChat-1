@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.data.DataFileTools;
@@ -97,7 +99,6 @@ public class MainActivity extends Activity implements WeiConstant{
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
 	}
-	
 
 	/**
 	 * 初始化数据
@@ -209,6 +210,9 @@ public class MainActivity extends Activity implements WeiConstant{
 			@Override
 			public void onClick(View view) {
 				// TODO Auto-generated method stub
+				if (TextUtils.isEmpty(WeiQrDao.getInstance().getQrUrl())){
+					return;
+				}
 				Intent intent = new Intent(mContext, AddFriendActivity.class);
 				intent.putExtra("BindUser", mSystemUser);
 				startActivity(intent);
@@ -272,19 +276,15 @@ public class MainActivity extends Activity implements WeiConstant{
 		return super.onTouchEvent(event);
 	}
 	
-	
 	/**
-	 * 点击进入用户信息界面，可进行相关信息编辑
+	 * 点击回复按钮
+	 * @param v
 	 */
-	public void enToUserIDetaiClick(View v){
-		Intent intent = new Intent(mContext, PersonalInfoActivity.class);
-		startActivity(intent);
-	}
-	
 	public void onBtnReplyClick(View v){
 		Intent intent = new Intent(mContext, ChatActivity.class);
-		startActivity(intent);
+		mContext.startActivity(intent);
 	}
+	
 	
 	@Override
 	protected void onPause() {

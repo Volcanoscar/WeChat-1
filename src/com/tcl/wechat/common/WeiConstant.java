@@ -187,5 +187,9 @@ public interface WeiConstant {
 	//公众号的ticket
 	public static final String ticket="http://we.qq.com/d/AQCvqyC3kjCTqtsDD9oU6mKorecLxifqDhpMvrno";
 	
-	public static String UUID = null;
+	//音频文件后缀
+	public static final String SUFFIX_AUDIO = ".amr";
+	
+	//视频文件后缀
+	public static final String SUFFIX_VIDEO = ".amr";
 }

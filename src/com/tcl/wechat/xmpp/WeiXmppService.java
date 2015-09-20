@@ -26,7 +26,6 @@ import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.DeviceInfo;
 import com.tcl.wechat.modle.QrInfo;
 import com.tcl.wechat.modle.WeiNotice;
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.receiver.ConnectionChangeReceiver;
 import com.tcl.wechat.utils.BaseUIHandler;
 import com.tcl.wechat.utils.NanoHTTPD;

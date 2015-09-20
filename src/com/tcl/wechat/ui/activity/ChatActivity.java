@@ -8,27 +8,37 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.action.recorder.Recorder;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
-import com.tcl.wechat.modle.ChatMessage;
-import com.tcl.wechat.modle.ChatMsgSource;
-import com.tcl.wechat.modle.ChatMsgType;
+import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.listener.NewMessageListener;
+import com.tcl.wechat.db.WeiMsgRecordDao;
+import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.ui.adapter.ChatMsgAdapter;
 import com.tcl.wechat.view.AudioRecorderButton;
+import com.tcl.wechat.view.UserInfoView;
 
 /**
  * 聊天界面
@@ -36,26 +46,59 @@ import com.tcl.wechat.view.AudioRecorderButton;
  */
 public class ChatActivity extends Activity {
 	
+	private static final String TAG = ChatActivity.class.getSimpleName();
+	
 	private Context mContext;
 	
 	/**
 	 * 界面信息
 	 */
+	private UserInfoView mUserIconImg;
+	private TextView mUserNameTv;
 	private EditText mMsgEdt;
 	private ListView mChatListView;
 	private ChatMsgAdapter mAdapter;
 	private AudioRecorderButton mRecorderButton;
 	private View mPlaySoundAnimView; //音频播放动画View；
 	
+	private BindUser mSysBindUser;
+	
+	/**
+	 * 用户信息
+	 */
+	private BindUser mBindUser;
+	
+	/**
+	 * 聊天记录
+	 */
+	private ArrayList<WeiXinMsgRecorder> mALlUserRecorders;
+	
 	/**
 	 * 数据信息
 	 */
-	private ArrayList<ChatMessage> mDatas;
 	private int mCurrentPosition = -1;
 	
-	private SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+	/**
+	 * 音频播放管理类
+	 */
+	private RecorderPlayerManager mAudioManager;
 	
-	private RecorderPlayerManager mPlayerManager;
+	/**
+	 * 消息记录工具类
+	 */
+	private WeiMsgRecordDao mRecordDao;
+	
+	/**
+	 * 数据工具类
+	 */
+	private DataFileTools mDataFileTools;
+	
+	/**
+	 * 日期格式
+	 */
+	private SimpleDateFormat df = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+	
+	private WeiXinMsgManager mWeiXinMsgManager;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +111,13 @@ public class ChatActivity extends Activity {
 		setContentView(R.layout.activity_chat);
 		
 		mContext = ChatActivity.this;
-		mPlayerManager = RecorderPlayerManager.getInstance();
+		mRecordDao = WeiMsgRecordDao.getInstance();
+		mAudioManager = RecorderPlayerManager.getInstance();
+		mDataFileTools = DataFileTools.getInstance();
+		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		
 		initData();
 		initView();
-		
 	}
 	
 
@@ -82,89 +127,78 @@ public class ChatActivity extends Activity {
 		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
-		mPlayerManager.resume();
+		mAudioManager.resume();
 	}
 	
 	/**
 	 * 数据初始化
 	 */
 	private void initData() {
-		mDatas = new ArrayList<ChatMessage>();
 		
-		for (int i = 0; i < 5; i++) {
-			ChatMessage imageMessage = new ChatMessage();
-			imageMessage.setUserName("Rex");
-			imageMessage.setMessage("[Android自定义控件] Android自定义控件");
-			imageMessage.setTime(df.format(new Date()));
-			if (i % 2 == 0){
-				imageMessage.setSource(ChatMsgSource.SRC_SENDED);
-			} else {
-				imageMessage.setSource(ChatMsgSource.SRC_RECEVIED);
-			}
-			imageMessage.setType(ChatMsgType.TYPE_TEXT);
-			mDatas.add(imageMessage);
+		/**
+		 * 获取数据信息
+		 */
+		Bundle bundle = getIntent().getExtras();
+		if (bundle == null){
+			return ;
 		}
+		mBindUser = (BindUser) bundle.get("bindUser");
+		mSysBindUser = WeiUserDao.getInstance().getSystemUser();
 		
-		for (int i = 0; i < 5; i++) {
-			ChatMessage imageMessage = new ChatMessage();
-			imageMessage.setUserName("Rex");
-			
-			imageMessage.setTime(df.format(new Date()));
-			if (i % 2 == 0){
-				imageMessage.setMessage(BitmapFactory.decodeResource(getResources(), R.drawable.biaoqing_012));
-				imageMessage.setSource(ChatMsgSource.SRC_SENDED);
-			} else {
-				imageMessage.setMessage(BitmapFactory.decodeResource(getResources(), R.drawable.baioqing_013));
-				imageMessage.setSource(ChatMsgSource.SRC_RECEVIED);
-			}
-			imageMessage.setType(ChatMsgType.TYPE_IAMGE);
-			mDatas.add(imageMessage);
+		if (mBindUser == null || mSysBindUser == null){
+			Log.e(TAG, "BindUser Or SysBindUser is NULL !!");
+			return ;
 		}
+		Log.i(TAG, "BindUser:" + mBindUser.toString());
+	
+		mALlUserRecorders = WeiMsgRecordDao.getInstance().getUserRecorder(mBindUser.getOpenId());
 		
-		//TODO 需要添加用户名
-		ChatMessage message1 = new ChatMessage();
-		message1.setMessage(new Recorder("", 25));
-		message1.setTime(df.format(new Date()));
-		message1.setSource(ChatMsgSource.SRC_SENDED);
-		message1.setType(ChatMsgType.TYPE_AUDIO);
-		mDatas.add(message1);
-		
-		//TODO 需要添加用户名
-		ChatMessage message2 = new ChatMessage();
-		message2.setMessage(new Recorder("", 50));
-		message2.setTime(df.format(new Date()));
-		message2.setSource(ChatMsgSource.SRC_RECEVIED);
-		message2.setType(ChatMsgType.TYPE_AUDIO);
-		mDatas.add(message2);
-		
-		//视频
-		ChatMessage videoMsg = new ChatMessage();
-		videoMsg.setMessage(R.drawable.message_video_bg);
-		videoMsg.setTime(df.format(new Date()));
-		videoMsg.setSource(ChatMsgSource.SRC_RECEVIED);
-		videoMsg.setType(ChatMsgType.TYPE_VIDEO);
-		mDatas.add(videoMsg);
-		
-		ChatMessage imgMsg = new ChatMessage();
-		imgMsg.setMessage(BitmapFactory.decodeResource(getResources(), R.drawable.chat_usericon));
-		imgMsg.setTime(df.format(new Date()));
-		imgMsg.setSource(ChatMsgSource.SRC_SENDED);
-		imgMsg.setType(ChatMsgType.TYPE_IAMGE);
-		mDatas.add(imgMsg);
-		
+		if (mALlUserRecorders != null){
+			for (WeiXinMsgRecorder recorder : mALlUserRecorders) {
+				recorder.setReceived(true);
+			}
+			Log.i(TAG, "ALlUserRecorders:" + mALlUserRecorders.toString());
+		}
+
+		/**
+		 * 增加新消息监听器
+		 */
+		mWeiXinMsgManager.addNewMessageListener(mNewMessageListener);
 	}
 
 	/**
 	 * 控件初始化
 	 */
 	private void initView() {
+		
+		if (mALlUserRecorders == null || mALlUserRecorders.isEmpty()){
+			return ;
+		}
+		
+		/**
+		 * 初始化界面
+		 */
+		mUserIconImg = (UserInfoView) findViewById(R.id.img_chat_usericon);
+		mUserNameTv = (TextView) findViewById(R.id.tv_chat_username);
 		mMsgEdt = (EditText) findViewById(R.id.edt_msg_input);
 		mChatListView = (ListView) findViewById(R.id.lv_chat_info);
-		mAdapter = new ChatMsgAdapter(mContext, mDatas);
+		mAdapter = new ChatMsgAdapter(mContext, mBindUser, mALlUserRecorders);
 		mChatListView.setAdapter(mAdapter);
-		mChatListView.setSelection(mDatas.size() - 1);
+		mChatListView.setSelection(mALlUserRecorders.size() - 1);
 		
 		mRecorderButton = (AudioRecorderButton) findViewById(R.id.btn_sound_reply);
+
+		/**
+		 * 数据填充
+		 */
+		Bitmap userIcon = mDataFileTools.getBindUserCircleIcon(mBindUser.getHeadImageUrl());
+		mUserIconImg.setUserIcon(userIcon, true);
+		if (TextUtils.isEmpty(mBindUser.getRemarkName())){
+			WeiUserDao.getInstance().updateRemarkName(mBindUser.getOpenId(), mBindUser.getNickName());
+			mBindUser.setRemarkName(mBindUser.getNickName());
+		}
+		mUserNameTv.setText(mBindUser.getRemarkName());
+		
 		
 		//监听事件
 		mRecorderButton.setRecorderCompletedListener(new AudioRecorderStateListener() {
@@ -176,19 +210,31 @@ public class ChatActivity extends Activity {
 			
 			@Override
 			public void onCompleted(Recorder recoder) {
-				ChatMessage message = new ChatMessage();
 				
-				//TODO 需要添加用户名
-				message.setMessage(recoder);
-				message.setTime(df.format(new Date()));
-				message.setSource(ChatMsgSource.SRC_SENDED);
-				message.setType(ChatMsgType.TYPE_AUDIO);
-				mDatas.add(message);
+				/**
+				 * 录音完成
+				 */
+				
+				//1、上传音频文件
+				
+				
+				//2、更新数据库
+				WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
+				msgRecorder.setOpenid(mBindUser.getOpenId());
+				msgRecorder.setMsgtype("voice");
+				msgRecorder.setContent(recoder.getFileName());
+				mALlUserRecorders.add(msgRecorder);
+				
+				//3、更新列表
 				update();
 				
 			}
 		});
 		mChatListView.setOnItemClickListener(listener);
+		
+		//强制隐藏Android输入法窗口
+		InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+	    imm.hideSoftInputFromWindow(mMsgEdt.getWindowToken(),0);
 	}
 	
 	private OnItemClickListener listener = new OnItemClickListener() {
@@ -202,12 +248,13 @@ public class ChatActivity extends Activity {
 				mCurrentPosition = position;
 			}
 			
-			ChatMessage message = mDatas.get(position);
+			WeiXinMsgRecorder recorder = mALlUserRecorders.get(position);
+			String msgType = recorder.getMsgtype();
 			
-			if (ChatMsgType.TYPE_AUDIO == message.getType()){
+			if (ChatMsgType.VOICE.equals(msgType)){
 				//播放动画
 				mPlaySoundAnimView = view.findViewById(R.id.view_chat_recorder_info);
-				if (ChatMsgSource.SRC_RECEVIED == message.getSource()){
+				if (0 == getWeiXinMsgResource(recorder)){
 					mPlaySoundAnimView.setBackgroundResource(R.drawable.play_sound_left_anim);
 				} else {
 					mPlaySoundAnimView.setBackgroundResource(R.drawable.play_sound_right_anim);
@@ -215,13 +262,41 @@ public class ChatActivity extends Activity {
 				AnimationDrawable anim = (AnimationDrawable) mPlaySoundAnimView.getBackground();
 				anim.start();
 				//播放音频
-				mPlayerManager.play(((Recorder)mDatas.get(mCurrentPosition).getMessage()).getFileName());
-				mPlayerManager.setPlayCompletedListener(playCompletedListener);
-			} else if (ChatMsgType.TYPE_VIDEO == message.getType()) {
+				//播放音频
+				String filePath = mDataFileTools.getAudioFilePath(recorder.getUrl());
+				mAudioManager.play(filePath);
+				mAudioManager.setPlayCompletedListener(playCompletedListener);
+			
+			} else if (ChatMsgType.VIDEO.equals(msgType)){
 				Intent intent = new Intent(mContext, VideoPlayerActivity.class);
+				intent.putExtra("recoder", "recorder");
 				intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 				startActivity(intent);
 			}
+		}
+	};
+	
+	private int getWeiXinMsgResource(WeiXinMsgRecorder recorder){
+		if (recorder.getOpenid().equals(mSysBindUser.getOpenId())){//send
+			return 0;
+		} else { //received
+			return 1;
+		}
+	}
+	
+	/**
+	 * 收到新消息监听器
+	 */
+	private NewMessageListener mNewMessageListener = new NewMessageListener(){
+
+		@Override
+		public void onNewMessage(WeiXinMsgRecorder recorder) {
+			// TODO Auto-generated method stub
+			if (recorder == null){
+				return ;
+			}
+			mALlUserRecorders.add(recorder);
+			update();
 		}
 	};
 	
@@ -243,10 +318,11 @@ public class ChatActivity extends Activity {
 		if (mPlaySoundAnimView == null){
 			return ;
 		}
-		if (mDatas == null || mDatas.get(mCurrentPosition) == null){
+		if (mALlUserRecorders == null || mALlUserRecorders.get(mCurrentPosition) == null){
 			return ;
 		}
-		if (ChatMsgSource.SRC_RECEVIED == mDatas.get(mCurrentPosition).getSource()){
+		WeiXinMsgRecorder recorder = mALlUserRecorders.get(mCurrentPosition);
+		if (recorder.isReceived()){
 			mPlaySoundAnimView.setBackgroundResource(R.drawable.voice_left);
 		} else {
 			mPlaySoundAnimView.setBackgroundResource(R.drawable.voice_right);
@@ -257,7 +333,7 @@ public class ChatActivity extends Activity {
 	 */
 	private void update(){
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mDatas.size() -1);
+		mChatListView.setSelection(mALlUserRecorders.size() -1);
 	}
 	
 	/**
@@ -269,16 +345,19 @@ public class ChatActivity extends Activity {
 			return ;
 		}
 		
-		ChatMessage message = new ChatMessage();
-		message.setUserName("Rex");
-		message.setMessage(mMsgEdt.getText().toString());
-		message.setTime(df.format(new Date()));
-		message.setSource(ChatMsgSource.SRC_SENDED);
-		message.setType(ChatMsgType.TYPE_TEXT);
-		mDatas.add(message);
+		WeiXinMsgRecorder recorder = new WeiXinMsgRecorder();
+		recorder.setOpenid(mBindUser.getOpenId());
+		recorder.setMsgtype("text");
+		recorder.setContent(mMsgEdt.getText().toString());
+		recorder.setCreatetime(df.format(new Date()));
+		recorder.setReceived(false);
+		mRecordDao.addRecorder(recorder);
+		
+		mALlUserRecorders.add(recorder);
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mDatas.size() - 1);
+		mChatListView.setSelection(mALlUserRecorders.size() - 1);
 		mMsgEdt.setText("");
+		
 	}
 	
 	/**
@@ -290,21 +369,16 @@ public class ChatActivity extends Activity {
 			return ;
 		}
 		
-		ChatMessage message = new ChatMessage();
-		message.setUserName("Rex");
-		message.setMessage(mMsgEdt.getText().toString());
-		message.setTime(df.format(new Date()));
-		message.setSource(ChatMsgSource.SRC_SENDED);
-		message.setType(ChatMsgType.TYPE_IAMGE);
-		mDatas.add(message);
-		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mDatas.size() - 1);
 		
-		mMsgEdt.setText("");
 	}
 	
+	/**
+	 * 图片选择按钮
+	 * @param view
+	 */
 	public void imgReplyClick(View view){
-		
+		Intent intent = new Intent(this, PicSelectActivity.class);
+		startActivity(intent);
 	}
 	
 	/**
@@ -327,7 +401,7 @@ public class ChatActivity extends Activity {
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		mPlayerManager.pause();
+		mAudioManager.pause();
 		
 	}
 	
@@ -335,13 +409,13 @@ public class ChatActivity extends Activity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
-		mPlayerManager.stop();
+		mAudioManager.stop();
 	}
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		mPlayerManager.release();
+		mAudioManager.release();
 		mCurrentPosition = 0;
 	}
 

@@ -1,16 +1,16 @@
 package com.tcl.wechat.modle.data;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-
-import com.tcl.wechat.utils.ImageUtil;
-import com.tcl.wechat.utils.MD5Util;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.utils.ImageUtil;
+import com.tcl.wechat.utils.MD5Util;
 
 /**
  * 获取文件相关路径
@@ -23,11 +23,11 @@ public class DataFileTools {
 	
 	private static final String FOLDER_APP_LOCAL = "WeChat";
 	
-	private static final String FOLDER_RECORD_SOUND = "sound";
+	private static final String FOLDER_RECORD_AUDIO = "audio"; //音频文件路径
 	
-	private static final String FOLDER_RECORD_VIDEO = "video";
+	private static final String FOLDER_RECORD_VIDEO = "video"; //视频文件路径
 	
-	private static final String FOLDER_RECORD_IMAGE = "image";
+	private static final String FOLDER_RECORD_IMAGE = "image"; //图片文件路径
 	
 	private static final String FOLDER_CACHE = "cache";
  	
@@ -74,14 +74,14 @@ public class DataFileTools {
 	 }
 	
 	/**
-	 * 获取录音文件存储路径 /wechat/sound
+	 * 获取录音文件存储路径 /wechat/audio
 	 * @return
 	 */
-	public String getRecordSoundPath(){
+	public String getRecordAudioPath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
-					File.separator + FOLDER_RECORD_SOUND;
+					File.separator + FOLDER_RECORD_AUDIO;
 		}
 		return null;
 	}
@@ -125,6 +125,32 @@ public class DataFileTools {
 		return null;
 	}
 	
+	/**
+     * 获取音频文件据对路径
+     * @param fileName
+     * @return
+     */
+    public String getAudioFilePath(String fileName){
+    	if (TextUtils.isEmpty(fileName)){
+    		return null;
+    	}
+    	return getRecordAudioPath() + File.separator + 
+    			MD5Util.hashKeyForDisk(fileName) + WeiConstant.SUFFIX_AUDIO;
+    	
+    }
+    
+    /**
+     * 获取视频文件绝对路径
+     * @param fileName
+     * @return
+     */
+    public String getVideoFilePath(String fileName){
+    	if (TextUtils.isEmpty(fileName)){
+    		return null;
+    	}
+    	return getRecordVideoPath() + File.separator + 
+    			MD5Util.hashKeyForDisk(fileName) + WeiConstant.SUFFIX_AUDIO;
+    }
 	
 	/**
      * 获取用户头像
@@ -147,15 +173,41 @@ public class DataFileTools {
     }
     
     /**
+     * 获取二维码图片
+     * @param fileName
+     * @return
+     */
+    public Bitmap getQrBitmap(String fileName){
+    	String imageCachePath = getRecordImagePath();
+    	if (imageCachePath != null){
+    		String filePath = imageCachePath + File.separator + MD5Util.hashKeyForDisk(fileName);
+    		Log.i(TAG, "filePath:" + filePath);
+    		return BitmapFactory.decodeFile(filePath);
+    	}
+    	return null;
+    }
+    
+    /**
      * 获取用户圆形头像
      * @param fileName
      * @return
      */
     public Bitmap getBindUserCircleIcon(String fileName){
-    	if (fileName == null && TextUtils.isEmpty(fileName)){
+    	if (TextUtils.isEmpty(fileName)){
     		Log.w(TAG, "filePath is NULL!!");
     		return null;
     	}
     	return ImageUtil.getInstance().createCircleImage(getBindUserIcon(fileName));
     }
+    
+    public Bitmap getChatImageIcon(String fileName){
+    	String imageCachePath = getRecordImagePath();
+    	if (imageCachePath != null){
+    		String filePath = imageCachePath + File.separator + MD5Util.hashKeyForDisk(fileName);
+    		Log.i(TAG, "filePath:" + filePath);
+    		return BitmapFactory.decodeFile(filePath);
+    	}
+    	return null;
+    }
+    
 }

@@ -140,33 +140,12 @@ public class MsgBoardGroupView extends LinearLayout{
 		if (bindUser == null){
 			return null;
 		}
-		//方法一
-		/*int layoutId = mContext.getResources().getIdentifier("layout_msgboard_" + (position + 1), 
-				"layout", mContext.getPackageName());
-		View childView = mInflater.inflate(layoutId, null);*/
-		
-		//方法二
 		MsgBoardView childView = new MsgBoardView(mContext);
 		childView.setupView(position % 4);
 		childView.addData(bindUser, mLastestMsgRecorderMap.get(bindUser.getOpenId()));
 		
 		mMsgBoardViewMap.put(bindUser.getOpenId(), childView);
-		
-		//方法三
-		/*View childView = null;
-		switch (position % 4) {
-		case 0:
-			childView = new MsgBoardFirstView(mContext);
-			break;
-		case 1:
-			childView = new MsgBoardSecondView(mContext);
-		case 2:
-			childView = new MsgBoardThirdView(mContext);
-		case 3:
-			childView = new MsgBoardFourthView(mContext);
-		default:
-			break;
-		}*/
+	
 		return childView;
 	}
 	
@@ -216,8 +195,8 @@ public class MsgBoardGroupView extends LinearLayout{
 				addUserColumn(bindUser, mOnLineChatUserCnt);
 		        mOnLineChatUserCnt ++;
 			} 
-			//3、 排序
 			
+			//3、 排序
 			
 			//4、消息通知
 			mMsgBoardViewMap.get(openId).receiveNewMessage(bindUser, recorder);

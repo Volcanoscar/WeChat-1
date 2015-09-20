@@ -15,8 +15,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.action.player.DownloadManager;
 import com.tcl.wechat.common.WeiConstant.CommandReturnType;
 import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.common.WeiConstant.SystemShared;
@@ -84,7 +86,8 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 	 * 执行获取网络二维码命令
 	 */
 	private void exeCmdToGetNetQr(){
-		if (WeiQrDao.getInstance().getQr() == null){
+		String qrUrl = WeiQrDao.getInstance().getQrUrl();
+		if (TextUtils.isEmpty(qrUrl)){
 			new WeiXmppCommand(mCommandHandler, CommandType.COMMAND_GET_QR, null).execute();
 		}
 	}
@@ -198,16 +201,18 @@ public class WeiXinLoginReceiver extends BroadcastReceiver{
 	 */
 	private void saveQr(){
 		final String url = (String)mCommandHandler.getData();
+		Log.i(TAG, "[saveQr]url:" + url);
 		if(url != null){
 			String qrUrl = WeiQrDao.getInstance().getUrl();
-			if (qrUrl == null){
+			if (TextUtils.isEmpty(qrUrl)){
 				if (!WeiQrDao.getInstance().updateUrl(url) ){
 					Log.e(TAG, "updateQr ERROR!!");
 					return ;
 				}
 			}
 			//下载更新二维码
-			DownLoadProxy.getInstanc().startDownloadQr(qrUrl);
+//			DownLoadProxy.getInstanc().startDownloadQr(qrUrl);
+			DownloadManager.getInstace().startToDownload(qrUrl, "image");
 		 }
 	}
 	

@@ -9,11 +9,15 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.action.player.DownloadManager;
+import com.tcl.wechat.action.player.listener.DownloadStateListener;
+import com.tcl.wechat.db.DeviceDao;
+import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.QrInfo;
 import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.QrUtil;
@@ -30,9 +34,15 @@ public class AddFriendActivity extends Activity {
 	private UserInfoView mUserInfoView;
 	private ImageView mPersonalQrImg;
 	
+	private QrInfo mQrInfo;
+	
 	private BindUser mSystemUser ;
 	
 	private QrUtil mQrUtil ;
+	
+	private DataFileTools mDataFileTools;
+	
+	private DownloadManager mDownloadManager;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +57,8 @@ public class AddFriendActivity extends Activity {
 		
 		mContext = AddFriendActivity.this;
 		mQrUtil = new QrUtil(mContext);
+		mDataFileTools = DataFileTools.getInstance();
+		mDownloadManager = DownloadManager.getInstace();
 		
 		initData();
 		initView();
@@ -59,6 +71,8 @@ public class AddFriendActivity extends Activity {
 		} else {
 			mSystemUser = WeiUserDao.getInstance().getAllUsers().get(0);
 		}
+		
+		mQrInfo = WeiQrDao.getInstance().getQr();
 	}
 
 	/**
@@ -77,9 +91,25 @@ public class AddFriendActivity extends Activity {
 			mUserInfoView.setUserNameVisible(View.VISIBLE);
 			mUserInfoView.setUserName(mSystemUser.getNickName());
 			
-			Bitmap qrBitmap = mQrUtil.createQRCode(mSystemUser.getNickName(), 
-					ImageUtil.getInstance().createCircleImage(userIcon));
-			mPersonalQrImg.setImageBitmap(qrBitmap);
+			/*Bitmap qrBitmap = mQrUtil.createQRCode(mSystemUser.getNickName(), 
+					ImageUtil.getInstance().createCircleImage(userIcon));*/
+//			String qrUrl = WeiQrDao.getInstance().getQrUrl();
+			
+			Bitmap qrBitmap = mDataFileTools.getQrBitmap(mQrInfo.getUrl());
+			if (qrBitmap != null){
+				Bitmap mixtrixQr = mQrUtil.mixtrixBitmap(qrBitmap, 
+						ImageUtil.getInstance().createCircleImage(userIcon));
+				mPersonalQrImg.setImageBitmap(mixtrixQr);
+			} else {
+				mDownloadManager.setDownloadStateListener(mDownLoadListener);
+				mDownloadManager.startToDownload(mQrInfo.getUrl(), "image");
+			}
+			
+			if (qrBitmap == null){
+				String deviceid = DeviceDao.getInstance().getDeviceId();
+				qrBitmap = mQrUtil.createQRCode(deviceid, 
+						ImageUtil.getInstance().createCircleImage(userIcon));
+			}
 		}
 	}
 	
@@ -93,6 +123,41 @@ public class AddFriendActivity extends Activity {
 		}
 	}
 
+	DownloadStateListener mDownLoadListener = new DownloadStateListener() {
+		
+		@Override
+		public void startDownLoad() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onProgressUpdate(int progress) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onDownLoadError(int errorCode) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onDownLoadCompleted() {
+			// TODO Auto-generated method stub
+			if (mPersonalQrImg != null){
+				Bitmap qrBitmap = mDataFileTools.getQrBitmap(mQrInfo.getUrl());
+				Bitmap userIcon = DataFileTools.getInstance()
+						.getBindUserIcon(mSystemUser.getHeadImageUrl());
+				Bitmap mixtrixQr = mQrUtil.mixtrixBitmap(qrBitmap, 
+						ImageUtil.getInstance().createCircleImage(userIcon));
+				mPersonalQrImg.setImageBitmap(mixtrixQr);
+				mPersonalQrImg.setImageBitmap(qrBitmap);
+			}
+		}
+	};
+	
 	/**
 	 * 返回按键
 	 * @param view
