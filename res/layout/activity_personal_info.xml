@@ -40,6 +40,7 @@
 		    android:gravity="center"
 		    android:text="@string/submit"
 		    android:textSize="22sp"
+		    android:onClick="submitClick"
 		    android:background="@drawable/submit_btn_selector"/>
 	    <View 
 	        android:layout_width="0dp"

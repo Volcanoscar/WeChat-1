@@ -34,6 +34,8 @@
     <string name="hint_delfriend">确认删除用户%s?</string>
     <string name="cancel">取&#160;&#160;&#160;消</string>
     <string name="confirm">确&#160;&#160;&#160;定</string>
+    <string name="update_success">头像上传成功</string>
+    <string name="intnet_err">网络访问异常，错误码：%s</string>
     
        
     <!-- 添加好友界面 -->

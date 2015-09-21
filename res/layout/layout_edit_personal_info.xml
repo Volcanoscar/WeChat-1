@@ -22,12 +22,13 @@
         android:textSize="32sp"
         android:textColor="@color/white"/>
     
-    <ImageView 
+    <ImageView
         android:id="@+id/img_edit_user_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/default_edit_user_icon"
         android:layout_centerInParent="true"
+        android:onClick="selectIconClick"
         android:contentDescription="@string/contentDesc"/>
     
      <EditText

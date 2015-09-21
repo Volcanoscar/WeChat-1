@@ -31,7 +31,7 @@ import android.util.Log;
 import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.modle.AppInfo;
-import com.tcl.wechat.xml.ParseConfigXml;
+import com.tcl.wechat.xmpp.ParseConfigXml;
 
 /**
  * 系统信息工具类

@@ -1,4 +1,4 @@
-package com.tcl.wechat.xml;
+package com.tcl.wechat.xmpp;
 
 import java.io.StringReader;
 import java.util.ArrayList;
