@@ -71,7 +71,7 @@ public class LSLoginResultIQ extends IQ {
         buf.append("</aslist>");
         if (token != null) {
             if (token.equals("")) {
-                buf.append("<token xmlns=\"tcl:hc:oken\"></token>\n");
+                buf.append("<token xmlns=\"tcl:hc:token\"></token>\n");
             }
             else {
             	buf.append("<token xmlns=\"tcl:hc:token\">").append(token).append("</token>\n");

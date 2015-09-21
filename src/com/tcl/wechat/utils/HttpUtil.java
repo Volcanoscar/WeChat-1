@@ -9,9 +9,16 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.util.HttpURLConnection;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 
 
@@ -21,6 +28,13 @@ import android.text.TextUtils;
  *
  */
 public class HttpUtil {
+	
+	private static final String TAG = HttpUtil.class.getSimpleName();
+	
+	/**
+	 *  上传多媒体文件路径
+	 */
+	public static String UPLOAD_MEDIA_URL = "http://file.api.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
 	
 	/**
 	 * 下载文件
@@ -181,5 +195,97 @@ public class HttpUtil {
 		}
 		return false;
 	}
+	
+	public static void upload2(final String accesstoken, final String type, final String filePath){
+		
+		Log.i(TAG, "upload->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				Log.i(TAG, "1111accesstoken:" + accesstoken + ", type:"  + type + ", filePath:" + filePath);
+//				upload1(accesstoken, type, filePath);
+			}
+		}).start();
+		
+	}
+	
+	/**
+	 * 上传多媒体文件
+	 * @param access_token token
+	 * @param type 聊天文件类型
+	 * @param filePath 文件节点路径
+	 */
+	public static void upload(String accesstoken, String type, String filePath) {
+		
+		if (TextUtils.isEmpty(accesstoken) || TextUtils.isEmpty(filePath)){
+			return ;
+		}
+		
+		Log.i(TAG, "2222accesstoken:" + accesstoken + ", type:"  + type + ", filePath:" + filePath);
+		
+		File file = new File(filePath);
+		HttpClient client = new HttpClient();
+		
+		String uploadurl = UPLOAD_MEDIA_URL.replace("ACCESS_TOKEN", accesstoken).replace("TYPE", type);
+		PostMethod post = new PostMethod(uploadurl);
+		post.setRequestHeader("User-Agent",
+				"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:30.0) Gecko/20100101 Firefox/30.0");
+		post.setRequestHeader("Host", "file.api.weixin.qq.com");
+		post.setRequestHeader("Connection", "Keep-Alive");
+		post.setRequestHeader("Cache-Control", "no-cache");
+		try {
+			Log.i(TAG, "file:"  + file);
+			Log.i(TAG, "file:"  + file.exists());
+			if (file != null && file.exists()) {
+				String contentType = "";
+				// 图片(image):1M,支持JPG格式 缩略图（thumb）：64KB，支持JPG格式
+				if (filePath.endsWith(".jpg") || filePath.endsWith(".JPG")) {
+					contentType = "image/jpeg";
+					// 语音 voice:2M，播放长度不超过60s，支持AMR\MP3格式
+				} else if (filePath.endsWith(".mp3")) {
+					contentType = "audio/mp3";
+				} else if (filePath.endsWith(".amr")) {
+					contentType = "voice/amr";
+					// 视频(video):10MB,支持MP4格式
+				} else if (filePath.endsWith(".mp4")) {
+					contentType = "video/mpeg4";
+				} else {
+					contentType = "application/octet-stream";
+				}
+				
+				
+				Log.i(TAG, "contentType:" + contentType);
+				
+				
+				FilePart filepart = new FilePart("media", file, contentType, "UTF-8");
+				Part[] parts = new Part[] { filepart };
+				MultipartRequestEntity entity = new MultipartRequestEntity(parts, post.getParams());
+				post.setRequestEntity(entity);
+				
+				
+				Log.i(TAG, "start executeMethod!!!");
+				
+				int rescok = client.executeMethod(post);
+				
+				Log.i(TAG, "rescok:" + rescok);
+				
+				Log.i(TAG, "post:" + post);
+				
+				if (client.executeMethod(post) == HttpStatus.SC_OK) {
+					
+					
+					
+					String responseContent = post.getResponseBodyAsString();
+					
+					Log.i(TAG, "responseContent:" + responseContent);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	 
 }

@@ -34,11 +34,13 @@ import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.UpLoadFileInfo;
 import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.modle.data.DataFileTools;
 import com.tcl.wechat.ui.adapter.ChatMsgAdapter;
 import com.tcl.wechat.view.AudioRecorderButton;
 import com.tcl.wechat.view.UserInfoView;
+import com.tcl.wechat.xmpp.WeiXmppManager;
 
 /**
  * 聊天界面
@@ -100,6 +102,8 @@ public class ChatActivity extends Activity {
 	
 	private WeiXinMsgManager mWeiXinMsgManager;
 	
+	private WeiXmppManager mWeiXmppManager;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -115,6 +119,7 @@ public class ChatActivity extends Activity {
 		mAudioManager = RecorderPlayerManager.getInstance();
 		mDataFileTools = DataFileTools.getInstance();
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
+		mWeiXmppManager = WeiXmppManager.getInstance();
 		
 		initData();
 		initView();
@@ -209,20 +214,24 @@ public class ChatActivity extends Activity {
 			}
 			
 			@Override
-			public void onCompleted(Recorder recoder) {
+			public void onCompleted(Recorder recorder) {
+				
+				Log.i(TAG, "onCompleted...");
 				
 				/**
 				 * 录音完成
 				 */
-				
 				//1、上传音频文件
-				
+				String filePath = DataFileTools.getInstance().getAudioFilePath(recorder.getFileName());
+				UpLoadFileInfo fileInfo = new UpLoadFileInfo(null,ChatMsgType.VOICE, filePath);
+				mWeiXmppManager.setmUpLoadFileInfo(fileInfo);
+				mWeiXmppManager.upload();
 				
 				//2、更新数据库
 				WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
 				msgRecorder.setOpenid(mBindUser.getOpenId());
-				msgRecorder.setMsgtype("voice");
-				msgRecorder.setContent(recoder.getFileName());
+				msgRecorder.setMsgtype(ChatMsgType.VOICE);
+//				msgRecorder.setContent(recorder.getFileName());
 				mALlUserRecorders.add(msgRecorder);
 				
 				//3、更新列表
@@ -295,6 +304,7 @@ public class ChatActivity extends Activity {
 			if (recorder == null){
 				return ;
 			}
+			recorder.setReceived(true);
 			mALlUserRecorders.add(recorder);
 			update();
 		}
@@ -417,6 +427,10 @@ public class ChatActivity extends Activity {
 		super.onDestroy();
 		mAudioManager.release();
 		mCurrentPosition = 0;
+		
+		if (mWeiXinMsgManager != null){
+			mWeiXinMsgManager.removeNewMessageListener(mNewMessageListener);
+		}
 	}
 
 }

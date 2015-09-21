@@ -1,8 +1,10 @@
 package com.tcl.wechat.utils;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.UUID;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -27,6 +30,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.tcl.wechat.modle.data.DataFileTools;
 
 /**
  * 图像处理工具类
@@ -533,5 +538,54 @@ public class ImageUtil {
         
         return outPutBitmap;  
     }  
+	
+	
+	/**
+	 * Bitmap输出为JPG格式
+	 * @param bitmap
+	 * @return
+	 */
+	public Bitmap compressFormatJPG(Bitmap bitmap){
+		if (bitmap == null){
+			Log.w(TAG, "bitmap is NULL!!");
+			return null;
+		}
+		
+		Bitmap out = null;
+		BufferedOutputStream bos = null;
+		File dir = new File(DataFileTools.getInstance().getTempPath());
+		if (!dir.exists()){
+			dir.mkdirs();
+		}
+		File tempFile = new File(dir, UUID.randomUUID() + ".jpg");
+		
+		try {
+			bos = new BufferedOutputStream(new FileOutputStream(tempFile));
+			if (bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)){
+				bos.flush();
+				out =  BitmapFactory.decodeFile(tempFile.getAbsolutePath());
+			}
+			return  out;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (bos != null){
+					bos.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (tempFile != null){
+				tempFile.delete();
+			}
+		}
+		return null;
+	}
 	
 }

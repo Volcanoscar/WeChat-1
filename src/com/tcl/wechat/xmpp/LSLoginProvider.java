@@ -56,7 +56,6 @@ public class LSLoginProvider implements IQProvider {
 					String token = parser.nextText();
 					iq.setToken(token);
 				}
-
 			} else if (eventType == XmlPullParser.END_TAG) {
 				if (parser.getName().equals("auth")) {
 					done = true;

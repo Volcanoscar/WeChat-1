@@ -10,7 +10,6 @@ import com.tcl.wechat.WeChatApplication;
 import com.tcl.wechat.action.player.DownloadManager;
 import com.tcl.wechat.action.player.listener.DownloadStateListener;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
-import com.tcl.wechat.common.WeiConstant;
 import com.tcl.wechat.common.WeiConstant.CommandAction;
 import com.tcl.wechat.controller.listener.BindListener;
 import com.tcl.wechat.controller.listener.LoginStateListener;
@@ -18,7 +17,6 @@ import com.tcl.wechat.controller.listener.NetChangedListener;
 import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.modle.WeiXinMsgRecorder;
-import com.tcl.wechat.utils.SystemReflect;
 
 /***
  * 微信消息管理类
@@ -35,17 +33,17 @@ public class WeiXinMsgManager {
 	/**
 	 *	消息监听集合
 	 */
-	public static ArrayList<NewMessageListener> newMsgListeners = new ArrayList<NewMessageListener>();
+	public static ArrayList<NewMessageListener> mNewMsgListeners = new ArrayList<NewMessageListener>();
 	
 	/**
 	 * 网络变化监听集合
 	 */
-	public static ArrayList<NetChangedListener> netChangedListeners = new ArrayList<NetChangedListener>();
+	public static ArrayList<NetChangedListener> mNetChangedListeners = new ArrayList<NetChangedListener>();
 	
 	/**
 	 * 绑定解绑集合
 	 */
-	public static ArrayList<BindListener> bindListeners = new ArrayList<BindListener>();
+	public static ArrayList<BindListener> mBindListeners = new ArrayList<BindListener>();
 	
 	/**
 	 * 登录状态监听器
@@ -74,14 +72,28 @@ public class WeiXinMsgManager {
 		return mLoginStateListener;
 	}
 
-	public void setLoginStateListener(LoginStateListener mListener) {
-		mLoginStateListener = mListener;
+	public void setLoginStateListener(LoginStateListener listener) {
+		mLoginStateListener = listener;
 	}
 
+	/**
+	 * 添加新消息监听器
+	 * @param listener
+	 */
 	public void addNewMessageListener(NewMessageListener listener){
-		newMsgListeners.add(listener);
+		mNewMsgListeners.add(listener);
 	}
-
+	
+	/**
+	 * 移除新消息监听器
+	 * @param listener
+	 */
+	public void removeNewMessageListener(NewMessageListener listener){
+		if (mNewMsgListeners != null && mNewMsgListeners.size() > 0){
+			mNewMsgListeners.remove(listener);
+		}
+	}
+	
 	/**
 	 * 通知接收消息
 	 * @param weiXinMsg
@@ -126,12 +138,13 @@ public class WeiXinMsgManager {
 			
 		}*/
 		//1、下载数据
+		// TODO 是否需要下载
 		if (isNeedDownload(recorder)){
 			download(recorder);
 		}
 		
 		//2、通知用户
-		for (NewMessageListener listener : newMsgListeners) {
+		for (NewMessageListener listener : mNewMsgListeners) {
 			listener.onNewMessage(recorder);
 		}
 	}
@@ -148,6 +161,8 @@ public class WeiXinMsgManager {
 		}
 		return false;
 	}
+	
+	
 	
 	/**
 	 * 下载文件
@@ -186,75 +201,6 @@ public class WeiXinMsgManager {
 		return true;
 	}
 	
-	
-	/**
-	 * 接收文本消息
-	 * @param weiXinMsg
-	 */
-	private void receiveTextMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received TextMsg [msgtype=" + weiXinMsg.getMsgtype() + ", Text=" + weiXinMsg.getContent() + "]");
-		
-		for (NewMessageListener listener : newMsgListeners) {
-			listener.onNewMessage(weiXinMsg);
-		}
-		
-		if(!SystemReflect.getProperties(SYS_SCAN_STATE, "off").equals("on")){
-			
-		}
-	}
-	
-	/**
-	 * 接收图片消息
-	 * @param weiXinMsg
-	 */
-	private void receiveImageMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received ImageMsg [msgtype=" + weiXinMsg.getMsgtype() + ", ImgUrl=" + weiXinMsg.getContent() + "]");
-	}
-	
-	/**
-	 * 接收音频消息
-	 */
-	private void receiveVoiceMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received VoiceMsg [msgtype=" + weiXinMsg.getMsgtype() + ", Recognition=" + weiXinMsg.getContent() + "]");
-	}
-	
-	/**
-	 * 接收视频消息
-	 */
-	private void receiveVideoMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received VideoMsg [msgtype=" + weiXinMsg.getMsgtype() + ", Recognition=" + weiXinMsg.getContent() + "]");
-
-		/**
-		 * 1、检查存储情况
-		 */
-	    /**
-	     * 2、开始下载视频
-	     */
-	    //TODO
-		/**
-		 * 3、 保存消息
-		 */
-	}
-	
-	/**
-	 * 接收弹幕消息
-	 * @param weiXinMsg
-	 */
-	private void receiveBarrageMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received BarrageMsg [msgtype=" + weiXinMsg.getMsgtype() + ", Content=" + weiXinMsg.getContent() + "]");
-		
-		if(!SystemReflect.getProperties(SYS_SCAN_STATE, "off").equals("on")
-				&&!WeiConstant.WechatConfigure.CurConfigure.equals(WeiConstant.WechatConfigure.SimpleVer)){
-		}
-	}
-	
-	/**
-	 * 接收预约节目提醒
-	 * @param weiXinMsg
-	 */
-	private void receiveNoticeMsg(WeiXinMsgRecorder weiXinMsg){
-		Log.i(TAG, "received NoticeMsg");
-	}
 	
 	private DownloadStateListener mListener = new DownloadStateListener() {
 		

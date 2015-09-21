@@ -16,7 +16,7 @@ public interface AudioRecorderStateListener {
 	
 	/**
 	 * 录音结束
-	 * @param recoder 录音文件信息
+	 * @param recorder 录音文件信息
 	 */
-	public void onCompleted(Recorder recoder);
+	public void onCompleted(Recorder recorder);
 }

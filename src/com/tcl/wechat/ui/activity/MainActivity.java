@@ -24,10 +24,14 @@ import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.WeiConstant;
+import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.db.WeiQrDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.modle.WeiXinMsgRecorder;
 import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.view.MsgBoardGroupView;
 import com.tcl.wechat.view.MyFriendGroupView;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
@@ -58,6 +62,7 @@ public class MainActivity extends Activity implements WeiConstant{
 	
 	private MyFriendGroupView mFriendGroupView;
 	private HorizontalScrollView mHorizontalScrollView;
+	private MsgBoardGroupView mMsgBoardGroupView;
 	
 	/**
 	 * 系统用户
@@ -75,6 +80,9 @@ public class MainActivity extends Activity implements WeiConstant{
 	private DataFileTools mDataFileTools;
 	
 	
+	private WeiXinMsgManager mWeiXinMsgManager;
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -87,17 +95,26 @@ public class MainActivity extends Activity implements WeiConstant{
 		
 		mContext = MainActivity.this;
 		mDataFileTools = DataFileTools.getInstance();
+		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		
 		initData();
 		initView();
+		initEvent();
 	}
 	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
 		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
+	}
+	
+	private void initEvent() {
+		// TODO Auto-generated method stub
+		mWeiXinMsgManager.addNewMessageListener(mNewMsgListener);
+		
 	}
 
 	/**
@@ -140,12 +157,18 @@ public class MainActivity extends Activity implements WeiConstant{
 	};
 	
 	/**
-	 * 更新用户信息
+	 * 新消息监听器
 	 */
-	private void updateUserInfo() {
-		mHandler.sendEmptyMessage(MSG_UPDATE_SYSTEMUSER);
-		mHandler.sendEmptyMessage(MSG_UPDATE_FRIENDLIST);
-	}
+	private NewMessageListener mNewMsgListener = new NewMessageListener(){
+
+		@Override
+		public void onNewMessage(WeiXinMsgRecorder recorder) {
+			// TODO Auto-generated method stub
+			if (mFriendGroupView != null){
+				mMsgBoardGroupView.receiveNewMessage(recorder);
+			}
+		}
+	};
 	
 	/**
 	 * 更新用户头像
@@ -239,6 +262,7 @@ public class MainActivity extends Activity implements WeiConstant{
 		 */
 		mMyFriendWord = (TextView)findViewById(R.id.myfriend_word);
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
+		mMsgBoardGroupView = (MsgBoardGroupView) findViewById(R.id.msgboard_group);
 		
 		
 		//字体
@@ -302,6 +326,11 @@ public class MainActivity extends Activity implements WeiConstant{
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		
+		unregisterReceiver(receiver);
+		if (mWeiXinMsgManager != null){
+			mWeiXinMsgManager.removeNewMessageListener(mNewMsgListener);
+		}
 	}
 	
 	public void setFont(TextView tv, String fontpath) {

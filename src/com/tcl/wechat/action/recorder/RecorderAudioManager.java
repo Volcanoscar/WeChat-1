@@ -140,8 +140,8 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 		if (bPrepared){
 			//range 0-7;
 			try {
-				return VOICE_MAX_LEVEL * 
-						mMediaRecorder.getMaxAmplitude() / 32768 + 1;
+				return 5;/*VOICE_MAX_LEVEL * 
+						mMediaRecorder.getMaxAmplitude() / 32768 + 1;*/
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

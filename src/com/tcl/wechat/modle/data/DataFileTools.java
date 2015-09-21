@@ -29,7 +29,9 @@ public class DataFileTools {
 	
 	private static final String FOLDER_RECORD_IMAGE = "image"; //图片文件路径
 	
-	private static final String FOLDER_CACHE = "cache";
+	private static final String FOLDER_TEMP = "temp";   		//临时缓存文件
+	
+	private static final String FOLDER_CACHE = "cache";			//缓存文件路径
  	
 	
 	private static class DataFileToolsInstance{
@@ -126,6 +128,19 @@ public class DataFileTools {
 	}
 	
 	/**
+	 * 获取临时文件路径/wechat/temp
+	 * @return
+	 */
+	public String getTempPath(){
+		if (isSdCardExist()){
+			return Environment.getExternalStorageDirectory() + 
+					File.separator + FOLDER_APP_LOCAL +
+					File.separator + FOLDER_TEMP;
+		}
+		return null;
+	}
+	
+	/**
      * 获取音频文件据对路径
      * @param fileName
      * @return
@@ -152,6 +167,7 @@ public class DataFileTools {
     			MD5Util.hashKeyForDisk(fileName) + WeiConstant.SUFFIX_AUDIO;
     }
 	
+    
 	/**
      * 获取用户头像
      * @param filePath

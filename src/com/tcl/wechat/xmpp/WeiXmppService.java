@@ -25,9 +25,11 @@ import com.tcl.wechat.modle.AppInfo;
 import com.tcl.wechat.modle.BindUser;
 import com.tcl.wechat.modle.DeviceInfo;
 import com.tcl.wechat.modle.QrInfo;
+import com.tcl.wechat.modle.UpLoadFileInfo;
 import com.tcl.wechat.modle.WeiNotice;
 import com.tcl.wechat.receiver.ConnectionChangeReceiver;
 import com.tcl.wechat.utils.BaseUIHandler;
+import com.tcl.wechat.utils.HttpUtil;
 import com.tcl.wechat.utils.NanoHTTPD;
 import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.utils.ToastUtil;
@@ -273,7 +275,16 @@ public class WeiXmppService extends Service{
 //				intent.putExtras(mBundle);
 //				sendBroadcast(intent);
 				break;
-				 
+				
+			case CommandType.COMMAND_SET_WEIXIN_MSG:
+				Log.i(TAG, "start upload file");
+				
+				UpLoadFileInfo fileInfo = (UpLoadFileInfo) msg.obj;
+				if (fileInfo != null){
+					Log.i(TAG, "UpLoadFileInfo:" + fileInfo.toString());
+					HttpUtil.upload(fileInfo.getAccesstoken(), fileInfo.getType(), fileInfo.getFilePath());
+				}
+				break;
 				 
 			case CommandType.COMMAND_REMOTEBINDER:
 				Log.d(TAG, "=============client received remotebinder message ===============");

@@ -80,6 +80,7 @@ public interface WeiConstant {
 		public static final int COMMAND_DEVICEIDNULL = 126;
 		public static final int COMMAND_MACNULL = 127;
 		public static final int COMMAND_GET_WEIXIN_APP = 128;
+		public static final int COMMAND_SET_WEIXIN_MSG = 129;
 	}
 	
 	/**

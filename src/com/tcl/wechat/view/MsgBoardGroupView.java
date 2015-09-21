@@ -12,8 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.tcl.wechat.controller.WeiXinMsgManager;
-import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.db.WeiMsgRecordDao;
 import com.tcl.wechat.db.WeiUserDao;
 import com.tcl.wechat.modle.BindUser;
@@ -57,8 +55,6 @@ public class MsgBoardGroupView extends LinearLayout{
 
 	private final int USER_TAB_HEIGHT = 400;
 	
-	private WeiXinMsgManager mWeiXinMsgManager;
-	
 	/*
 	 * 轨迹，根据移动的leftMargn来确定
 	 */
@@ -81,7 +77,6 @@ public class MsgBoardGroupView extends LinearLayout{
 		//初始化
 		mContext = context;
 		mInflater = LayoutInflater.from(context);
-		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		
 		mAllMsgRecords = new ArrayList<WeiXinMsgRecorder>();
 		mLastestMsgRecorderMap = new HashMap<String, WeiXinMsgRecorder>();
@@ -90,9 +85,6 @@ public class MsgBoardGroupView extends LinearLayout{
 		
 		//加载数据
 		loadMsgBoardData();
-		
-		//设置监听器
-		mWeiXinMsgManager.addNewMessageListener(mNewMsgListener);
 	}
 	
 	/**
@@ -164,43 +156,43 @@ public class MsgBoardGroupView extends LinearLayout{
 		addView(view, position, params);
 	}
 	
-	private NewMessageListener mNewMsgListener = new NewMessageListener() {
+	/**
+	 * 接收新消息
+	 * @param recorder
+	 */
+	public void receiveNewMessage(WeiXinMsgRecorder recorder){
+		Log.i(TAG, "receive new message!");
 		
-		@Override
-		public void onNewMessage(WeiXinMsgRecorder recorder) {
-			Log.i(TAG, "receive new message!");
-			
-			if (recorder == null){
-				return ;
-			}
-			
-			/**
-			 * 收到新消息
-			 * 1、用户视图重新排序
-			 */
-			
-			String openId = recorder.getOpenid();
-			
-			if (mLastestMsgRecorderMap.containsKey(openId)){
-				mLastestMsgRecorderMap.remove(openId);
-			}
-			mLastestMsgRecorderMap.put(openId, recorder);
-			
-			/**
-			 * 2、如果是新用户，要添加视图
-			 */
-			BindUser bindUser = mAllBindUserMap.get(openId);
-			if (bindUser == null){//新聊天用户
-				bindUser = mWeiUserDao.getUser(openId);
-				addUserColumn(bindUser, mOnLineChatUserCnt);
-		        mOnLineChatUserCnt ++;
-			} 
-			
-			//3、 排序
-			
-			//4、消息通知
-			mMsgBoardViewMap.get(openId).receiveNewMessage(bindUser, recorder);
-			
+		if (recorder == null){
+			return ;
 		}
-	};
+		
+		/**
+		 * 收到新消息
+		 * 1、用户视图重新排序
+		 */
+		
+		String openId = recorder.getOpenid();
+		
+		if (mLastestMsgRecorderMap.containsKey(openId)){
+			mLastestMsgRecorderMap.remove(openId);
+		}
+		mLastestMsgRecorderMap.put(openId, recorder);
+		
+		/**
+		 * 2、如果是新用户，要添加视图
+		 */
+		BindUser bindUser = mAllBindUserMap.get(openId);
+		if (bindUser == null){//新聊天用户
+			bindUser = mWeiUserDao.getUser(openId);
+			addUserColumn(bindUser, mOnLineChatUserCnt);
+	        mOnLineChatUserCnt ++;
+		} 
+		
+		//3、 排序
+		
+		//4、消息通知
+		mMsgBoardViewMap.get(openId).receiveNewMessage(bindUser, recorder);
+		
+	}
 }
