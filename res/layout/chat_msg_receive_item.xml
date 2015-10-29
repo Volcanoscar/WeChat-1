@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:background="#4571C671"
     android:layout_gravity="center"
-    android:padding="5dp" 
     android:orientation="vertical">
     
     <RelativeLayout
@@ -12,7 +11,7 @@
      	android:layout_width="wrap_content"
      	android:layout_height="wrap_content"
      	android:layout_gravity="left"
-     	android:layout_margin="5dp">
+     	android:layout_margin="@dimen/dp_10">
      	<!-- 在此需要手动添加View -->
 	</RelativeLayout>
     
@@ -20,7 +19,7 @@
         android:id="@+id/tv_chat_msgsendtime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="@dimen/dp_30"
         android:gravity="left|bottom"
         android:textSize="18sp"
         android:textColor="@color/gray"/>

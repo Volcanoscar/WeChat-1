@@ -19,5 +19,5 @@
         android:layout_marginRight="10dp"
         android:text="@string/main_title"
         android:textColor="@color/white"
-        android:textSize="36sp"	/>
+        android:textSize="32sp"	/>
 </RelativeLayout>

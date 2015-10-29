@@ -8,15 +8,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="100dp"
-        android:layout_marginLeft="30dp"
+        android:layout_marginTop="@dimen/dp_150"
+        android:layout_marginLeft="@dimen/dp_75"
         android:background="@drawable/chat_right_bg">
         <TextView 
             android:id="@+id/tv_right_msg"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
-            android:layout_marginTop="80dp"
-            android:layout_marginLeft="75dp"
+            android:layout_height="@dimen/dp_300"
+            android:layout_marginTop="@dimen/dp_125"
+            android:layout_marginLeft="@dimen/dp_112"
             android:text="超出取值范围的值将被恢复为默认值"
             android:background="#45F0F0F0"
             android:textColor="@color/black"
@@ -28,8 +28,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="150dp"
+        android:layout_marginTop="@dimen/dp_50"
+        android:layout_marginLeft="@dimen/dp_300"
         android:src="@drawable/chat_clip_right"
         android:contentDescription="@string/contentDesc"/>
     
@@ -38,7 +38,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="380dp"
+        android:layout_marginLeft="@dimen/dp_25"
+        android:layout_marginTop="@dimen/dp_550"
         android:background="@drawable/msg_reply_selector"
         android:onClick="msgReplyRightClick"
         android:rotation="2"/>

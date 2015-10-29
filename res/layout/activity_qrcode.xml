@@ -4,29 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
-    android:orientation="vertical" >
-    
-    <com.tcl.wechat.view.TopBarView
-        android:layout_width="match_parent"
-        android:layout_height="45dp" 
-        custom:topBarTitle="@string/add_friend"/>
-    
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-        
-        <com.tcl.wechat.view.UserInfoView 
-            android:id="@+id/uv_personal_icon"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="10dp"
-            custom:textBackground="@drawable/big_head_word"
-        	custom:imageSrc="@drawable/default_personal_user_icon"
-        	custom:imageScaleType="centerInside"/>
+    android:orientation="horizontal" >
+    <com.tcl.wechat.view.UserInfoView 
+	    android:id="@+id/uv_personal_icon"
+	    android:layout_width="0dp"
+	    android:layout_height="match_parent"
+	    android:layout_weight="1"
+	    android:gravity="center"
+	    android:layout_marginLeft="@dimen/dp_10"
+	    android:layout_marginTop="@dimen/dp_10"
+	    custom:textSize="32sp"
+       	custom:textColor="@color/white"
+        custom:textBackground="@android:color/transparent"
+       	custom:imageSrc="@drawable/default_personal_user_icon"
+       	custom:imageScaleType="centerInside"/>
         
         <RelativeLayout
 		    android:layout_width="0dp"
@@ -35,27 +26,43 @@
 		    android:gravity="center">
 		    <ImageView
 		        android:id="@+id/img_personal_qrcode"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
+		        android:layout_width="@dimen/dp_850"
+		        android:layout_height="@dimen/dp_850"
 		        android:layout_centerInParent="true"
-		        android:padding="10dp"
-		        android:scaleType="matrix"
+		        android:padding="@dimen/dp_10"
+		        android:scaleType="fitXY"
 		        android:background="@color/white"
 		        android:contentDescription="@string/contentDesc"/>
 		    <TextView 
+		        android:id="@+id/tv_hint"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:layout_below="@id/img_personal_qrcode"
-		        android:layout_marginTop="20dp"
+		        android:layout_marginTop="@dimen/dp_20"
 		        android:gravity="center"
 		        android:text="@string/add_friend_hint"
-		        android:textSize="18sp"
+		        android:textSize="22sp"
 		        android:textColor="#AAffffff"/>
+		    <TextView 
+		        android:id="@+id/tv_add_friend_error"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_below="@id/tv_hint"
+		        android:layout_marginTop="@dimen/dp_20"
+		        android:ellipsize="marquee" 
+		        android:focusable="true" 
+		        android:marqueeRepeatLimit="marquee_forever" 
+		        android:focusableInTouchMode="true" 
+		        android:scrollHorizontally="true"
+		        android:singleLine="true"
+		        android:textSize="28sp"
+		        android:textColor="@color/red"
+		        android:text="@string/add_friend_error"
+		        android:visibility="gone"/>
 		</RelativeLayout> 
         
 		<View 
 		    android:layout_width="0dp"
 		    android:layout_height="match_parent"
 		    android:layout_weight="1"/>
-    </LinearLayout>
 </LinearLayout>

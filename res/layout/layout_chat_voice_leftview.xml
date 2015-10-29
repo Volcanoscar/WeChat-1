@@ -13,8 +13,8 @@
         android:background="@drawable/chat_voice_left_selector">
         <View 
 	   	    android:id="@+id/view_chat_recorder_info"
-	   	    android:layout_width="40dp"
-	   	    android:layout_height="40dp"
+	   	    android:layout_width="@dimen/dp_40"
+	   	    android:layout_height="@dimen/dp_40"
 	   	    android:layout_gravity="center_vertical|left"
 	   	    android:background="@drawable/voice_left"/>
     </FrameLayout>

@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,7 +18,11 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader.ImageContainer;
+import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
@@ -29,17 +34,11 @@ import com.tcl.wechat.view.listener.UserInfoEditListener;
  */
 public class UserInfoView extends LinearLayout{
 
-	private static final String TAG = "UserInfoView";
-	
-	private static final int DEFULT_WIDTH = 100;
-	private static final int DEFULT_HEIGHT = 100;
-	
 	private String mTextTitle;
 	private float mTextSize;
 	private int mTextColor;
 	private Drawable mTextBg;
 	private Bitmap mBitmap;
-//	private Drawable mImgDrawable;
 	
 	private View mView;
 	private ImageView mUserIconImg;
@@ -48,8 +47,9 @@ public class UserInfoView extends LinearLayout{
 	private EditText mUserNameEdt;
 	
 	private boolean bEditable = false;
+	private boolean bHasBg = false;
 	
-	private String tag = "";
+	private String mTag = "";
 	
 	/**
 	 * 点击监听事件
@@ -80,7 +80,6 @@ public class UserInfoView extends LinearLayout{
 		mTextBg = ta.getDrawable(R.styleable.userImageView_textBackground);
 		mBitmap = BitmapFactory.decodeResource(getResources(), 
 				ta.getResourceId(R.styleable.userImageView_imageSrc, 0));
-//		mImgDrawable = ta.getDrawable(R.styleable.userImageView_imageBackground);
 		ta.recycle();
 		
 		mUserIconImg = (ImageView) mView.findViewById(R.id.user_icon);
@@ -118,7 +117,6 @@ public class UserInfoView extends LinearLayout{
 			@Override
 			public boolean onLongClick(View v) {
 				if (bEditable){
-					mDeleteFlagImg.setVisibility(VISIBLE);
 					if (mEditListener != null){
 						mEditListener.onDeleteUserEvent(getTag());
 						return true;
@@ -140,14 +138,29 @@ public class UserInfoView extends LinearLayout{
 			}
 		});
 	}
-	
-	
+
 	/**
 	 * 设置头像是否可编辑
 	 * @param editable
 	 */
 	public void setUserIconEditable(boolean editable){
 		this.bEditable = editable;
+	}
+	
+	public boolean isEditable() {
+		return bEditable;
+	}
+
+	public ImageView getUserView(){
+		return mUserIconImg;
+	}
+	
+	public String getEditUserName(){
+		Editable editable = mUserNameEdt.getText();
+		if (editable == null){
+			return "";
+		}
+		return editable.toString();
 	}
 	
 	/**
@@ -194,11 +207,58 @@ public class UserInfoView extends LinearLayout{
 	}
 	
 	/**
+	 * 设置用户头像
+	 * @param headimageUrl 图像url地址
+	 * @note 该方法实现过程：图像下载、头像缓存、头像显示，建议使用该方法
+	 */
+	public void setUserIcon(String headimageUrl){
+		bHasBg = false;
+		WeApplication.getImageLoader().get(headimageUrl, mImageListener );
+	}
+	
+	/**
+	 * 设置用户头像
+	 * @param headimageUrl 图像url地址
+	 * @note 该方法实现过程：图像下载、头像缓存、头像显示，建议使用该方法
+	 */
+	public void setUserIcon(String headimageUrl, boolean hasBg){
+		bHasBg = hasBg;
+		try {
+			WeApplication.getImageLoader().get(headimageUrl, mImageListener );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/**
 	 * 设置用户昵称
 	 * @param userName
 	 */
 	public void setUserName(String userName){
+		
+		if (userName != null && userName.length() >= 8){
+			userName = userName.substring(0, 7) + "...";
+		}
+		setFont("fonts/oop.TTF");
 		mUserNameEdt.setText(userName);
+	}
+	
+	/**
+	 * 设置用户昵称
+	 * @param userName
+	 * @param hasBg
+	 */
+	public void setUserName(String userName, boolean hasBg){
+		
+		if (userName != null && userName.length() >= 8){
+			userName = userName.substring(0, 7) + "...";
+		}
+		mUserNameEdt.setText(userName);
+		setFont("fonts/oop.TTF");
+		if (!hasBg){
+			mUserNameEdt.setBackgroundColor(Color.TRANSPARENT);
+		}
 	}
 	
 	/**
@@ -285,7 +345,7 @@ public class UserInfoView extends LinearLayout{
 	 * @return
 	 */
 	public String getTag() {
-		return tag;
+		return mTag;
 	}
 
 	/**
@@ -293,6 +353,35 @@ public class UserInfoView extends LinearLayout{
 	 * @param tag
 	 */
 	public void setTag(String tag) {
-		this.tag = tag;
+		this.mTag = tag;
 	}
+	
+	private ImageListener mImageListener = new ImageListener() {
+		
+		@Override
+		public void onErrorResponse(VolleyError error) {
+			// TODO Auto-generated method stub
+			Bitmap defuserIcon = BitmapFactory.decodeResource(getResources(), 
+					R.drawable.default_user_icon);
+			if (defuserIcon != null){
+				mUserIconImg.setImageBitmap(defuserIcon);
+			}
+		}
+		
+		@Override
+		public void onResponse(ImageContainer response, boolean isImmediate) {
+			// TODO Auto-generated method stub
+			Bitmap userIcon = ImageUtil.getInstance().createCircleImage(response.getBitmap());
+			if (userIcon != null){
+				mUserIconImg.setImageBitmap(userIcon);
+				if (bHasBg){
+					mUserIconImg.setBackgroundResource(R.drawable.user_icon_bg);
+				} else {
+					mUserIconImg.setBackgroundColor(Color.TRANSPARENT);
+				}
+			} else {
+				
+			}
+		}
+	};
 }

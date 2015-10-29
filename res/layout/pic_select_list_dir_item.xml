@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/id_dir_item_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:background="@drawable/pic_dir"
@@ -16,7 +16,7 @@
         android:paddingRight="12dp"
         android:paddingTop="9dp"
         android:scaleType="fitXY"
-        android:src="@drawable/ic_launcher" 
+        android:src="@drawable/pictures_no" 
         android:contentDescription="@string/contentDesc"/>
 
     <LinearLayout
@@ -41,7 +41,7 @@
             android:layout_gravity="center"
             android:text="@string/pic_count"
             android:textColor="#444"
-            android:textSize="12sp" />
+            android:textSize="18sp" />
     </LinearLayout>
 
     <ImageView

@@ -14,9 +14,60 @@
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
-         <item name="android:windowIsTranslucent">true</item> 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+    
+   	<style name="Anim_fade" parent="android:Theme.NoTitleBar">
+       <item name="android:windowAnimationStyle">@style/fade</item>
+    </style>
+    
+   	<style name="Anim_scale" parent="android:Theme.NoTitleBar">
+       <item name="android:windowAnimationStyle">@style/scale_fade</item>
+    </style>
+
+    <style name="fade" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/fade_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/fade_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/fade_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/fade_out</item>
+    </style>
+    
+    <style name="scale_fade" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/scale_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/scale_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/scale_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/scale_out</item>
+    </style>
+    
+    <style name="AnimFade2" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_from_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_out_to_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_to_right</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_in_from_left</item>
+    </style>
+    
+    <style name="horizontal_slide" parent="android:Theme.NoTitleBar">
+        <item name="android:windowAnimationStyle">@style/AnimFade2</item>
+        <item name="android:windowFrame">@null</item><!--边框-->  
+        <item name="android:windowNoTitle">true</item><!--无标题--> 
+    </style>
+    
+    <!-- 加载进度样式 -->
+    <style name="loadingProgressBarStyle" >
+	　　<item name="android:indeterminateDrawable">@drawable/loading_progress</item>
+	　　<item name="android:minWidth">@dimen/dp_75</item>
+	　　<item name="android:maxWidth">@dimen/dp_75</item>
+	　　<item name="android:minHeight">@dimen/dp_75</item>
+	　　<item name="android:maxHeight">@dimen/dp_75</item>
+	</style> 
+	
+    <style name="chatmsgLoadingProgressBarStyle" >
+	　　<item name="android:indeterminateDrawable">@drawable/loading_message</item>
+	　　<item name="android:minWidth">@dimen/dp_75</item>
+	　　<item name="android:maxWidth">@dimen/dp_75</item>
+	　　<item name="android:minHeight">@dimen/dp_75</item>
+	　　<item name="android:maxHeight">@dimen/dp_75</item>
+	</style> 
 
     <style name="AnimTop2" parent="@android:style/Animation">  
     	<item name="android:windowEnterAnimation">@anim/push_top_in2</item>
@@ -35,26 +86,34 @@
 	
     <!-- Progress样式 -->
     <style name="myProgressBarStyleLarge" >
-	　　<item name="android:indeterminateDrawable">@drawable/progress_lager</item>
-	　　<item name="android:minWidth">76dip</item>
-	　　<item name="android:maxWidth">76dip</item>
-	　　<item name="android:minHeight">76dip</item>
-	　　<item name="android:maxHeight">76dip</item>
+	　　<item name="android:indeterminateDrawable">@drawable/loading_progress</item>
+	　　<item name="android:minWidth">@dimen/dp_76</item>
+	　　<item name="android:maxWidth">@dimen/dp_76</item>
+	　　<item name="android:minHeight">@dimen/dp_76</item>
+	　　<item name="android:maxHeight">@dimen/dp_76</item>
 	</style> 
-    
-    <style name="RecorderDialogTheme"
-        parent="@android:style/Theme.Dialog">
-        <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
-        <item name="android:windowFrame">@null</item><!--边框-->  
-        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->  
-        <item name="android:windowNoTitle">true</item><!--无标题-->  
-        <item name="android:windowIsTranslucent">true</item><!-- 透明 -->
-       	<item name="android:backgroundDimEnabled">false</item><!-- 背景窗口是否变暗 -->
+	
+    <style name="loadMsgProgressBarStyle">
+        <item name="android:indeterminateDrawable">@drawable/loading_message</item>
+        <item name="android:minHeight">@dimen/dp_100</item>
+        <item name="android:minWidth">@dimen/dp_100</item>
+        <item name="android:maxHeight">@dimen/dp_100</item>
+        <item name="android:maxWidth">@dimen/dp_100</item>
     </style>
     
-     <style name="anim_popup_dir">
+    <style name="dialogStyle" parent="android:Theme.Dialog">
+        <item name="android:windowAnimationStyle">@style/AnimTop2</item><!-- 动画样式 -->
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
+        <item name="android:backgroundDimEnabled">false</item><!--模糊-->   
+   	</style>
+    
+   	<style name="anim_popup_dir">
         <item name="android:windowEnterAnimation">@anim/slide_in</item>
         <item name="android:windowExitAnimation">@anim/slide_out</item>
-    </style>
-    
+   	</style>
+
 </resources>

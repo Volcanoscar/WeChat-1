@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="620dp"
-    android:layout_height="280dp"
+    android:layout_width="700dp"
+    android:layout_height="400dp"
     android:layout_gravity="center"
     android:orientation="vertical" >
     
@@ -22,11 +22,13 @@
         android:id="@+id/tv_deluser_info"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="4"
+        android:paddingLeft="5dp"
         android:gravity="left|center_vertical"
         android:background="@drawable/del_user_content"
-        android:ellipsize="end" 
+        android:ellipsize="middle" 
         android:singleLine="true"
+        android:maxEms="10"
         android:text="@string/hint_delfriend"
         android:textColor="@color/white"
         android:textSize="36sp"/>
@@ -38,24 +40,24 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
         <Button 
+            android:id="@+id/btn_cancel"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/cancel"
             android:textSize="32sp"
             android:textColor="@color/white"
-            android:onClick="cancelOnclck"
             android:background="@drawable/del_user_cancel"
             style="?android:attr/buttonBarButtonStyle"/>
         
         <Button
+            android:id="@+id/btn_confirm"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/confirm"
             android:textSize="32sp"
             android:textColor="@color/white"
-            android:onClick="delUserOnClick"
             android:background="@drawable/del_user_confirm"
             style="?android:attr/buttonBarButtonStyle"/>
     </LinearLayout>

@@ -15,15 +15,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/family_board"
-        android:layout_marginLeft="40dp"
+        android:layout_marginLeft="@dimen/dp_40"
         android:contentDescription="@string/contentDesc"  />
     
     <TextView 
         android:id="@+id/my_messageborad_word"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="120dp"
-        android:layout_marginLeft="70dp"
+        android:layout_marginTop="@dimen/dp_120"
+        android:layout_marginLeft="@dimen/dp_88"
         android:text="@string/familyboard"
         android:textColor="@color/white" 
         android:textSize="36sp"
@@ -33,7 +33,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="40dp"
+        android:layout_marginLeft="@dimen/dp_20"
         android:layout_toRightOf="@id/my_messageborad_word"
         android:orientation="horizontal" >
 

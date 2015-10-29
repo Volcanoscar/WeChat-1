@@ -4,79 +4,163 @@
     android:layout_height="match_parent">
     
     <TextView 
-        android:id="@+id/msg_play_time"
+        android:id="@+id/msg_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:text="2:23"
         android:textSize="22sp"
         android:textColor="@color/white"
-        android:visibility="visible"/>
+        android:visibility="gone"/>
     
     <RelativeLayout
         android:id="@+id/chat_msg_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/msg_play_time"
-        android:layout_marginBottom="10dp"
-        android:clickable="true"
-        android:descendantFocusability="beforeDescendants"
-        android:gravity="bottom">
-        <ImageView
-            android:id="@+id/img_videomsg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="25dp"
-            android:src="@drawable/message_video_bg"
-            android:contentDescription="@string/contentDesc"
-            android:visibility="gone"/>
+        android:layout_width="240dp"
+        android:layout_height="190dp"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="46dp"
+        android:layout_above="@id/msg_play">
         
-        <TextView 
+        <!-- 文本显示控件 -->
+        <TextView
             android:id="@+id/tv_textmsg_detail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="30dp"
-            android:layout_marginLeft="55dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginBottom="10dp"
-            android:padding="10dp"
+            android:layout_height="match_parent"
             android:gravity="center"
             android:background="@drawable/message_text_bg"
             android:ellipsize="end" 
-            android:maxLines="8"
+            android:padding="5dp"
+            android:maxLines="6"
             android:textColor="@color/black"
-            android:textSize="22sp"
-            android:visibility="gone"/>
+            android:textSize="24sp"
+            android:visibility="gone"
+            android:autoLink="web"/>
         
-        <ImageView 
-            android:id="@+id/img_voicemsg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
-            android:layout_marginBottom="40dp"
-            android:layout_marginLeft="60dp"
-            android:layout_marginRight="40dp"
-            android:src="@drawable/message_voice_icon"
-            android:scaleType="center"
-            android:background="@drawable/message_voice_bg"
-            android:contentDescription="@string/contentDesc"
-            android:visibility="gone"/>
-        
+        <!-- 图像显示控件 -->
         <ImageView 
             android:id="@+id/img_imagemsg_detail"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="60dp"
-            android:layout_marginRight="35dp"
-            android:layout_marginTop="30dp"
-            android:background="@drawable/message_image_bg"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/contentDesc"
+            android:background="@drawable/message_location_view_bg"
+            android:scaleType="centerInside"
             android:visibility="gone"/>
+        
+        <!-- 音频显示控件 -->
+        <LinearLayout
+            android:id="@+id/layout_audioview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+           	android:orientation="vertical"
+           	android:background="@drawable/message_audio_bg"
+            android:visibility="gone">
+            <ImageView 
+	            android:id="@+id/img_voicemsg_detail"
+	            android:layout_width="match_parent"
+	            android:layout_height="0dp"
+	            android:layout_weight="1"
+	            android:src="@drawable/msg_audio"
+	            android:scaleType="center"
+	            android:background="@drawable/message_voice_bg"
+	            android:contentDescription="@string/contentDesc"/>
+            <TextView 
+		        android:id="@+id/msg_play_time"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginTop="5dp"
+		        android:gravity="center"
+		        android:textSize="22sp"
+		        android:textColor="@color/black"
+		        android:visibility="gone"/>
+        </LinearLayout>
+       
+        
+        <!-- 视频显示控件 -->
+        <RelativeLayout
+            android:id="@+id/layout_videoview"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:layout_centerInParent="true"
+		    android:layout_gravity="center"
+		    android:background="@drawable/playview_bg"
+		    android:visibility="visible">
+		    <ImageView
+		        android:id="@+id/img_videomsg_detail"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"
+		        android:scaleType="fitXY"
+		        android:src="@drawable/message_video_bg"
+		        android:contentDescription="@string/contentDesc"/>
+		    <ImageView 
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_centerInParent="true"
+		        android:src="@drawable/msg_video_play_selector"
+		        android:contentDescription="@string/contentDesc"/>
+		</RelativeLayout>
+		
+        
+        <!-- 位置显示控件 -->
+        <RelativeLayout 
+            android:id="@+id/layout_locationview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/message_location_view_bg"
+            android:visibility="gone">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/msg_location"
+                android:scaleType="fitXY"
+                android:contentDescription="@string/contentDesc"/>
+            <TextView 
+                android:id="@+id/tv_location_detail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:padding="@dimen/dp_5"
+		        android:background="#67808080"
+		        android:maxLines="2"
+		        android:ellipsize="end"
+		        android:textSize="18sp"
+		        android:textColor="@color/black" />
+        </RelativeLayout>
+        
+        <!-- 链接显示控件 -->
+        <RelativeLayout
+            android:id="@+id/layout_linkview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/message_webview_bg"
+            android:visibility="gone">
+            <TextView 
+                android:id="@+id/tv_link_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:padding="3dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="1.2"
+                android:textColor="#33cc33"
+                android:textSize="20sp"/>
+            <TextView 
+                android:id="@+id/tv_link_desprition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_below="@id/tv_link_title"
+                android:padding="3dp"
+                android:maxLines="4"
+                android:ellipsize="end"
+                android:textColor="@color/gray"
+                android:textSize="18sp"/>
+        </RelativeLayout>
     </RelativeLayout>
-
 </RelativeLayout>

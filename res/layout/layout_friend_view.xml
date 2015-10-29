@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         custom:textTitle=""
-        custom:textSize="16sp"
+        custom:textSize="22sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
         custom:imageSrc="@drawable/default_user_icon"

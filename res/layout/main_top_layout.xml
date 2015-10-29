@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
-    android:layout_height="180dp"
-    android:gravity="center|left"
+    android:layout_height="@dimen/dp_350"
+    android:gravity="left|center_vertical"
     android:orientation="horizontal" >
     
     <com.tcl.wechat.view.UserInfoView
@@ -11,9 +11,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_gravity="center"
-        android:paddingLeft="20dp"
+        android:paddingLeft="@dimen/dp_20"
         custom:textTitle=""
-        custom:textSize="16sp"
+        custom:textSize="22sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
         custom:imageSrc="@drawable/default_sys_user_icon"
@@ -24,10 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" 
         android:layout_gravity="center"
-        android:paddingLeft="30dp"
-        custom:textTitle=""
-        custom:textSize="14sp"
-        custom:textColor="#ff000000"
+        android:paddingLeft="@dimen/dp_30"
         custom:textBackground="@drawable/add_friend"
         custom:imageSrc="@drawable/add_friend_pressed"
         custom:imageScaleType="centerInside"/>

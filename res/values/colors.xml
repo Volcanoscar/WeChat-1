@@ -103,6 +103,8 @@
 	<color name="aquamarine">#7fffd4</color><!--碧绿色 --> 
 	<color name="chartreuse">#7fff00</color><!--黄绿色 --> 
 	<color name="lawngreen">#7cfc00</color><!--草绿色 --> 
+	<color name="dark_green">#458B00</color><!-- 深绿色 -->
+	<color name="light_green">#00CD00</color><!-- 浅绿色 -->
 	<color name="mediumslateblue">#7b68ee</color><!--中暗蓝色 --> 
 	<color name="lightslategray">#778899</color><!--亮蓝灰 --> 
 	<color name="lightslategrey">#778899</color><!--亮蓝灰 --> 

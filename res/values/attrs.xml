@@ -36,7 +36,7 @@
     
     <!-- TopBar属性 -->
     <declare-styleable name="TopBatView">
-        <attr name="topBarTitle" format="string"/>
+        <attr name="title" format="string"/>
     </declare-styleable>
     
 </resources>

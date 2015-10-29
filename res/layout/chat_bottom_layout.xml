@@ -1,28 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:rotation="-4"
     android:orientation="vertical" >
     
     <!-- 消息输入框 -->
+    <ScrollView 
+		android:layout_width="match_parent"
+     	android:layout_height="wrap_content"
+     	android:fillViewport="true"  
+  		android:orientation="vertical"  
+  		android:scrollbars="none">
+     	<com.tcl.wechat.view.ChatMsgEditText
+         	android:id="@+id/edt_msg_input"
+         	android:layout_width="match_parent"
+         	android:layout_height="wrap_content"
+         	android:background="@drawable/chat_msg_edit_bg"
+         	android:textSize="22sp"
+         	android:inputType="text"/> 
+ 	</ScrollView>
+    
+    <!-- 表情列表栏 -->
     <RelativeLayout 
+        android:id="@+id/layout_faceview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <EditText
-            android:id="@+id/edt_msg_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/chat_msg_edit_bg"
-            android:textSize="22sp"
-            android:inputType="text"/>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/face_view_bg"
+	    android:visibility="gone">
+        <include
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+	     	layout="@layout/layout_chat_face" />
     </RelativeLayout>
     
    <!-- 底部功能按键 -->
     <RelativeLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="@dimen/dp_25"
+        android:layout_marginBottom="@dimen/dp_25">
         <!-- 录音按钮 -->
         <com.tcl.wechat.view.AudioRecorderButton
             android:id="@+id/btn_sound_reply"
@@ -37,16 +55,16 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="@drawable/msg_reply_selector"
-            android:onClick="msgReplyClick"/>
+            android:onClick="replyTextClick"/>
         <!-- 表情回复控件 -->
         <Button 
             android:id="@+id/btn_face_reply"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@id/btn_msg_reply"
-            android:layout_marginRight="40dp"
+            android:layout_marginRight="@dimen/dp_75"
             android:background="@drawable/face_reply_selector"
-            android:onClick="msgReplyClick"/>
+            android:onClick="replyFaceClick"/>
         
         <!-- 图片回复控件 -->
         <Button 
@@ -54,9 +72,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@id/btn_face_reply"
-            android:layout_marginRight="40dp"
+            android:layout_marginRight="@dimen/dp_50"
             android:background="@drawable/img_reply_selector"
             android:onClick="imgReplyClick"/>
     </RelativeLayout>
-    
 </LinearLayout>

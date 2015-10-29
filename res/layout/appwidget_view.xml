@@ -24,7 +24,7 @@
 	        android:layout_gravity="center_horizontal"
 	        layout="@layout/appwidget_msginfo_view"/>
 	    
-	    <!-- 消息提示模块 -->
+	    <!-- 用户信息模块 -->
 	    <include 
 	        android:layout_width="match_parent"
 	        android:layout_height="0dp"

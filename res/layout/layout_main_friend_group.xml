@@ -7,7 +7,7 @@
         android:id="@+id/myfriend_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_marginTop="@dimen/dp_175"
         android:scaleType="fitXY"
         android:src="@drawable/blue_line_02"
         android:contentDescription="@string/contentDesc" />
@@ -16,8 +16,8 @@
         android:id="@+id/myfriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="155dp"
-        android:layout_marginLeft="160dp"
+        android:layout_marginTop="@dimen/dp_255"
+        android:layout_marginLeft="@dimen/dp_255"
         android:src="@drawable/my_friend"
         android:contentDescription="@string/contentDesc"  />
     
@@ -25,8 +25,8 @@
         android:id="@+id/myfriend_word"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="180dp"
-        android:layout_marginLeft="195dp"
+        android:layout_marginTop="@dimen/dp_290"
+        android:layout_marginLeft="@dimen/dp_300"
         android:gravity="center"
         android:text="@string/myfriend"
         android:textSize="28sp"

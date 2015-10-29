@@ -1,16 +1,39 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-
+    
+    <com.tcl.wechat.view.TopBarView
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_70" 
+        custom:title="@string/select_picture"/>
+    
+    <Button 
+        android:id="@+id/btn_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/dp_10"
+        android:paddingLeft="@dimen/dp_10"
+        android:paddingRight="@dimen/dp_10"
+        android:text="@string/send"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:onClick="onSendClick"
+        android:background="@drawable/send_btn_selector"/>
+    
     <GridView
         android:id="@+id/gv_image_select"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/topbar"
         android:cacheColorHint="@android:color/transparent"
         android:clipChildren="true"
         android:gravity="center"
-        android:horizontalSpacing="3dp"
+        android:horizontalSpacing="@dimen/dp_3"
         android:listSelector="@android:color/transparent"
         android:numColumns="10"
         android:stretchMode="columnWidth"
@@ -20,29 +43,32 @@
     <RelativeLayout
         android:id="@+id/layout_bottom_view"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="#e0000000"
         android:clickable="true" >
-
         <TextView
             android:id="@+id/id_choose_dir"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:gravity="center_vertical"
-            android:paddingLeft="10dp"
+            android:padding="@dimen/dp_10"
+            android:textSize="18sp"
             android:text="@string/all_pictures"
             android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/id_total_count"
-            android:layout_width="50dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/dp_10"
+            android:padding="@dimen/dp_10"
             android:gravity="center"
+            android:textSize="18sp"
             android:text="@string/pic_count"
             android:textColor="@android:color/white" />
     </RelativeLayout>

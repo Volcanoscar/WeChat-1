@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:gravity="center">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     
  	<com.tcl.wechat.view.UserInfoView 
 		android:id="@+id/uv_personal_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_centerInParent="true"
         custom:textSize="32sp"
         custom:textColor="@color/white"
         custom:textBackground="@android:color/transparent"

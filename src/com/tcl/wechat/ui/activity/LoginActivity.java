@@ -4,104 +4,124 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
+import android.view.WindowManager;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.controller.WeiXinMsgManager;
-import com.tcl.wechat.controller.listener.LoginStateListener;
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant;
+import com.tcl.wechat.utils.NetWorkUtil;
+import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.utils.SystemShare.SharedEditer;
-import com.tcl.wechat.utils.UIUtils;
+import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
-public class LoginActivity extends Activity implements WeiConstant{
+/**
+ * 登录主界面
+ * @author rex.lei
+ *
+ */
+public class LoginActivity extends Activity implements IConstant{
 	
-	private static final String TAG = "LoginActivity";
-	
-	private SharedEditer mEditer;
-	
-	private Timer mTimer;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.activity_loading);
-		
-		mEditer = new SharedEditer();
-		
-        startLogin();     
-	}
+	private static final String TAG = LoginActivity.class.getSimpleName();
 	
 	/**
-	 * 判断用户是否注册成功，包含用户信息已经保存
-	 * @return
+	 * 登陆超时定时器
 	 */
-	private boolean isRegistener(){
-		
-		return mEditer.getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false);
+	private Timer mTimer;
+	
+	private SharedEditer mEditer ;
+	
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setBackgroundDrawable(null);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_login);
+        
+        mEditer = new SharedEditer();
+    }
+    
+    @Override
+    protected void onStart() {
+    	// TODO Auto-generated method stub
+    	super.onStart();
+    	
+		registerBoradcast();
+		startLogin(); 
+    }
+    
+    /**
+	 * 注册广播，用于监听登陆是否成功
+	 */
+	private void registerBoradcast() {
+		// TODO Auto-generated method stub
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(CommandAction.ACTION_LOGIN_SUCCESS);
+		registerReceiver(receiver, filter);
 	}
 	
+	private BroadcastReceiver receiver = new BroadcastReceiver(){
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			if (CommandAction.ACTION_LOGIN_SUCCESS.equals(intent.getAction())){
+				startToEnter();
+			}
+		}
+	};
+	
+
 	/**
 	 * 开始登陆
 	 */
 	public void startLogin() {
 		
-		Log.i(TAG, "start Login...");
-		mEditer.putBoolean(SystemShared.KEY_FLAG_ENTER, false);
-		
-		//长连接已存在
-		if (WeiXmppManager.getInstance().isConnected()) {
-			startToEnter();
-			return;
-		}
-		
-		//网络不可用，已经注册完成
-		if (!UIUtils.isNetworkAvailable() && isRegistener()){
-			startToEnter();
-			return;
-		}
-		
-		mEditer.putBoolean(SystemShared.KEY_FLAG_ENTER, false);
-		
-		addLoginStateListenter();
-		WeiXinMsgManager.getInstance().setLoginStateListener(mLoginStateListener);
-		
-		if (WeiXmppManager.getInstance().isRegister()){
-			WeiXmppManager.getInstance().login();
-		} else {
-			Intent serviceIntent = new Intent(this, WeiXmppService.class);
-			serviceIntent.putExtra("startmode", WeiConstant.StartServiceMode.OWN);
-			serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startService(serviceIntent);
-		}
-	}
-
-	/**
-	 * 监听登陆状态
-	 */
-	private void addLoginStateListenter(){
-		
-		mTimer = new Timer();
-		mTimer.schedule(new TimerTask() {
+		Log.d(TAG, "start Login...");
+		if (WeiXmppManager.getInstance().isRegister()){//用户已经注册
 			
-			@Override
-			public void run() {
-				if (isRegistener()){
+			//设置超时监听
+			mTimer = new Timer();
+			mTimer.schedule(mTimeoutTask, LOGIN_TIME_OUT);
+			
+			//网络不可用
+			if (!NetWorkUtil.isNetworkAvailable()){
+				ToastUtil.showToastForced(R.string.notwork_not_available);
+				//add by Rex:网络不可用
+				if (WeiXmppManager.getInstance().isRegister()) {//已经注册，直接进入
 					startToEnter();
-				} /*else { // 进程已经起来，会自动注册
-					//没有注册成功，则继续登录
-					Intent serviceIntent = new Intent(LoginActivity.this, WeiXmppService.class);
-					serviceIntent.putExtra("startmode", WeiConstant.StartServiceMode.OWN);
-					serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startService(serviceIntent);
-				}*/
+				} else {  //未注册，退出
+					ToastUtil.showToastForced(R.string.no_register);
+				}
+				return;
+			} 
+			
+			//长连接已存在，并且已经注册
+			if (WeiXmppManager.getInstance().isConnected()) {
+				startToEnter();
+			} else {
+				WeiXmppManager.getInstance().login();
 			}
-		}, LOG_IN_TIMEOUT);
+			return;
+		}
+		
+		//未注册用户，则启动服务开始注册
+		Intent serviceIntent = new Intent(LoginActivity.this, WeiXmppService.class);
+		serviceIntent.putExtra("startmode", StartServiceMode.OWN);
+    	serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);        	 			
+    	startService(serviceIntent);
+		
 	}
 	
 	/**
@@ -109,42 +129,72 @@ public class LoginActivity extends Activity implements WeiConstant{
 	 */
 	private void startToEnter(){
 		
-		if (mTimer != null){
-			mTimer.cancel();
-		}
-		
-		mEditer.putBoolean(SystemShared.KEY_FLAG_ENTER, true);
-		
-		Intent intent = new Intent(this, MainActivity.class);
-		startActivity(intent);
-		finish();
+		new AsyncTask<Void, Void, Boolean>(){
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				while (true) {
+					if (mEditer.getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false)){
+						return true;
+					} 
+					waitFor();
+					
+				}
+			}
+			protected void onPostExecute(Boolean result) {
+				if (result) {
+					if (SystemInfoUtil.isTopActivity() &&  
+							WeiXmppManager.getInstance().isRegister()){
+						Intent intent = new Intent(LoginActivity.this, 
+								FamilyBoardMainActivity.class);
+						startActivity(intent);
+					} 
+					if (mTimer != null){
+						mTimer.cancel();
+					}
+					finish();
+				}
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
-	/**
-	 * 登录状态监听器
-	 */
-	private LoginStateListener mLoginStateListener = new LoginStateListener() {
+	private TimerTask mTimeoutTask = new TimerTask() {
 		
 		@Override
-		public void onLoginSuccess() {
-			// TODO Auto-generated method stub
+		public void run() {
 			startToEnter();
 		}
-		
-		@Override
-		public void onLoginFailed(int errorCode) {
-			
-		}
 	};
+	
+	private void waitFor(){
+		try {
+			Log.i(TAG, "waitFor....");
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+    @Override
+    protected void onPause() {
+    	super.onPause();
+    }
+    
+    @Override
+    protected void onStop() {
+    	super.onStop();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	super.onDestroy();
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+		unregisterReceiver(receiver);
 		
 		if (mTimer != null){
 			mTimer.cancel();
-			mTimer = null;
 		}
- 	}
-	
+    }
 }

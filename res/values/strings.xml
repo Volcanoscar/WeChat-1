@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">WeChat</string>
+    <string name="app_name">微信留言板</string>
     <string name="main_title">微信留言板</string>
-    <string name="reply">&#160;回&#160;&#160;复&#160;</string>
+    <string name="reply">回&#160;&#160;复</string>
     
-    <string name="notwork_not_available">网络不可用!</string>
+    <string name="notwork_not_available">网络不可用</string>
+    <string name="device_info_error">设备信息错误，注册失败!</string>
     <string name="register">开始注册用户</string>
     <string name="register_success">注册成功</string>
     <string name="register_failed">注册失败</string>
+    <string name="no_register">用户未注册</string>
     <string name="login">开始登陆&#160;</string>
     <string name="login_success">登录成功</string>
     <string name="login_failed">登录失败</string>
@@ -31,24 +33,40 @@
     <string name="submit">提&#160;&#160;&#160;&#160;&#160;&#160;交</string>
     <string name="input_nick_name">输入新名称</string>
     <string name="prompt_inquiry">提示询问</string>
-    <string name="hint_delfriend">确认删除用户%s?</string>
+    <string name="hint_delfriend">确认删除用户&#60; %s &#62;?</string>
     <string name="cancel">取&#160;&#160;&#160;消</string>
     <string name="confirm">确&#160;&#160;&#160;定</string>
-    <string name="update_success">头像上传成功</string>
+    <string name="update_icon_success">头像上传成功</string>
+    <string name="update_icon_failed">头像上传失败</string>
     <string name="intnet_err">网络访问异常，错误码：%s</string>
+    <string name="user_unbind">用户《%s》已经解绑</string>
+    <string name="user_bind">用户《%s》已经绑定</string>
+    <string name="unbind_failed">删除用户失败</string>
     
        
     <!-- 添加好友界面 -->
     <string name="add_friend">添加好友</string>
     <string name="add_friend_hint">扫一扫上面的二维码图片，加我好友</string>
+    <string name="add_friend_error">您的好友已经达到上限，再添加可能会失败，您可以删除其他用户后，再行添加!</string>
     
     <string name="back">&#160;&#160;返回&#160;&#160;</string>
     <string name="contentDesc"></string>
     <string name="page_Indicator">(%1$d / %2$d)</string>
     
+    <string name="select_picture">选择图片</string>
     <string name="all_pictures">所有图片</string>
     <string name="pic_count">%d张</string>
     <string name="loading">Loading&#160;</string>
     <string name="no_picture">暂无图片</string>
+    <string name="send">发&#160;&#160;送</string>
+    <string name="send_pic">发送(%1$d/%2$d)</string>
+    <string name="select_pic_hint">你最多只能选择%d个图片或者视频</string>
+    
+    <string name="copy">复制</string>
+    <string name="delete">删除</string>
+    <string name="paste">粘贴</string>
+    <string name="cut">剪切</string>
+    <string name="selectall">全选</string>
+    <string name="no_message">no message !</string>
     
 </resources>

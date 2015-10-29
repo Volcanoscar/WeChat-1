@@ -7,25 +7,25 @@
     android:gravity="center"
     android:orientation="vertical" >
     
-    <LinearLayout 
+    <RelativeLayout 
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
         <ImageView 
             android:id="@+id/img_recorder_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/recorder"
-            android:visibility="visible"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
             android:contentDescription="@string/contentDesc"/>
         <ImageView
             android:id="@+id/img_recorder_voice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/recorder_level1"
+            android:layout_centerInParent="true"
+            android:src="@drawable/record_level9"
             android:visibility="visible"
             android:contentDescription="@string/contentDesc"/>
-    </LinearLayout>
+    </RelativeLayout>
     
     <TextView 
         android:id="@+id/tv_recorder_hint"

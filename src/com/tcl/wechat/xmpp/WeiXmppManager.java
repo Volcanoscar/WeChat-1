@@ -17,221 +17,144 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.provider.ProviderManager;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.WeChatApplication;
-import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.common.WeiConstant.CommandType;
-import com.tcl.wechat.db.DeviceDao;
-import com.tcl.wechat.db.WeiQrDao;
-import com.tcl.wechat.modle.BindUser;
-import com.tcl.wechat.modle.UpLoadFileInfo;
-import com.tcl.wechat.modle.WeiNotice;
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
-import com.tcl.wechat.utils.BaseUIHandler;
-import com.tcl.wechat.utils.HttpUtil;
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.EventReason;
+import com.tcl.wechat.common.IConstant.EventType;
+import com.tcl.wechat.common.IConstant.ReturnType;
+import com.tcl.wechat.common.IConstant.SystemShared;
+import com.tcl.wechat.database.DeviceDao;
+import com.tcl.wechat.database.WeiQrDao;
+import com.tcl.wechat.model.BindUser;
+import com.tcl.wechat.model.WeiNotice;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.utils.SystemInfoUtil;
+import com.tcl.wechat.utils.SystemShare.SharedEditer;
 import com.tcl.wechat.utils.ToastUtil;
-import com.tcl.wechat.utils.UIUtils;
 
 /**
- * @ClassName: WeiXmppManager
- * @Description: weixin协议管理类 tv-android-wechat（TV微信） tv-android-hc （TV家庭云）
- *               phone-android-hc (手机家庭云)
+ * Xmpp管理类
+ * @author rex.lei
+ *
  */
 public class WeiXmppManager {
-
-	private static final String TAG = WeiXmppManager.class.getSimpleName();
-
+	
+	private static final String TAG = "WeiXmppManager";
+	
 	private static final int CONNECT_TIME = 5;
-	private static final int ACCESS_TIME = 1; // 考虑到负载均衡，一次没连上，就要重新获取AS的地址，重新AS
-	private static int GET_ACCESS_ADDR_TIME = 0;// 考虑到负载均衡，一次没连上，就要重新获取AS的地址，重新走登录流程不超过3次
-
+	private static final int ACCESS_TIME  = 1;//考虑到负载均衡，一次没连上，就要重新获取AS的地址，重新AS
+	private static int mAccessCount 	  = 0;//考虑到负载均衡，一次没连上，就要重新获取AS的地址，重新走登录流程不超过3次
+	
 	private Context mContext = null;
-
 	/**
 	 * 端口信息
 	 */
 	private String xmppHost1 = null;
-	private String xmppHost2 = null;
 	private int xmppPort1 = 0;
-	private int xmppPort2 = 0;
 	private String curHost = null;
 	private int curport = 0;
 	private String password = "";
 	private String memberid = "";
 	private String token = "";
-
+	private String deviceid = "";
+	private String macAddress = "";
+	private String uuid = "";
+	
+	private Thread reconnctionThtread = null;
 	private XMPPConnection mXmppConnect = null;
-	private BaseUIHandler mHandler = null;
+	
+	private XmppEventListener mEventListener;
+	
 	private boolean loginFlag = false;
 	private boolean registerFlag = false;
-
-	private static PacketListener authPacketListener = null,
-			loginPacketListener = null, weiMsgPacketListener = null,
-			weiNoticePacketListener = null, weiRemoteBindPacketListener = null,
-			weiControlPacketListener = null, weiAppPacketListener = null,
-			serviceMsgPacketListener = null, weiunberUserListener = null,
-			weiUploadListener = null;
-
 	private Boolean reconnError = false;
-	private Thread reconnctionThtread = null;
-	private Handler timeHandler = new Handler();
-
+	
 	private static final class WeiXmppManagerInstance {
 		private static WeiXmppManager mInstance = new WeiXmppManager();
 	}
 
 	private WeiXmppManager() {
 		xmppHost1 = "124.251.36.70";
-		xmppHost2 = "124.251.36.70";
 		curHost = xmppHost1;
 
 		xmppPort1 = 5222;
-		xmppPort2 = 5222;
 		curport = xmppPort1;
 
 		password = "6216f8a75fd5bb3d5f22b6f9958cdede3fc086c2";
 
-		mContext = WeChatApplication.gContext;
+		mContext = WeApplication.getContext();
 	}
-
+	
 	public static WeiXmppManager getInstance() {
 		return WeiXmppManagerInstance.mInstance;
 	}
-
+	
 	/**
 	 * 判断是否已经建立链接
 	 */
 	public boolean isConnected() {
 		return mXmppConnect != null && mXmppConnect.isConnected();
 	}
-
-	/**
-	 * 获取XMPPConnection对象
-	 * 
-	 * @return connection
-	 */
-	public XMPPConnection getConnection() {
-		return mXmppConnect;
-	}
-
+	
 	/**
 	 * 设置XMPPConnection
 	 * 
 	 * @return connection
 	 */
 	public void setConnection(XMPPConnection connection) {
+		if (mXmppConnect != null){
+			mXmppConnect.disconnect();
+		}
 		mXmppConnect = connection;
 		setReconnection();
 	}
-
+	
 	/**
-	 * ͣ关闭长连接
-	 */
-
-	public void disconnection() {
-
-		if (mXmppConnect != null) {
-			mXmppConnect.disconnect();
-			mXmppConnect = null;
-		}
-	}
-
-	/**
-	 * @return mContext
-	 */
-
-	public Context getmContext() {
-		return mContext;
-	}
-
-	/**
-	 * @return mContext
-	 */
-
-	public void setmContext(Context mContext) {
-		this.mContext = mContext;
-	}
-
-	/**
-	 * 是否已经注册
-	 * 
+	 * 获取XMPPConnection
 	 * @return
 	 */
-	public boolean isRegister() {
-		boolean flag = false;
-		String memberId = DeviceDao.getInstance().getMemberId();
-		Log.i(TAG, "memberId:" + memberId);
-		if (!TextUtils.isEmpty(memberId) && !memberId.trim().equals("")) {
-			Log.i(TAG, "The memberId: " + memberId + " has been registered!");
-			return true;
+	public XMPPConnection getConnection() {
+		return mXmppConnect;
+	}
+	
+	/**
+	 * 设置重连监听
+	 */
+	private void setReconnection() {
+		if (reconnctionThtread != null && reconnctionThtread.isAlive()) {
+			reconnctionThtread.interrupt();
+			mXmppConnect.removeConnectionListener(connectionListener);
+			reconnctionThtread = null;
 		}
-		return flag;
+
+		reconnctionThtread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mXmppConnect.addConnectionListener(connectionListener);
+			}
+		});
+		reconnctionThtread.start();
 	}
-
-	/**
-	 * 初始化监听器
-	 */
-	void initListener() {
-
-		Log.d(TAG, "initListener");
-
-		authPacketListener = null;
-		loginPacketListener = null;
-		weiMsgPacketListener = null;
-		weiNoticePacketListener = null;
-		weiRemoteBindPacketListener = null;
-		weiControlPacketListener = null;
-		weiAppPacketListener = null;
-		serviceMsgPacketListener = null;
-		weiunberUserListener = null;
-		weiUploadListener = null;
-		Getqr.initPacketListener();
-		QueryBinder.initPacketListener();
-		Unbind.initPacketListener();
-	}
-
-	/**
-	 * @return the mHandler
-	 */
-	public Handler getmHandler() {
-		return mHandler;
-	}
-
-	/**
-	 * @param mHandler
-	 *            the mHandler to set
-	 */
-	public void setmHandler(BaseUIHandler mHandler) {
-		this.mHandler = mHandler;
-	}
-
-	/**
-	 * @return the reconnError
-	 */
+	
 	public Boolean getReconnError() {
 		return reconnError;
 	}
 
-	/**
-	 * @param reconnError
-	 *            the reconnError to set
-	 */
 	public void setReconnError(Boolean reconnError) {
 		this.reconnError = reconnError;
 	}
-
+	
 	/**
 	 * @Description:重连机制
 	 */
-
-	ConnectionListener connectionListener = new ConnectionListener() {
+	private ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void reconnectionSuccessful() {
@@ -264,47 +187,122 @@ public class WeiXmppManager {
 			// relogin();
 		}
 	};
-
+	
 	/**
-	 * 设置重连监听
+	 * ͣ关闭长连接
 	 */
-	private void setReconnection() {
-		if (reconnctionThtread != null && reconnctionThtread.isAlive()) {
-			reconnctionThtread.interrupt();
-			mXmppConnect.removeConnectionListener(connectionListener);
-			reconnctionThtread = null;
+	public void disconnection() {
+
+		if (mXmppConnect != null) {
+			mXmppConnect.disconnect();
+			mXmppConnect = null;
 		}
-
-		reconnctionThtread = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				mXmppConnect.addConnectionListener(connectionListener);
-			}
-		});
-		reconnctionThtread.start();
 	}
-
+	
 	/**
-	 * 获取XMPPConnection对象
+	 * 是否已经注册
 	 * 
 	 * @return
 	 */
-	private XMPPConnection getXMPPConnection() {
-
-//		String clientkeystore = "data/data/com.tcl.music/keystore";
-//		String clienttruststore = "data/data/com.tcl.music/truststore";
+	public boolean isRegister() {
+		boolean flag = false;
+		String memberId = DeviceDao.getInstance().getMemberId();
+		if (!TextUtils.isEmpty(memberId) && !memberId.trim().equals("")) {
+			Log.i(TAG, "The memberId: " + memberId + " registered!");
+			return true;
+		}
+		Log.i(TAG, "The memberId: " + memberId + " not registered!");
+		return flag;
+	}
+	
+	/**
+	 * 网络是否可用
+	 * @return
+	 */
+	private boolean isNetworkAvailable(){
+		if (!NetWorkUtil.isWifiConnected()) {
+			Log.i(TAG, "Network is not available!!");
+			ToastUtil.showToastForced(R.string.notwork_not_available);
+			if (mEventListener != null){
+				mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_FAILED, 
+						EventReason.REASON_NETWORK_NOTAVAILABLE, null));
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * DeviceId是否合法
+	 * @return
+	 */
+	private boolean isDeviceIdLegal(){
+		deviceid = SystemInfoUtil.getDeviceId();
+		Log.i(TAG, "DeviceId:" + deviceid);
+		if (TextUtils.isEmpty(deviceid)) {
+			Log.i(TAG, "DeviceId is not available!!");
+			if (mEventListener != null){
+				mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_FAILED, 
+						EventReason.REASON_DEVICE_ERROR, null));
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Mac地址是否合法
+	 * @return
+	 */
+	private boolean isMacAddressLegal(){
+		macAddress = SystemInfoUtil.getMacAddr();
+		Log.i(TAG, "macAddress:" + macAddress);
+		if (TextUtils.isEmpty(macAddress)) {
+			Log.e(TAG,"Get Mac Address Failed, You should init DeviceDB first!");
+			if (mEventListener != null){
+				mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_FAILED, 
+						EventReason.REASON_MAC_ERROR, null));
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * UUID是否合法
+	 * @return
+	 */
+	private boolean isUUIDLegal(){
+		uuid = WeiQrDao.getInstance().getUUID();
+		Log.v(TAG, "uuid = " + uuid);
+		if (TextUtils.isEmpty(uuid)) {
+			Log.e(TAG, "Get uuid is NULL, You should init first!");
+			if (mEventListener != null){
+				mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_FAILED, 
+						EventReason.REASON_UUID_ERROR, null));
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 获取XMPPConnection对象
+	 * @param ipAddr ip地址
+	 * @param port 端口
+	 * @return
+	 */
+	private XMPPConnection getXMPPConnection(String ipAddr, int port) {
 
 		try {
 			ConnectionConfiguration config = null;
-			config = new ConnectionConfiguration(curHost, curport);
-//			config.setKeystorePath(clientkeystore);
+			config = new ConnectionConfiguration(ipAddr, port);
 			config.setSecurityMode(SecurityMode.required);
 			config.setSelfSignedCertificateEnabled(true);
 			config.setSASLAuthenticationEnabled(true);
 			config.setTruststorePassword("tclking");
-//			config.setTruststorePath(clienttruststore);
+			config.setTruststorePath("/system/etc/security/cacerts.bks");
+			config.setTruststorePassword("changeit");
 			config.setTruststoreType("bks");
 			config.setReconnectionAllowed(false);
 			config.setDebuggerEnabled(true);
@@ -316,861 +314,526 @@ public class WeiXmppManager {
 		}
 		return null;
 	}
-
+	
 	/**
-	 * 客户端注册服务器函数 注册
+	 * 客户端注册用户
 	 */
-	public void register() {
-
+	public void register(){
 		Log.d(TAG, "=====================start register===============");
-
-		if (!UIUtils.isNetworkAvailable()) {
-			Log.i(TAG, "Network is not available!!");
+		if (!isNetworkAvailable()){
+			Log.e(TAG, "register failed!!");
 			ToastUtil.showToastForced(R.string.notwork_not_available);
-			return;
+			return ;
 		}
-
-		Log.d(TAG, "registerFlag =  " + registerFlag);
+		
+		if (!isDeviceIdLegal() || !isMacAddressLegal() || !isUUIDLegal()){
+			ToastUtil.showToastForced(R.string.device_info_error);
+			return ;
+		}
+		
+		new SharedEditer().putBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false);
 		if (registerFlag) {
-			Log.d(TAG, "Has been registered successfully! ");
 			return;
 		}
-
+		
+		ToastUtil.showToast(R.string.register);
+		
 		registerFlag = true;
-		ToastUtil.showToast("Start to register");
-		Log.d(TAG, "Start to register !");
-
-		initListener();
-
-		new Thread(new Runnable() {
+		new AsyncTask<Void, Void, Void>() {
 
 			@Override
-			public void run() {
-
-				String deviceid = SystemInfoUtil.getDeviceId();
-				if (TextUtils.isEmpty(deviceid)) {
-					if (mHandler != null) {
-						mHandler.sendEmptyMessage(CommandType.COMMAND_DEVICEIDNULL);
-					}
-					return;
-				}
-
-				String macAddr = SystemInfoUtil.getMacAddr();
-				if (TextUtils.isEmpty(macAddr)) {
-					Log.e(TAG,
-							"Get Mac Address Failed, You should init DeviceDB first!");
-					if (mHandler != null) {
-						mHandler.sendEmptyMessage(CommandType.COMMAND_MACNULL);
-					}
-					return;
-				}
-
-				String uuid = WeiQrDao.getInstance().getUUID();
-				Log.v(TAG, "uuid = " + uuid);
-				if (TextUtils.isEmpty(uuid)) {
-					Log.e(TAG, "Get uuid is NULL, You should init first!");
-					return;
-				}
-
-				SmackConfiguration.setPacketReplyTimeout(10000);
-
+			protected Void doInBackground(Void... params) {
+				SmackConfiguration.setPacketReplyTimeout(10 * 1000);
 				for (int i = 0; i < CONNECT_TIME; i++) {
-					XMPPConnection connect = getXMPPConnection();
+					XMPPConnection connect = null;
 					try {
-						Log.d(TAG,
-								"=====================connecting...===============");
-						Log.i(TAG, "ConnectCnt=" + (i + 1) + ",Host=" + curHost
-								+ ", Port=" + curHost);
+						connect = getXMPPConnection(curHost, curport);
 						connect.connect();
-					} catch (XMPPException e) {
-						Log.d(TAG,
-								"==================connect failed!!===============");
-						registerFlag = false;
-						connect.disconnect();
-						if (i == 1) { // 尝试两次都失败就换个域名和端口
-							curport = xmppPort2;// 异常后就尝试另外一个端口注册
-							curHost = xmppHost2;
-						}
-						e.printStackTrace();
-					}
-					// 连接登录服务器
-					if (connect.isConnected()) {
-						Log.d(TAG,
-								"=====================connected===============");
-						Log.d(TAG, "Server has been connected!");
-
-						addRegisterListener(connect);
-						// deviceID
-						String content = "";
-
-						String deviceidmac_id = deviceid + macAddr;
-						// deviceidmac_id=
-						// "6c99e7943d15d7cb6325c79d0837b3bf65344d77";
-						content = "<addmaindevice xmlns=\"tcl:hc:login\">"
-								+ "<deviceid>"
-								+ deviceidmac_id
-								+ "</deviceid>" // deviceid
-												// 3xj53egiejw5tk1232abc34na123rfrer9q1aaa8
-								+ "<password>"
-								+ password
-								+ "</password>"
-								+ "<resource>"
-								+ "tv-android-wechat"
-								+ "</resource>"
-								+ "<clienttype>"
-								+ SystemInfoUtil.getClienttype(mContext)
-								+ "</clienttype>"
-								+ "<uuid>"
-								+ uuid
-								+ "</uuid>"
-								+ "<iqiyiid>"
-								+ "12345"
-								+ "</iqiyiid>"
-								+ "<nick>"
-								+ "TV"
-								+ "</nick>"
-								+ "<type>"
-								+ "wechat" + "</type>" + "</addmaindevice>";
-						IQ userContentIQ = new UserContentIQ(content);
-						userContentIQ.setType(IQ.Type.SET);
-						connect.sendPacket(userContentIQ);
-						Log.i(TAG,
-								"send register info:" + userContentIQ.toXML());
-						return;
-					}
-				}
-			}
-		}).start();
-	}
-
-	/**
-	 * 添加注册用户监听器
-	 * 
-	 * @param connection
-	 */
-	private void addRegisterListener(final XMPPConnection connection) {
-		// 创建获取mumid监听
-		ProviderManager.getInstance().addIQProvider("addmaindevice",
-				"tcl:hc:login", new LSMemIDProvider());
-		PacketFilter midfilter = new PacketTypeFilter(LSMemIDResultIQ.class);
-
-		connection.addPacketListener(new PacketListener() {
-
-			@Override
-			public void processPacket(Packet packet) {
-				IQ packageIq = (IQ) packet;
-				Log.i(TAG, "Registration result:" + packageIq.toXML());
-
-				try {
-					if (packageIq instanceof LSMemIDResultIQ) {
-
-						LSMemIDResultIQ lSMemIDResultIQ = (LSMemIDResultIQ) packet;
-						String memberId = lSMemIDResultIQ.getMemberid();
-						String errorCode = lSMemIDResultIQ.getErrorcode();
-						Log.i(TAG, "memberId=" + memberId + ",errorCode="
-								+ errorCode);
-
-						if (memberId != null
-								&& DeviceDao.getInstance().updateMemberId(
-										memberId)) {
-							// 注册成功
-							Log.d(TAG,
-									"=====================register successfully===============");
-							ToastUtil.showToast("register successfully");
+						
+						if (connect != null && connect.isConnected()){
+							Log.d(TAG,"=====================connected===============");
+							Log.i(TAG, "Thread:" + Thread.currentThread());
+							
+							addRegisterListener(connect);
+							
+							String deviceid_Mac = deviceid + macAddress;
+							String content = "<addmaindevice xmlns=\"tcl:hc:login\">"
+									+ "<deviceid>"
+									+ deviceid_Mac
+									+ "</deviceid>"
+									+ "<password>"
+									+ password
+									+ "</password>"
+									+ "<resource>"
+									+ "tv-android-wechat"
+									+ "</resource>"
+									+ "<clienttype>"
+									+ SystemInfoUtil.getClienttype(mContext)
+									+ "</clienttype>"
+									+ "<uuid>"
+									+ uuid
+									+ "</uuid>"
+									+ "<iqiyiid>"
+									+ "12345"
+									+ "</iqiyiid>"
+									+ "<nick>"
+									+ "TV"
+									+ "</nick>"
+									+ "<type>"
+									+ "wechat" 
+									+ "</type>" 
+									+ "</addmaindevice>";
+							IQ userContentIQ = new UserContentIQ(content);
+							userContentIQ.setType(IQ.Type.SET);
+							connect.sendPacket(userContentIQ);
+							Log.i(TAG,"send register info:" + userContentIQ.toXML());
+							return null;
 						} else {
-							Log.e(TAG, "updateMemberId Failed!!");
 							registerFlag = false;
 						}
-
-						if (mHandler != null && errorCode != null
-								&& errorCode.equalsIgnoreCase("0")) {
-							mHandler.sendEmptyMessage(CommandType.COMMAND_REGISTER);
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (connection != null) {
-						connection.disconnect();
+					} catch (XMPPException e) {
+						e.printStackTrace();
+						Log.w(TAG, e.getMessage() + " ,ConnectCnt=" + (i + 1) + ",Host=" + curHost
+								+ ", Port=" + curHost);
+						registerFlag = false;
+						connect.disconnect();
 					}
 				}
+				return null;
 			}
-		}, midfilter);
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
-
+	
 	/**
-	 * 客户端登陆服务器函数
+	 * 客户端登录
 	 */
-	public void login() {
-
+	public void login(){
+		
 		Log.d(TAG, "=====================start login===============");
-		if (!UIUtils.isNetworkAvailable()) {
-			Log.i(TAG, "Network is not available!!");
-			ToastUtil.showToastForced("Network is not available");
-			return;
+		Log.i(TAG, "login curThread:" + Thread.currentThread());
+		if (!isNetworkAvailable()){
+			return ;
 		}
-
+		
 		if (loginFlag) {
-			ToastUtil.showToast("Login successfully");
 			return;
 		}
-
+		
 		if (isConnected()) {
 			Log.d(TAG, "Long connection exists, do not need to login");
 			return;
 		}
-
-		ToastUtil.showToast("start login");
-
 		loginFlag = true;
-		timeHandler.removeCallbacks(mUpdateTimeTask);
-		timeHandler.postDelayed(mUpdateTimeTask, WeiConstant.LOG_IN_TIMEOUT);
+		/**
+		 * 登录过程：
+		 * 1、获取接入列表 accessServer()
+		 * 2、开始登陆           startLogin()
+		 */
+		accessServer();
+	}
+	
+	/**
+	 * @Description: 断开连接后重新登陆
+	 */
+	private void relogin() {
+		Log.d(TAG, "开始重新login");
 
-		initListener();
+		if (!isNetworkAvailable()) {
+			return;
+		}
+		
+		if (loginFlag) {
+			return;
+		}
+		
+		if (isConnected()) {
+			return;
+		}
 
-		new Thread(new Runnable() {
+		// 断开连接后重新登陆
+		WeiXmppManager.getInstance().login();
+	}
+	
+	/**
+	 * 接入服务器，获取接入令牌
+	 */
+	private void accessServer(){
+
+		new AsyncTask<Void, Void, Void>(){
 
 			@Override
-			public void run() {
-				// TODO Auto-generated method stub
+			protected Void doInBackground(Void... params) {
+				
 				SmackConfiguration.setPacketReplyTimeout(10000);
-				for (int i = 0; i < CONNECT_TIME; i++) {
-					XMPPConnection connect = getXMPPConnection();
+				for (int i = 0; i < CONNECT_TIME; i++){
+					XMPPConnection connect = null;
 					try {
+						connect = getXMPPConnection(curHost, curport);
 						connect.connect();
+						if (connect != null && connect.isConnected()){
+							//设置接入成功的长链接
+							setConnection(connect);
+							
+							addAccessListener(connect);
+							
+							memberid = DeviceDao.getInstance().getMemberId();
+							Log.i(TAG, "memberid:" + memberid);
+							
+							String content = "<auth xmlns=\"tcl:hc:login\">"
+									+ "<username>" + "#" + memberid
+									+ "@wechat.big.tclclouds.com" + "</username>"
+									+ "<password></password>" + "<digest></digest>"
+									+ "<resource>tv-android-wechat</resource>"
+									+ "</auth>";
+							IQ userLoginIQ = new UserLoginIQ(content);
+							userLoginIQ.setType(IQ.Type.GET);
+							connect.sendPacket(userLoginIQ);
+							Log.i(TAG, "send access info:" + userLoginIQ.toXML());
+							return null;
+						}
 					} catch (XMPPException e) {
+						// TODO Auto-generated catch block
 						e.printStackTrace();
 						connect.disconnect();
-						Log.d(TAG,
-								"==================connect failed!!===============");
-						Log.i(TAG, "ConnectCnt=" + (i + 1) + ",Host=" + curHost
+						Log.w(TAG, e.getMessage() + " ,ConnectCnt=" + (i + 1) + ",Host=" + curHost
 								+ ", Port=" + curHost);
-						if (i == 1) {
-							curport = xmppPort2;
-							curHost = xmppHost2;
-						}
-					}
-					// 连接登录服务
-					if (connect.isConnected()) {
-
-						Log.d(TAG,
-								"=====================connected===============");
-						Log.d(TAG, "Server has been connected!");
-
-						addLoginListener(connect);
-
-						memberid = DeviceDao.getInstance().getMemberId();
-						Log.i(TAG, "memberid:" + memberid);
-
-						String content = "<auth xmlns=\"tcl:hc:login\">"
-								+ "<username>" + "#" + memberid
-								+ "@wechat.big.tclclouds.com" + "</username>"
-								+ "<password></password>" + "<digest></digest>"
-								+ "<resource>tv-android-wechat</resource>"
-								+ "</auth>";
-						IQ userLoginIQ = new UserLoginIQ(content);
-						userLoginIQ.setType(IQ.Type.GET);
-						connect.sendPacket(userLoginIQ);
-						Log.i(TAG, "send Login info:" + userLoginIQ.toXML());
-						return;
 					}
 				}
+				return null;
+			} 
+		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+	
+	/**
+	 * 开始登陆
+	 */
+	private void startLogin(){
+		
+		Log.d(TAG, "startLogin..........");
+		Log.i(TAG, "startLogin curThread:" + Thread.currentThread());
+		XMPPConnection connection = null;
+		try {
+			ConnectionConfiguration config = null;
+			config = new ConnectionConfiguration(curHost,
+					Integer.valueOf(curport));
+			config.setSecurityMode(SecurityMode.required);
+			config.setSASLAuthenticationEnabled(true);
+			config.setCompressionEnabled(false);
+			config.setDebuggerEnabled(true);
+			config.setReconnectionAllowed(false);
+			config.setDebuggerEnabled(true);
+			connection = new XMPPConnection(config);
+			connection.connect();
+			
+			if (connection != null && connection.isConnected()){
+				Log.d(TAG, "startLogin connectted!!");
+				setConnection(connection);
+				
+				addLoginListener(connection);
+				
+				String content = "<auth xmlns=\"tcl:hc:portal\">"
+						+ "<username>"
+						+ "#"
+						+ memberid
+						+ "</username>"
+						+ "<resource>tv-android-wechat</resource>"
+						+ "<token>"
+						+ token
+						+ "</token>"
+						+ "</auth>";
+
+				IQ userLoginIQ = new UserLoginIQ(content);
+				userLoginIQ.setType(IQ.Type.SET);
+				mXmppConnect.sendPacket(userLoginIQ);
+				Log.d(TAG, "Sending an access request：" + content);
+				return;
 			}
-		}).start();
+		} catch (XMPPException e) {
+			e.printStackTrace();
+			Log.w(TAG, "connection error:" + e.getMessage());
+			if (connection != null){
+				connection.disconnect();
+			}
+		}
 	}
 
 	/**
-	 * 添加登录监听器
-	 * 
+	 * 客户端注册监听器
 	 * @param connect
 	 */
-	private void addLoginListener(final XMPPConnection connect) {
-
-		ProviderManager.getInstance().addIQProvider("auth", "tcl:hc:login",new LSLoginProvider());
-		PacketFilter filter = new PacketTypeFilter(LSLoginResultIQ.class);
-		connect.addPacketListener(authPacketListener = new PacketListener() {
-
+	private void addRegisterListener(final XMPPConnection connect) {
+		ProviderManager.getInstance().addIQProvider("addmaindevice",
+				"tcl:hc:login", new LSMemIDProvider());
+		PacketFilter filter = new PacketTypeFilter(LSMemIDResultIQ.class);
+		connect.addPacketListener(new PacketListener() {
+			
 			@Override
 			public void processPacket(Packet packet) {
-				IQ loginIq = (IQ) packet;
-				Log.d(TAG, "Login Result:" + loginIq.toXML());
+				IQ packageIq = (IQ) packet;
+				Log.i(TAG, "Registration result:" + packageIq.toXML());
+				Log.i(TAG, "Thread:" + Thread.currentThread());
 				try {
-					if (packet instanceof LSLoginResultIQ) {
-						LSLoginResultIQ loginResultIQ = (LSLoginResultIQ) packet;
-						token = loginResultIQ.getToken();
-
-						Log.d(TAG, "接入列表大小=" + loginResultIQ.getIpAndport().size());
-						for (int i = 0; i < ACCESS_TIME; i++) {
-							String asIp = "124.251.36.70";
-							String asPort = "5223";
-							try {
-								ConnectionConfiguration config = null;
-								config = new ConnectionConfiguration(asIp,
-										Integer.valueOf(asPort));
-								config.setSecurityMode(SecurityMode.required);
-								config.setSASLAuthenticationEnabled(true);
-								config.setCompressionEnabled(false);
-								config.setDebuggerEnabled(true);// //////////////////////////
-								config.setReconnectionAllowed(false);
-								config.setDebuggerEnabled(true);
-								XMPPConnection conn = new XMPPConnection(config);
-
-								Log.d(TAG, "正在介入服务   asIp=" + asIp + ",asPort="
-										+ asPort);
-
-								conn.connect();
-
-								Log.i(TAG, "接入地址连接是否成功:" + conn.isConnected());
-								if (conn.isConnected()) {
-									// 设置接入成功的长链接
-									setConnection(conn);
-									Log.d(TAG, "--接入地址成功，准备接入！");
-									ProviderManager.getInstance().addIQProvider("auth", "tcl:hc:portal", new LoginProvider());
-									PacketFilter loginFilter = new PacketTypeFilter(LoginResultIQ.class);// success
-									if (loginPacketListener == null) {
-										mXmppConnect.addPacketListener(loginPacketListener = new PacketListener() {
-
-											@Override
-											public void processPacket(Packet p) {
-
-												IQ myIQ = (IQ) p;
-												Log.d(TAG,"AS返回结果:" + myIQ.toXML());
-												try {
-													if (p instanceof LoginResultIQ) {
-
-														LoginResultIQ loginResultIQ = (LoginResultIQ) p;
-														String errorCode = loginResultIQ.getErrorcode();
-														loginFlag = false;
-														reconnError = false;
-														GET_ACCESS_ADDR_TIME = 0;
-														timeHandler.removeCallbacks(mUpdateTimeTask);
-														if (errorCode.equalsIgnoreCase("0")) {
-															// 创建微信用户绑定解绑定监听
-															setNoticeListener();
-															// 创建微信用户远程绑定监听
-															setRemoteBindListener();
-															// 创建推送消息监听
-															setWeiMsgListener();
-															// 创建遥控器监听
-															setWeiControlListener();
-															// 创建监听服务器发送离线确认消息
-															setServiceMsglListener();
-															// 创建监听获取accesstoken监听器
-															setUploadFileListener();
-															
-															if (mHandler != null) {
-																mHandler.sendEmptyMessage(CommandType.COMMAND_LOGIN);
-															}
-														} else {// 服务器返回错误码
-															disconnection();
-														}
-													}
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-											}
-
-										}, loginFilter);
-									}
-
-									String content = "<auth xmlns=\"tcl:hc:portal\">"
-											+ "<username>"
-											+ "#"
-											+ memberid
-											+ "</username>"
-											+ "<resource>tv-android-wechat</resource>"
-											+ "<token>"
-											+ token
-											+ "</token>"
-											+ "</auth>";
-
-									IQ userLoginIQ = new UserLoginIQ(content);
-									userLoginIQ.setType(IQ.Type.SET);
-									mXmppConnect.sendPacket(userLoginIQ);
-									Log.d(TAG, "Sending an access request："
-											+ content);
-									return;
-								}
-
-							} catch (XMPPException e1) {
-								Log.i(TAG, "XPPP ERROR：" + e1.toString());
-								e1.printStackTrace();
-								disconnection();
+					if (packageIq instanceof LSMemIDResultIQ){
+						LSMemIDResultIQ iq = (LSMemIDResultIQ) packet;
+						String memberId = iq.getMemberid();
+						String errorCode = iq.getErrorcode();
+						Log.i(TAG, "memberId=" + memberId + ",errorCode=" + errorCode);
+						if (memberId != null && DeviceDao.getInstance().updateMemberId(memberId)) {
+							
+							if (connect != null) {
+								Log.i(TAG, "Register finished, connect.disconnect");
+								connect.disconnect();
 							}
-						}
-
-						// 一个AS IP连接五次都失败了，那就重新登录获取AS的地址
-						Log.i(TAG, "负载均衡，AS没连接上，重新走登录流程，重新获取AS地址-GET_ACCESS_ADDR_TIME=" + GET_ACCESS_ADDR_TIME);
-						loginFlag = false;
-						GET_ACCESS_ADDR_TIME++;
-						if (GET_ACCESS_ADDR_TIME <= 3) {
-							Thread.sleep(5000);
-							relogin();
+							
+							// 注册成功
+							Log.d(TAG,"=====================register successfully===============");
+							if (mEventListener != null) {
+								mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_SUCCESS, 
+										EventReason.REASON_COMMON_SUCCESS, null));
+							}
 						} else {
-							// 不再登录获取，重置获取ls次数为0
-							GET_ACCESS_ADDR_TIME = 0;
-							if (mHandler != null) {
-								Message msg = mHandler.obtainMessage();
-								msg.what = WeiConstant.LOG_IN_TIMEOUT;
-								mHandler.sendMessage(msg);
+							Log.e(TAG, "updateMemberId Failed!!");
+							if (mEventListener != null) {
+								mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REGISTER_FAILED, 
+										EventReason.REASON_COMMON_FAILED, errorCode));
 							}
+							registerFlag = false;
+						}
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				} 
+			}
+		}, filter);
+	}
+	
+	/**
+	 * 客户端接入监听器
+	 * @param connect
+	 */
+	private void addAccessListener(final XMPPConnection connect) {
+		ProviderManager.getInstance().addIQProvider("auth", "tcl:hc:login",new LSLoginProvider());
+		PacketFilter filter = new PacketTypeFilter(LSLoginResultIQ.class);
+		connect.addPacketListener(new PacketListener() {
+			
+			@SuppressWarnings("unused")
+			@Override
+			public void processPacket(Packet packet) {
+				LSLoginResultIQ loginResultIQ = (LSLoginResultIQ) packet;
+				token = loginResultIQ.getToken();
+				try {
+					token = loginResultIQ.getToken();
+					int size = loginResultIQ.getIpAndport().size();
+					
+					Log.i(TAG, "size:" + size);
+					Log.i(TAG, "curThread:" + Thread.currentThread());
+					
+					if (size == 0) {    
+						Log.e(TAG, "login Error, Access list size is NULL!!");
+						return;
+					}
+					
+					for (int i = 0 ;i < ACCESS_TIME ; i++){
+						String str = loginResultIQ.getIpAndport().get(0);
+						curHost = str.split(",")[0];
+						curport = Integer.parseInt(str.split(",")[1]);
+						Log.d(TAG, "curHost:" + curHost + ",curport:" + curport);
+						
+						if (connect != null){
+							connect.disconnect();						
+						}
+						
+						startLogin();
+						return;
+					}
+					//一个AS IP连接五次都失败了，那就重新登录获取AS的地址
+					Log.i(TAG, "负载均衡，AS没连接上，重新走登录流程，重新获取AS地址 mAccessCount:" + mAccessCount);
+					mAccessCount++;
+					loginFlag = false;
+					if(mAccessCount <= 3){
+						Thread.sleep(5000);
+						relogin();
+					} else{
+						//不再登录获取，重置获取ls次数为0
+						mAccessCount = 0;
+						if (mEventListener != null){
+							mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_LOGINFAILED, 
+									EventReason.REASON_LOGIN_TIMEOUT, null));
 						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-				} finally {
-					Log.d(TAG, "server has been shut down!");
-					connect.disconnect();
+				} finally{
+					Log.i(TAG,"conn1.disconnect() 登录服务器被关闭：" + connect.isConnected());
+//					if (connect != null){
+//						connect.disconnect();						
+//					}
 				}
 			}
 		}, filter);
 	}
-
-	/**
-	 * @Description: 断开连接后重新登陆
-	 */
-
-	void relogin() {
-
-		Log.d(TAG, "开始重新login");
-
-		if (!UIUtils.isNetworkAvailable()) {
-			Log.d(TAG, "网络不可以用");
-			return;
-		}
-		if (loginFlag) {
-			Log.d(TAG, "当前正在登陆");
-			return;
-		}
-		if (isConnected()) {
-			Log.d(TAG, "长连接存在，不用登陆");
-			return;
-		}
-
-		initListener();
-		// 断开连接后重新登陆
-		WeiXmppManager.getInstance().login();
-	}
-
-	
 	
 	/**
-	 * 创建绑定解绑定监听
+	 * 登录监听器
+	 * @param connection
 	 */
-	private void setNoticeListener() {
-
-		ProviderManager.getInstance().addIQProvider("notice", "tcl:hc:wechat",
-				new WeiNoticeMsgProvider());
-		PacketFilter authFilter = new PacketTypeFilter(WeiNoticegResultIQ.class);// success
-		if (weiNoticePacketListener == null) {
-			mXmppConnect.addPacketListener(
-					weiNoticePacketListener = new PacketListener() {
-
-						@Override
-						public void processPacket(Packet p) {
-
-							IQ myIQ = (IQ) p;
-							Log.d(TAG, "收到weixin用户绑定通知:" + myIQ.toXML());
-
-							try {
-
-								if (p instanceof WeiNoticegResultIQ) {
-									WeiNoticegResultIQ weiNoticeResultIQ = (WeiNoticegResultIQ) p;
-									WeiNotice weiNotice = weiNoticeResultIQ
-											.getWeiNotice();
-									if (mHandler != null && weiNotice != null) {
-										mHandler.setData(weiNotice);
-										mHandler.sendEmptyMessage(CommandType.COMMAND_GET_WEIXIN_NOTICE);
-									}
-								}
-
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
+	private void addLoginListener(final XMPPConnection connection) {
+		// TODO Auto-generated method stub
+		ProviderManager.getInstance().addIQProvider("auth", "tcl:hc:portal", new LoginProvider());
+		PacketFilter filter = new PacketTypeFilter(LoginResultIQ.class);
+		connection.addPacketListener(new PacketListener() {
+			
+			@Override
+			public void processPacket(Packet packet) {
+				// TODO Auto-generated method stub
+				IQ packageIq = (IQ) packet;
+				Log.d(TAG,"AS返回结果:" + packageIq.toXML());
+				Log.i(TAG, "addLoginListener Thread:" + Thread.currentThread());
+				if (packageIq instanceof LoginResultIQ){
+					LoginResultIQ loginResultIQ = (LoginResultIQ) packet;
+					String errorCode = loginResultIQ.getErrorcode();
+					loginFlag = false;
+					reconnError = false;
+					mAccessCount = 0;
+					
+					Log.i(TAG, "errorCode:" + errorCode);
+					
+					if (ReturnType.STATUS_SUCCESS.equals(errorCode)){
+						// 创建微信用户绑定解绑定监听
+						addNoticeListener();
+						// 创建微信用户远程绑定监听
+						addRemoteBindListener();
+						// 创建推送消息监听
+						addWeiMsgListener();
+						// 创建监听服务器发送离线确认消息
+						addServiceMsglListener();
+						
+						//fix by rex 2015/10/5
+						//reason:获取用户列表成功时，再通知服务器
+						//初始化完成
+						/*InitFinish initfinish = new InitFinish(connection, null);	
+						initfinish.sentPacket();*/
+						Log.i(TAG, "EventType: TYPE_LOGIN_SUCCESS ,EventReason: SUCCESS!!" );
+						if (mEventListener != null){
+							mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_LOGIN_SUCCESS, 
+									EventReason.REASON_COMMON_SUCCESS, null));	
+						} else {
+							Log.w(TAG, "EventListener is NULL!!!");
 						}
-					}, authFilter);
-		}
-
+					} else {// 服务器返回错误码
+						Log.e(TAG, "disconnection!!,  errorInfo:" + loginResultIQ.toXML());
+						disconnection();
+					}
+				}
+			}
+		}, filter);
 	}
+	
+	/**
+	 * 绑定解绑定监听
+	 * @param connection
+	 */
+	private void addNoticeListener() {
 
+		ProviderManager.getInstance().addIQProvider("notice", "tcl:hc:wechat", new WeiNoticeMsgProvider());
+		PacketFilter filter = new PacketTypeFilter(WeiNoticegResultIQ.class);
+		mXmppConnect.addPacketListener(new PacketListener() {
+			
+			@Override
+			public void processPacket(Packet packet) {
+				IQ packetIq = (IQ) packet;
+				Log.d(TAG, "Receive Notice package:" + packetIq.toXML());
+				if (packetIq instanceof WeiNoticegResultIQ){
+					WeiNoticegResultIQ weiNoticeResultIQ = (WeiNoticegResultIQ) packet;
+					WeiNotice weiNotice = weiNoticeResultIQ.getWeiNotice();
+					Log.i(TAG, "weiNotice:" + weiNotice);
+					if (mEventListener != null){
+						mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_BIND_EVENT, 
+								0, weiNotice));
+					}
+				}
+			}
+		}, filter);
+	}
+	
 	/**
 	 * 创建远程绑定监听
 	 */
-	private void setRemoteBindListener() {
-
-		ProviderManager.getInstance().addIQProvider("remotebind",
-				"tcl:hc:wechat", new WeiRemoteBindProvider());
-		PacketFilter authFilter = new PacketTypeFilter(
-				WeiRemoteBindResultIQ.class);// success
-		if (weiRemoteBindPacketListener == null) {
-			mXmppConnect.addPacketListener(
-					weiRemoteBindPacketListener = new PacketListener() {
-
-						@Override
-						public void processPacket(Packet p) {
-
-							IQ myIQ = (IQ) p;
-							Log.d(TAG, "收到weixin用户远程绑定请求:" + myIQ.toXML());
-
-							try {
-
-								if (p instanceof WeiRemoteBindResultIQ) {
-									WeiRemoteBindResultIQ weiRemoteBindResultIQ = (WeiRemoteBindResultIQ) p;
-									BindUser bindUser = weiRemoteBindResultIQ
-											.getWeiRemoteBind();
-
-									// WeiRemoteBind weiRemoteBind =
-									// weiRemoteBindResultIQ.getWeiRemoteBind();
-									if (mHandler != null && bindUser != null) {
-										mHandler.setData(bindUser);
-										mHandler.sendEmptyMessage(CommandType.COMMAND_REMOTEBINDER);
-									}
-								}
-
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
-						}
-					}, authFilter);
-		}
-
+	private void addRemoteBindListener(){
+		ProviderManager.getInstance().addIQProvider("remotebind", "tcl:hc:wechat", new WeiRemoteBindProvider());
+		PacketFilter filter = new PacketTypeFilter(WeiRemoteBindResultIQ.class);
+		mXmppConnect.addPacketListener(new PacketListener() {
+			
+			@Override
+			public void processPacket(Packet packet) {
+				// TODO Auto-generated method stub
+				IQ packetIq = (IQ) packet;
+				Log.d(TAG, "Receive Remotebind package::" + packetIq.toXML());
+				if (packetIq instanceof WeiRemoteBindResultIQ){
+					WeiRemoteBindResultIQ weiRemoteBindResultIQ = (WeiRemoteBindResultIQ) packet;
+					BindUser bindUser = weiRemoteBindResultIQ
+							.getWeiRemoteBind();
+					Log.i(TAG, "bindUser:" + bindUser);
+					if (mEventListener != null){
+						mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_REMOTE_BIND_EVENT, 
+								0, bindUser));
+					}
+				}
+			}
+		}, filter);
 	}
-
+	
 	/**
 	 * 创建终端接收推送监听
 	 */
-	private void setWeiMsgListener() {
-		/**
-		 * XML文本解析器，将信息转换成IQ
-		 */
-		ProviderManager.getInstance().addIQProvider("msg", "tcl:hc:wechat",
-				new WeiMsgProvider());
-		PacketFilter authFilter = new PacketTypeFilter(WeiMsgResultIQ.class);// success
-
-		if (weiMsgPacketListener == null) {
-			mXmppConnect.addPacketListener(
-					weiMsgPacketListener = new PacketListener() {
-
-						@Override
-						public void processPacket(Packet p) {
-
-							IQ myIQ = (IQ) p;
-							Log.d(TAG, "收到weixin用户推送内容:" + myIQ.toXML());
-							try {
-								if (p instanceof WeiMsgResultIQ) {
-									WeiMsgResultIQ weiMsgResultIQ = (WeiMsgResultIQ) p;
-									WeiXinMsgRecorder weiXinMsg = weiMsgResultIQ
-											.getWeiXinMsg();
-
-									if (mHandler != null && weiXinMsg != null) {
-										Log.i(TAG,
-												"消息内容：" + weiXinMsg.toString());
-										Message msg = new Message();
-										msg.what = CommandType.COMMAND_GET_WEIXIN_MSG;
-										Bundle b = new Bundle();
-										b.putParcelable("weiXinMsg", weiXinMsg);
-										msg.obj = b;
-										mHandler.sendMessage(msg); // 向Handler发送消息,更新UI
-									}
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					}, authFilter);
-		}
+	private void addWeiMsgListener(){
+		ProviderManager.getInstance().addIQProvider("msg", "tcl:hc:wechat", new WeiMsgProvider());
+		PacketFilter filter = new PacketTypeFilter(WeiMsgResultIQ.class);
+		mXmppConnect.addPacketListener(new PacketListener() {
+			
+			@Override
+			public void processPacket(Packet packet) {
+				IQ packetIq = (IQ) packet;
+				Log.d(TAG, "Receive WeiMsg package:" + packetIq.toXML());
+				Log.i(TAG, "addWeiMsgListener Thread:" + Thread.currentThread());
+				if (packetIq instanceof WeiMsgResultIQ){
+					WeiMsgResultIQ weiMsgResultIQ = (WeiMsgResultIQ) packet;
+					WeiXinMsgRecorder weixinMsg = weiMsgResultIQ.getWeiXinMsg();
+					
+					if (mEventListener != null){
+						mEventListener.onEvent(new XmppEvent(this, EventType.TYPE_RECEIVE_WEIXINMSG, 
+								0, weixinMsg));
+					}
+				}
+			}
+		}, filter);
 	}
-
-	/**
-	 * 创建终端接收推送监听
-	 */
-	private void setWeiControlListener() {
-
-		ProviderManager.getInstance().addIQProvider("control", "tcl:hc:wechat",
-				new WeiControlProvider());
-		PacketFilter authFilter = new PacketTypeFilter(WeiControlResultIQ.class);// success
-		if (weiControlPacketListener == null) {
-			mXmppConnect.addPacketListener(
-					weiControlPacketListener = new PacketListener() {
-
-						@Override
-						public void processPacket(Packet p) {
-
-							IQ myIQ = (IQ) p;
-							Log.d(TAG, "收到weixin用户推送内容:" + myIQ.toXML());
-
-							try {
-
-								if (p instanceof WeiControlResultIQ) {
-									WeiControlResultIQ weiControlResultIQ = (WeiControlResultIQ) p;
-									WeiXinMsgRecorder weiXinMsg = weiControlResultIQ
-											.getWeiXinMsg();
-									if (mHandler != null && weiXinMsg != null) {
-										mHandler.setData(weiXinMsg);
-										mHandler.sendEmptyMessage(CommandType.COMMAND_GET_WEIXIN_CONTROL);
-									}
-								}
-
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
-						}
-					}, authFilter);
-		}
-	}
-
-	/**
-	 * 创建终端接收应用、游戏安装、卸载或打开命令监听
-	 */
-	private void setWeiAppListener() {
-		ProviderManager.getInstance().addIQProvider("app", "tcl:hc:wechat",
-				new WeiControlProvider());
-	}
-
+	
 	/**
 	 * 创建服务器判断终端是否离线消息监听
 	 */
-	private void setServiceMsglListener() {
-		PacketFilter PING_PACKET_FILTER = new AndFilter(new PacketTypeFilter(
-				Ping.class), new IQTypeFilter(Type.GET));
-
-		if (serviceMsgPacketListener == null) {
-			mXmppConnect.addPacketListener(new PacketListener() {
-				// Send a Pong for every Ping
-				@Override
-				public void processPacket(Packet packet) {
-					Pong pong = new Pong(packet);
-					mXmppConnect.sendPacket(pong);
-					Log.i(TAG, "setServiceMsglListener发送确认在线的消息到服务器");
-				}
-			}, PING_PACKET_FILTER);
-		}
-	}
-
-	private Runnable mUpdateTimeTask = new Runnable() {
-		public void run() {
-			loginFlag = false;
-			/*
-			 * if (mHandler != null){ Message msg = mHandler.obtainMessage();
-			 * msg.what = WeiConstant.LOG_IN_TIMEOUT; mHandler.sendMessage(msg);
-			 * }
-			 */
-		}
-	};
-	
-	private UpLoadFileInfo mUpLoadFileInfo;
-	
-	public UpLoadFileInfo getmUpLoadFileInfo() {
-		return mUpLoadFileInfo;
-	}
-
-	public void setmUpLoadFileInfo(UpLoadFileInfo mUpLoadFileInfo) {
-		this.mUpLoadFileInfo = mUpLoadFileInfo;
-	}
-
-	/**
-	 * 上传文件至服务器
-	 * @param type
-	 * @param recorder
-	 */
-	public void upload(){
-		Log.d(TAG, "=====================start upload===============");
-
-		if (!UIUtils.isNetworkAvailable()) {
-			Log.i(TAG, "Network is not available!!");
-			ToastUtil.showToastForced("Network is not available");
-			return;
-		}
-
-		ToastUtil.showToast("start upload");
-
-		new Thread(new Runnable() {
-
+	private void addServiceMsglListener() {
+		PacketFilter filter = new AndFilter(new PacketTypeFilter(Ping.class), 
+				new IQTypeFilter(Type.GET));
+		mXmppConnect.addPacketListener(new PacketListener() {
+			
 			@Override
-			public void run() {
+			public void processPacket(Packet packet) {
 				// TODO Auto-generated method stub
-				SmackConfiguration.setPacketReplyTimeout(10000);
-
-				XMPPConnection connect = getXMPPConnection();
-				try {
-					connect.connect();
-				} catch (XMPPException e) {
-					e.printStackTrace();
-					connect.disconnect();
-					Log.d(TAG,"==================connect failed!!===============");
-				}
-				// 连接登录服务
-				if (connect.isConnected()) {
-
-					Log.d(TAG, "=====================connected===============");
-					Log.d(TAG, "Server has been connected!");
-
-					String content = "<getaccesstoken xmlns=\"tcl:hc:portal\">"
-							+ "</getaccesstoken>";
-
-					IQ tokenIQ = new LSAccessTokenIQ(content);
-					tokenIQ.setType(IQ.Type.SET);
-					connect.sendPacket(tokenIQ);
-					Log.d(TAG, "Sending an access request：" + content);
-					return;
-				}
+				Pong pong = new Pong(packet);
+				mXmppConnect.sendPacket(pong);
+				Log.d(TAG, "Send a online message to the server");
 			}
-		}).start();
+		}, filter);
+		
 	}
 	
-	private void setUploadFileListener() {
-		// TODO Auto-generated method stub
-		/**
-		 * XML文本解析器，将信息转换成IQ
-		 */
-		ProviderManager.getInstance().addIQProvider("getaccesstoken", "tcl:hc:portal", new AccessTokenProvider());
-		PacketFilter midfilter = new PacketTypeFilter(LSAccessTokenIQ.class);
-
-		if (weiUploadListener == null) {
-			mXmppConnect.addPacketListener(weiUploadListener = new PacketListener() {
-
-				@Override
-				public void processPacket(Packet packet) {
-					
-					LSAccessTokenIQ tokenIQ = (LSAccessTokenIQ) packet;
-					
-					if (tokenIQ != null){
-						Log.i(TAG, "tokenIQ:" + tokenIQ.toXML());
-						
-//						String errorCode = tokenIQ.getErrorcode();
-//						String accessToken = tokenIQ.getAccesstoken();
-//						UpLoadFileInfo fileInfo = getmUpLoadFileInfo();
-						
-//						HttpUtil.upload(fileInfo.getAccesstoken(), fileInfo.getType(), fileInfo.getFilePath());
-						/*fileInfo.setAccesstoken(accessToken);
-						if (mHandler != null && errorCode != null
-								&& errorCode.equalsIgnoreCase("0")) {
-							Message msg = mHandler.obtainMessage();
-							msg.what = CommandType.COMMAND_SET_WEIXIN_MSG;
-							msg.obj = fileInfo;
-							mHandler.sendMessage(msg);
-						}*/
-					}
-				}
-			}, midfilter);
-		}
-	
-	}
 	
 	/**
-	 * 客户端解绑操作
+	 * 增加事件监听器
 	 */
-	public void unbind(final BindUser bindUser) {
-		Log.d(TAG, "=====================start unbind===============");
-		if (bindUser == null) {
-			Log.w(TAG, "unbind user is NULL!!");
-			return;
-		}
-		if (!UIUtils.isNetworkAvailable()) {
-			Log.i(TAG, "Network is not available!!");
-			ToastUtil.showToastForced("Network is not available");
-			return;
-		}
-
-		ToastUtil.showToast("start unbind");
-
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				SmackConfiguration.setPacketReplyTimeout(10000);
-
-				XMPPConnection connect = getXMPPConnection();
-				try {
-					connect.connect();
-				} catch (XMPPException e) {
-					e.printStackTrace();
-					connect.disconnect();
-					Log.d(TAG,
-							"==================connect failed!!===============");
-				}
-				// 连接登录服务
-				if (connect.isConnected()) {
-
-					Log.d(TAG, "=====================connected===============");
-					Log.d(TAG, "Server has been connected!");
-
-					addUnbindListener(connect, bindUser);
-
-					String content = "<unbind xmlns=\"tcl:hc:wechat\">"
-							+ "<openid>" + bindUser.getOpenId() + "</openid>"
-							+ "<deviceid>"
-							+ DeviceDao.getInstance().getDeviceId()
-							+ "</deviceid>" + "</unbind>";
-
-					IQ userUnbindIQ = new UnbindResultIQ(content);
-					userUnbindIQ.setType(IQ.Type.SET);
-
-					mXmppConnect.sendPacket(userUnbindIQ);
-					Log.d(TAG, "Sending an access request：" + content);
-					return;
-				}
-			}
-		}).start();
-	}
-
-	private void addUnbindListener(final XMPPConnection connection,
-			final BindUser bindUser) {
-		ProviderManager.getInstance().addIQProvider("unbind", "tcl:hc:wechat",
-				new UnbindProvider());
-		PacketFilter filter = new PacketTypeFilter(LSLoginResultIQ.class);
-		connection.addPacketListener(
-				weiunberUserListener = new PacketListener() {
-
-					@Override
-					public void processPacket(Packet packet) {
-						UnbindResultIQ packageIq = (UnbindResultIQ) packet;
-						Log.i(TAG, "Registration result:" + packageIq.toXML());
-
-						try {
-							if (packageIq instanceof UnbindResultIQ) {
-
-								UnbindResultIQ unbindResultIQ = (UnbindResultIQ) packet;
-								String openId = unbindResultIQ.getopenid();
-								String errorCode = unbindResultIQ
-										.getErrorcode();
-								Log.i(TAG, "openId=" + openId + ",errorCode="
-										+ errorCode);
-
-								if (openId != null
-										&& openId.equals(bindUser.getOpenId())) {
-									// 注册成功
-									Log.d(TAG,
-											"=====================Unbind successfully===============");
-									ToastUtil.showToast("Unbind successfully");
-
-								} else {
-									Log.e(TAG, "updateMemberId Failed!!");
-									mHandler.sendEmptyMessage(CommandType.COMMAND_UN_BINDER_ERROR);
-									return;
-								}
-
-								if (mHandler != null && errorCode != null
-										&& errorCode.equalsIgnoreCase("0")) {
-									Message msg = mHandler.obtainMessage();
-									msg.what = CommandType.COMMAND_UN_BINDER;
-									msg.obj = openId;
-									mHandler.sendMessage(msg);
-								}
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						} finally {
-							if (connection != null) {
-								connection.disconnect();
-							}
-						}
-					}
-				}, filter);
-
+	public void addListener(XmppEventListener listener) {
+		mEventListener = listener;
 	}
 }
