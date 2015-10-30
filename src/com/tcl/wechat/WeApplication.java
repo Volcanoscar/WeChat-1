@@ -117,7 +117,7 @@ public class WeApplication extends Application {
 			String deviceId = DeviceDao.getInstance().getDeviceId();
 			if (TextUtils.isEmpty(macAddr) || macAddr.equalsIgnoreCase("") ||
 					TextUtils.isEmpty(deviceId) || deviceId.equalsIgnoreCase("")){
-				macAddr = SystemInfoUtil.getMacAddr();
+				macAddr = SystemInfoUtil.getLocalMacAddress();
 				deviceId = SystemInfoUtil.getDeviceId();
 				DeviceInfo deviceInfo = new DeviceInfo(deviceId, macAddr, null);
 				if (!DeviceDao.getInstance().addDeviceInfo(deviceInfo)){

@@ -30,8 +30,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.ImageView;
 
-import com.tcl.wechat.modle.data.DataFileTools;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader.ImageContainer;
+import com.android.volley.toolbox.ImageLoader.ImageListener;
+import com.tcl.wechat.R;
+import com.tcl.wechat.WeApplication;
 
 /**
  * 图像处理工具类
@@ -330,6 +335,88 @@ public class ImageUtil {
 	}
 	
 	/**
+	 * 保存图片至本地
+	 * @param bitmap 图片Bitmap
+	 * @param fileName 文件路径
+	 * @return
+	 */
+	public boolean saveBitmap(Bitmap bitmap, String fileName){
+		if (TextUtils.isEmpty(fileName) || bitmap == null){
+			return false;
+		}
+		
+		boolean bRet = false;
+        File file = new File(DataFileTools.getInstance().getBindUserIconPath(fileName));
+        if(file.exists()){
+            file.delete();
+        }
+        FileOutputStream out = null;
+        try{
+            out = new FileOutputStream(file);
+            bRet = bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+        	e.printStackTrace();
+		}finally {
+        	try {
+				if (out != null){
+					out.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        }
+        return bRet;
+    }
+	
+	/**
+	 * 更新Bitmap文件
+	 * @param fileName
+	 * @param bitmap
+	 * @return
+	 */
+	public boolean updateBitmap(String fileName, Bitmap bitmap){
+		if (TextUtils.isEmpty(fileName) || bitmap == null){
+			Log.w(TAG, "filePath is NULL or bitmap is NULL!!");
+			return false;
+		}
+		String filePath = DataFileTools.getInstance().getRecordImagePath();
+		File dir = new File(filePath);
+		if (!dir.exists()){
+			dir.mkdirs();
+		}
+		File updateFile = new File(dir, MD5Util.hashKeyForDisk(fileName)); 
+		Log.i(TAG, "updateFile:" + updateFile.getAbsolutePath());
+		
+		boolean bRet = false;
+		FileOutputStream fOutputStream = null;
+		try {
+			fOutputStream = new FileOutputStream(updateFile);
+			bRet = bitmap.compress(Bitmap.CompressFormat.PNG, 0, fOutputStream);
+			fOutputStream.flush();
+		} catch (FileNotFoundException e) {
+			Log.d(TAG, "FileNotFound:" + e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			Log.d(TAG, "IOException:" + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fOutputStream != null){
+					fOutputStream.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return bRet;
+	}
+	
+	/**
 	 * 根据资源ID获取Bitmap对象
 	 * @param res
 	 * @param srcId
@@ -588,4 +675,66 @@ public class ImageUtil {
 		return null;
 	}
 	
+	/**
+	 * ImageView设置背景图像
+	 * @param imageView
+	 * @param imageUrl
+	 */
+	public void setImageBitmap(final ImageView imageView, String imageUrl){
+		this.setImageBitmap(imageView, imageUrl, 0, 0);
+	}
+	
+	/**
+	 * ImageView设置背景图像
+	 * @param imageView
+	 * @param imageUrl
+	 */
+	public void setImageBitmap(final ImageView imageView, String imageUrl, int maxWidth, int maxHeight ){
+		WeApplication.getImageLoader().get(imageUrl, new ImageListener() {
+			
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				// TODO Auto-generated method stub
+			}
+			
+			@Override
+			public void onResponse(ImageContainer response, boolean isImmediate) {
+				// TODO Auto-generated method stub
+				Bitmap bitmap = response.getBitmap();
+				if (bitmap != null){
+					imageView.setImageBitmap(bitmap);
+				}
+			}
+		}, maxWidth, maxHeight);
+	}
+	
+	/**
+	 * ImageView设置背景图像, 增加设置默认图像功能
+	 * @param context
+	 * @param imageView
+	 * @param imageUrl
+	 */
+	public void setImageBitmap(final Context context, final ImageView imageView, String imageUrl){
+		WeApplication.getImageLoader().get(imageUrl, new ImageListener() {
+			
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				// TODO Auto-generated method stub
+				Bitmap defBitmap = BitmapFactory.decodeResource(context.getResources(), 
+						R.drawable.pictures_no);
+				if (defBitmap != null){
+					imageView.setImageBitmap(defBitmap);
+				}
+			}
+			
+			@Override
+			public void onResponse(ImageContainer response, boolean isImmediate) {
+				// TODO Auto-generated method stub
+				Bitmap bitmap = response.getBitmap();
+				if (bitmap != null){
+					imageView.setImageBitmap(bitmap);
+				}
+			}
+		});
+	}
 }

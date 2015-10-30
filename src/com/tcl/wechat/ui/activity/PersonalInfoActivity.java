@@ -1,12 +1,9 @@
 package com.tcl.wechat.ui.activity;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 
-import org.apache.http.Header;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -14,7 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Base64;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,14 +20,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.db.WeiUserDao;
-import com.tcl.wechat.http.AsyncHttpClient;
-import com.tcl.wechat.http.AsyncHttpResponseHandler;
-import com.tcl.wechat.http.RequestParams;
-import com.tcl.wechat.modle.BindUser;
-import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.CommandAction;
+import com.tcl.wechat.database.WeiUserDao;
+import com.tcl.wechat.model.BindUser;
+import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
-import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 
@@ -42,15 +38,16 @@ public class PersonalInfoActivity extends Activity{
 	
 	private static final String TAG = "PersonalInfoActivity";
  	
-	private Context mContext;
-	
 	private static final int PHOTO_REQUEST_CAMERA =  1;// 拍照
 	private static final int PHOTO_REQUEST_GALLERY = 2;// 从相册中选择
 	private static final int PHOTO_REQUEST_CUT = 	 3;// 结果
 	
 	private static final String PHOTO_FILE_NAME = "system.jpg";
 	
-	private Bitmap bitmap;
+	/**
+	 * @note
+	 */
+	private static Bitmap mBitmap;
 
 	private File tempFile;
 	
@@ -82,7 +79,6 @@ public class PersonalInfoActivity extends Activity{
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_personal_info);
         
-        mContext = this;
         mDataFileTools = DataFileTools.getInstance();
         
         initData();
@@ -103,12 +99,7 @@ public class PersonalInfoActivity extends Activity{
 		if (!WeiXmppManager.getInstance().isRegister()){
 			return ;
 		}
-		
-		if (getIntent() != null && getIntent().getExtras() != null){
-			mSystemUser = getIntent().getExtras().getParcelable("BindUser");
-		} else {
-			mSystemUser = WeiUserDao.getInstance().getAllUsers().get(0);
-		}
+		mSystemUser = WeiUserDao.getInstance().getSystemUser();
 	}
 
 	private void initView() {
@@ -116,10 +107,8 @@ public class PersonalInfoActivity extends Activity{
 		mUserInfoView = (UserInfoView) findViewById(R.id.uv_personal_icon);
 		
 		if (mSystemUser != null){
-			Bitmap userIcon = DataFileTools.getInstance()
-					.getBindUserIcon(mSystemUser.getHeadImageUrl());
-			mUserInfoView.setUserIcon(userIcon, false);
-			mUserInfoView.setUserName(mSystemUser.getRemarkName());
+			mUserInfoView.setUserIcon(mSystemUser.getHeadImageUrl(), false);
+			mUserInfoView.setUserName(mSystemUser.getRemarkName(), false);
 		}
 		
 		mEditUserIcon = (ImageView) findViewById(R.id.img_edit_user_icon);
@@ -132,17 +121,18 @@ public class PersonalInfoActivity extends Activity{
 	 * @param view
 	 */
 	public void submitClick(View view){
-		
+		upload(view);
 	}
 	
 	/**
 	 * 从相册获取图片
 	 * @param view
 	 */
+	@SuppressLint("InlinedApi") 
 	public void selectIconClick(View view){
 		// 激活系统图库，选择一张图片
-		Intent intent = new Intent(Intent.ACTION_PICK);
-		intent.setType("image/*");
+		Intent intent = new Intent(Intent.ACTION_PICK);  
+		intent.setType("image/*");  
 		startActivityForResult(intent, PHOTO_REQUEST_GALLERY);
 	}
 	
@@ -176,12 +166,16 @@ public class PersonalInfoActivity extends Activity{
 			} 
 		} else if (requestCode == PHOTO_REQUEST_CUT) {
 			try {
-				bitmap = data.getParcelableExtra("data");
-				Bitmap userIcon = ImageUtil.getInstance().createCircleImage(bitmap);
-				this.mEditUserIcon.setImageBitmap(userIcon);
-				boolean delete = tempFile.delete();
-				System.out.println("delete = " + delete);
-
+				mBitmap = data.getParcelableExtra("data");
+				if (mBitmap != null){
+					mBitmap = ImageUtil.getInstance().zoomBitmap(mBitmap, 240, 240);
+					Bitmap newUserIcon = ImageUtil.getInstance().createCircleImage(mBitmap);
+					mEditUserIcon.setImageBitmap(newUserIcon);
+					if (tempFile != null){
+						boolean delete = tempFile.delete();
+						Log.i(TAG, "delete = " + delete);
+					}
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -189,58 +183,8 @@ public class PersonalInfoActivity extends Activity{
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
-	/*
-	 * 上传图片
-	 */
-	public void upload(View view) {
-		try {
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-			out.flush();
-			out.close();
-			byte[] buffer = out.toByteArray();
-
-			byte[] encode = Base64.encode(buffer, Base64.DEFAULT);
-			String photo = new String(encode);
-
-			RequestParams params = new RequestParams();
-			params.put("photo", photo);
-			String url = "http://110.65.99.66:8080/jerry/UploadImgServlet";
-
-			AsyncHttpClient client = new AsyncHttpClient();
-			client.post(url, params, new AsyncHttpResponseHandler() {
-				@Override
-				public void onSuccess(int statusCode, Header[] headers,
-						byte[] responseBody) {
-					try {
-						if (statusCode == 200) {
-							ToastUtil.showToastForced(R.string.update_success);
-						} else {
-							ToastUtil.showToastForced(String.format(
-									getString(R.string.intnet_err), statusCode));
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-				@Override
-				public void onFailure(int statusCode, Header[] headers,
-						byte[] responseBody, Throwable error) {
-					ToastUtil.showToastForced(String.format(
-							getString(R.string.intnet_err), statusCode));
-				}
-			});
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	/**
 	 * 剪切图片
-	 * 
 	 * @function:
 	 * @author:Jerry
 	 * @date:2013-12-30
@@ -255,15 +199,40 @@ public class PersonalInfoActivity extends Activity{
 		intent.putExtra("aspectX", 1);
 		intent.putExtra("aspectY", 1);
 		// 裁剪后输出图片的尺寸大小
-		intent.putExtra("outputX", 250);
-		intent.putExtra("outputY", 250);
+		intent.putExtra("outputX", 240);
+		intent.putExtra("outputY", 240);
 		// 图片格式
-		intent.putExtra("outputFormat", "JPEG");
+		intent.putExtra("outputFormat", "PNG");
 		intent.putExtra("noFaceDetection", true);// 取消人脸识别
 		intent.putExtra("return-data", true);// true:不返回uri，false：返回uri
 		startActivityForResult(intent, PHOTO_REQUEST_CUT);
 	}
 	
+	/***
+	 * 提交信息
+	 * @param view
+	 */
+	public void upload(View view) {
+		final String remarkName = mEditUserNameEdt.getText().toString();
+		if (!TextUtils.isEmpty(remarkName)){
+			if (WeiUserDao.getInstance().updateRemarkName(mSystemUser.getOpenId(), remarkName)){
+				mUserInfoView.setUserName(remarkName);
+				mEditUserNameEdt.setText("");
+			} else {
+				Log.e(TAG, "updateRemarkName ERROR!!");
+			}
+		}
+		
+		if (mBitmap != null){
+			WeApplication.getImageLoader().put(mSystemUser.getHeadImageUrl(), mBitmap);
+			mUserInfoView.setUserIcon(mBitmap, false);
+		}
+		
+		//通知更新系统用户信息
+		Intent intent = new Intent();
+		intent.setAction(CommandAction.ACTION_UPDATE_SYSTEMUSER);
+		sendBroadcast(intent);
+	}
 	
 	@Override
 	protected void onPause() {

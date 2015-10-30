@@ -59,6 +59,7 @@ public class ViewHolder{
 	 * @param viewId
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends View> T getView(int viewId){
 		View view = mViews.get(viewId);
 		if (view == null){
@@ -116,7 +117,7 @@ public class ViewHolder{
 	 * @return
 	 */
 	public ViewHolder setImageByUrl(int viewId, String url){
-		ImageLoader.getInstance(3,Type.LIFO).loadImage(url, (ImageView) getView(viewId));
+		ImageLoader.getInstance(3, Type.LIFO).loadImage(url, (ImageView) getView(viewId));
 		return this;
 	}
 

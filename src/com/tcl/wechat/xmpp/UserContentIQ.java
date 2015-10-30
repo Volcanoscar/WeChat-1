@@ -5,7 +5,7 @@ import org.jivesoftware.smack.provider.IQProvider;
 import org.xmlpull.v1.XmlPullParser;
 
 /**
- * 终端携带令牌登录接入服务�?
+ * 终端携带令牌登录接入服务器
  * @author junjian
  *
  */

@@ -1,9 +1,9 @@
 package com.tcl.wechat.utils;
 
+import com.tcl.wechat.WeApplication;
+
 import android.content.Context;
 import android.widget.Toast;
-
-import com.tcl.wechat.WeChatApplication;
 
 /**
  * Toast帮助类
@@ -12,7 +12,7 @@ import com.tcl.wechat.WeChatApplication;
  */
 public class ToastUtil {
 	
-	private static Context mContext = WeChatApplication.gContext;
+	private static Context mContext = WeApplication.getContext();
 	
 	/**
 	 * 开关标志

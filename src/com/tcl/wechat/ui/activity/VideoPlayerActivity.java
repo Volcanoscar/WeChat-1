@@ -5,9 +5,14 @@ import java.util.concurrent.Semaphore;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
@@ -19,11 +24,10 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.action.player.DownloadManager;
 import com.tcl.wechat.action.player.VideoPlayManager;
-import com.tcl.wechat.action.player.listener.DownloadStateListener;
 import com.tcl.wechat.action.player.listener.PlayStateListener;
-import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.common.IConstant.DownloadState;
+import com.tcl.wechat.utils.DataFileTools;
 
 /**
  * 视频播放控件
@@ -51,7 +55,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 	 * 管理类
 	 */
 	private VideoPlayManager mPlayManager;
-	private DownloadManager mLoadManager;
+//	private DownloadManager mLoadManager;
 	
 	/**
 	 * SrufaceView创建信号量
@@ -68,6 +72,8 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 		
 		bDownload = false;
 		bPlayFlag = false;
+		
+		registerBroadcast();
 		handleIntent();
 		init();
 	}
@@ -81,6 +87,15 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 		Log.i(TAG, "FilePath:" + mFilePath);
 	}
 
+	/**
+	 * 注册广播
+	 */
+	private void registerBroadcast() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(DownloadState.DOWNLOAD_COMPLETED);
+		registerReceiver(receiver, filter);
+	}
+	
 	/**
 	 * 初始化
 	 */
@@ -120,8 +135,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 		// TODO Auto-generated method stub
 		super.onResume();
 		
-		mLoadManager = DownloadManager.getInstace(); 
-		mLoadManager.setDownloadStateListener(downloadStateListener);
+//		mLoadManager = DownloadManager.getInstace(); 
 		
 		// for test
 		mFilePath = "http://dlsw.baidu.com/sw-search-sp/soft/05/12876/epp_V4.0.0.395_setup.1441769341.exe";
@@ -133,7 +147,7 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 			bDownload = true;
 			mHandler.sendEmptyMessageDelayed(MSG_START_PLAY,2000);
 		} else {
-			mLoadManager.startToDownload(mFilePath);
+//			mLoadManager.startDownLload(mFilePath, null, DownlodaType.VIDEO);
 		}
 		
 	}
@@ -201,43 +215,33 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 	};
 	
 	/**
-	 * 下载监听器
+	 * 广播接收器
 	 */
-	private DownloadStateListener downloadStateListener = new DownloadStateListener() {
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
 		
 		@Override
-		public void startDownLoad() {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		@Override
-		public void onProgressUpdate(int progress) {
-			// TODO Auto-generated method stub
-			Log.i(TAG, "onProgressUpdate progress:" + progress);
-		}
-		
-		@Override
-		public void onDownLoadError(int errorCode) {
-			// TODO Auto-generated method stub
-			Log.i(TAG, "onDownLoadError errorCode:" + errorCode);
-		}
-		
-		@Override
-		public void onDownLoadCompleted() {
-			if (isDestroyed()){
-				return ;
-			}
-			try {
-				mSurfaceCreateSemaphore.acquire();
-				bDownload = true;
-				mHandler.sendEmptyMessage(MSG_START_PLAY);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (DownloadState.DOWNLOAD_COMPLETED.equals(action)){
+				if (isDestroyed()){
+						return ;
+				}
+				String url = intent.getStringExtra("url");
+				if (TextUtils.isEmpty(url) || !mFilePath.equals(url)){
+					return ;
+				}
+				try {
+					mSurfaceCreateSemaphore.acquire();
+					bDownload = true;
+					mHandler.sendEmptyMessage(MSG_START_PLAY);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	};
+	
 	
 	/**
 	 * 播放状态监听

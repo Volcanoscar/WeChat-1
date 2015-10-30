@@ -10,14 +10,21 @@ package com.tcl.wechat.xmpp;
 import java.util.Map;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.IQ;
+
+import com.tcl.wechat.WeApplication;
+
+import android.os.AsyncTask;
 import android.util.Log;
 
 /**
- * @ClassName: QueryBinder
+ * 上报设备信息
+ * @author rex.lei
+ *
  */
-
 public class ReportDeviceInfo {
-	private String tag = "ReportDeviceInfo";
+	
+	private static final String TAG = ReportDeviceInfo.class.getSimpleName();
+	
 	private  XMPPConnection connection = null;
 	private String deviceid,dnum,huanid,lanip,messageboxid,mac,version;
 
@@ -34,35 +41,28 @@ public class ReportDeviceInfo {
 	
 
 	public void sentPacket(){
+		
+		new AsyncTask<Void, Void, Void>() {
 
-		new Thread(new Runnable() {
-			
 			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				try {
-					String content = "";				
-					content = "<report xmlns=\"tcl:hc:wechat\">" 
-							+ "<deviceid>" + deviceid+ "</deviceid>" 
-							+ "<dnum>" + dnum+ "</dnum>" 
-							+ "<huanid>" + huanid+ "</huanid>" 
-							+"<lanip>"+lanip+"</lanip>"
-							+"<messageboxid>"+messageboxid+"</messageboxid>"
-							+"<mac>"+mac+"</mac>"
-							+"<version>"+version+"</version>"
-							+ "</report>";
+			protected Void doInBackground(Void... params) {
+				String content = "<report xmlns=\"tcl:hc:wechat\">" 
+						+ "<deviceid>" + deviceid+ "</deviceid>" 
+						+ "<dnum>" + dnum+ "</dnum>" 
+						+ "<huanid>" + huanid+ "</huanid>" 
+						+ "<lanip>"+lanip+"</lanip>"
+						+ "<messageboxid>"+messageboxid+"</messageboxid>"
+						+ "<mac>"+mac+"</mac>"
+						+ "<version>"+version+"</version>"
+						+ "</report>";
 				
-					IQ userContentIQ = new UserContentIQ(content);
-					userContentIQ.setType(IQ.Type.SET);
-					connection.sendPacket(userContentIQ);										
-					Log.d(tag, "发送ReportDeviceInfo请求"+userContentIQ.toXML());
-					
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
+				IQ userContentIQ = new UserContentIQ(content);
+				userContentIQ.setType(IQ.Type.SET);
+				connection.sendPacket(userContentIQ);										
+				Log.d(TAG, "Send ReportDeviceInfo:"+userContentIQ.toXML());
+				return null;
 			}
-		}).start();		
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
 }

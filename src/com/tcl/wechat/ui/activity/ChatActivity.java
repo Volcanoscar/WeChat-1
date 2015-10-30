@@ -580,9 +580,12 @@ public class ChatActivity extends Activity {
 			if (recorder == null){
 				return ;
 			}
-			recorder.setReceived(true);
-			mALlUserRecorders.add(recorder);
-			update();
+			
+			if (recorder.getOpenid().equals(mBindUser.getOpenId())) {
+				recorder.setReceived(true);
+				mALlUserRecorders.add(recorder);
+				update();
+			}
 		}
 	};
 	

@@ -35,6 +35,10 @@ public class UnbindProvider implements IQProvider {
 					parser.next();		
 					String openid = parser.getText();
 					iq.setopenid(openid);
+				} else if (parser.getName().equals("deviceid")){
+					parser.next();		
+					String deviceid = parser.getText();
+					iq.setDeviceid(deviceid);
 				}
 			} 
 			else if (eventType == XmlPullParser.END_TAG) {

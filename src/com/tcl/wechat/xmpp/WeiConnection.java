@@ -8,12 +8,6 @@
 package com.tcl.wechat.xmpp;
 
 
-import java.util.List;
-
-import org.jivesoftware.smack.XMPPConnection;
-
-
-
 import android.os.Parcel;
 import android.os.Parcelable;
 

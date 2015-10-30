@@ -18,6 +18,7 @@ public class UnbindResultIQ extends IQ {
 	private final String xml;
 	private String errorcode;
     private String openid;
+    private String deviceid;
 
 	public UnbindResultIQ(final String xml) {
 		this.xml = xml;
@@ -38,6 +39,14 @@ public class UnbindResultIQ extends IQ {
 		this.openid = openid;
 	}
 
+	public String getDeviceid() {
+		return deviceid;
+	}
+
+	public void setDeviceid(String deviceid) {
+		this.deviceid = deviceid;
+	}
+
 	@Override
 	public String getChildElementXML() {
 		
@@ -46,6 +55,7 @@ public class UnbindResultIQ extends IQ {
         if (errorcode != null){
         	buf.append("<errorcode>").append(errorcode).append("</errorcode>\n");
         	buf.append("<openid>").append(openid).append("</openid>\n");
+        	buf.append("<deviceid>").append(deviceid).append("</deviceid>\n");
         }
         buf.append("</unbind>");
         return buf.toString();

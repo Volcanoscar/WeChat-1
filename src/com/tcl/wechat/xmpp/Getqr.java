@@ -15,87 +15,76 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.provider.ProviderManager;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
-import com.tcl.wechat.common.WeiConstant.CommandType;
-import com.tcl.wechat.utils.BaseUIHandler;
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.EventReason;
+import com.tcl.wechat.common.IConstant.EventType;
+import com.tcl.wechat.common.IConstant.ReturnType;
 
 /**
- * @ClassName: Getqr
- * @Description: 获取二维码信息
+ * 获取二维码信息
+ * @author rex.lei
+ *
  */
-
 public class Getqr {
-	private String tag = "Getqr";
-	private  XMPPConnection connection = null;
-	private static BaseUIHandler mHandler = null;
-	private static PacketListener packetListener = null;
-	private IQ userContentIQ;
 	
-	public Getqr(XMPPConnection conn ,BaseUIHandler handler){
-		this.connection = conn;
-		this.mHandler = handler;
-	}
+	private static final String TAG = Getqr.class.getSimpleName();
 	
-	public static void initPacketListener() {
-		packetListener = null;
+	private XMPPConnection mConnection = null;
+	private XmppEventListener mListener = null;
+	
+
+	public Getqr(XMPPConnection mConnection, XmppEventListener mListener) {
+		super();
+		this.mConnection = mConnection;
+		this.mListener = mListener;
 	}
 
 	public void sentPacket(){
+		
+		new AsyncTask<Void, Void, Void>() {
 
-		new Thread(new Runnable() {
-			
 			@Override
-			public void run() {
+			protected Void doInBackground(Void... params) {
 				// TODO Auto-generated method stub
-				try {
-
-					ProviderManager.getInstance().addIQProvider("getqr", "tcl:hc:wechat", new GetQrProvider());
-					PacketFilter filter = new PacketTypeFilter(GetQrResultIQ.class);//success		
-
-					if (packetListener == null){
-						connection.addPacketListener(packetListener = new PacketListener() {
-
-							@Override
-							public void processPacket(Packet p) {
-				
-								IQ myIQ = (IQ) p;
-								Log.d(tag, "GetQrResultIQ返回结果:" + myIQ.toXML());
-
-								try {
-
-									if(p instanceof GetQrResultIQ){							
-									
-										GetQrResultIQ getQrResultIQ = (GetQrResultIQ) p;
-										String errCode = getQrResultIQ.getErrorcode();
-										String url = getQrResultIQ.getUrl();
-										if (mHandler != null){
-											mHandler.setData(url);
-											mHandler.setStatus(errCode);
-											mHandler.sendEmptyMessage(CommandType.COMMAND_GET_QR);
-										}
-									}
-								} catch (Exception e) {
-									e.printStackTrace();
+				ProviderManager.getInstance().addIQProvider("getqr", "tcl:hc:wechat", new GetQrProvider());
+				PacketFilter filter = new PacketTypeFilter(GetQrResultIQ.class);
+				mConnection.addPacketListener(new PacketListener() {
+					
+					@Override
+					public void processPacket(Packet packet) {
+						IQ packetIq = (IQ) packet;
+						Log.d(TAG, "GetQr ResultIQ:" + packetIq.toXML());
+						if (packetIq instanceof GetQrResultIQ){
+							GetQrResultIQ getQrResultIQ = (GetQrResultIQ) packet;
+							String errorCode = getQrResultIQ.getErrorcode();
+							String url = getQrResultIQ.getUrl();
+							
+							if (ReturnType.STATUS_SUCCESS.equals(errorCode)){
+								if (mListener != null){
+									mListener.onEvent(new XmppEvent(this, EventType.TYPE_GET_QR, 
+											EventReason.REASON_COMMON_SUCCESS, url));
+								}
+							} else {
+								if (mListener != null){
+									mListener.onEvent(new XmppEvent(this, EventType.TYPE_GET_QR, 
+											EventReason.REASON_COMMON_FAILED, null));
 								}
 							}
-						}, filter);	
+						}
 					}
-					
-					String content = "<getqr xmlns=\"tcl:hc:wechat\">" + "</getqr>";
-					userContentIQ = new UserContentIQ(content);
-					userContentIQ.setType(IQ.Type.GET);
-					connection.sendPacket(userContentIQ);
-						
-					Log.d(tag, "发送获取qr请求"+userContentIQ.toXML());
-					
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
+				}, filter);
+				
+				
+				String content = "<getqr xmlns=\"tcl:hc:wechat\">" + "</getqr>";
+				UserContentIQ userContentIQ = new UserContentIQ(content);
+				userContentIQ.setType(IQ.Type.GET);
+				mConnection.sendPacket(userContentIQ);
+				Log.d(TAG, "Send Qr Request:" + userContentIQ.toXML());
+				return null;
 			}
-		}).start();
-		
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
-
 }

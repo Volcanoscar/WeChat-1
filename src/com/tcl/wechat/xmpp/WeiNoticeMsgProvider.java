@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import android.util.Log;
 
-import com.tcl.wechat.modle.WeiNotice;
+import com.tcl.wechat.model.WeiNotice;
 
 /**
  * @ClassName: WeiNoticeMsgProvider
@@ -43,21 +43,21 @@ public class WeiNoticeMsgProvider implements IQProvider {
 				}else if (parser.getName().equals("openid")){
 					parser.next();		
 					String openid = parser.getText();
-					weiNotice.setOpenid(openid);
+					weiNotice.setOpenId(openid);
 				}else if (parser.getName().equals("nickname")){
 					parser.next();		
 					String nickname = parser.getText();
-					weiNotice.setNickname(nickname);
+					weiNotice.setNickName(nickname);
 				}else if (parser.getName().equals("sex")){
 					parser.next();		
 					String sex = parser.getText();
 					weiNotice.setSex(sex);
-					Log.d("WeiNoticeMsgProvider", "sex"+sex);
+					Log.d("WeiNoticeMsgProvider", "sex:"+sex);
 				}else if (parser.getName().equals("headimgurl")){
 					parser.next();		
 					String headimgurl = parser.getText();
-					weiNotice.setHeadimgurl(headimgurl);
-					Log.d("WeiNoticeMsgProvider", "headimgurl"+headimgurl);
+					weiNotice.setHeadImageUrl(headimgurl);
+					Log.d("WeiNoticeMsgProvider", "headimgurl:"+headimgurl);
 				}
 			} else if (eventType == XmlPullParser.END_TAG) {
 				if (parser.getName().equals("notice")) {

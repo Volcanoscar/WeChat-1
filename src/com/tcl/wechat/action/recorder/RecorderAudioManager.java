@@ -2,6 +2,7 @@ package com.tcl.wechat.action.recorder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.UUID;
 
 import android.media.MediaRecorder;
@@ -19,7 +20,7 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 	
 	private static final String TAG = "RecorderAudioManager";
 	
-	private static final int VOICE_MAX_LEVEL = 7;
+	private static final int VOICE_MAX_LEVEL = 14;
 	
 	private String mFileDir;   //音频文件存储路径
 	private String mCurrentFilePath;
@@ -52,6 +53,7 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 		return RecorderInstance.mInstance;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void prepare() {
 		File file = getFilePath();
@@ -68,6 +70,8 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 			mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.RAW_AMR);
 			//设置音频编码格式个AMR
 			mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+			//设置最大录音文件大小2M
+			mMediaRecorder.setMaxFileSize(2 * 1024 * 1024);
 			
 			mMediaRecorder.prepare();
 			mMediaRecorder.start();
@@ -90,7 +94,7 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 	 * 获取音频文件路径
 	 * @return
 	 */
-	private File getFilePath(){
+	public File getFilePath(){
 		File file = null;
 		try {
 			Log.i(TAG, "FileDir:" + mFileDir);
@@ -112,7 +116,7 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 	 * 生成音频文件名称
 	 * @return 文件名称
 	 */
-	private String createFileName(){
+	public String createFileName(){
 		return UUID.randomUUID().toString() + ".amr";
 	}
 	
@@ -138,10 +142,9 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 	@Override
 	public int getLevel() {
 		if (bPrepared){
-			//range 0-7;
+			//range 0-14;
 			try {
-				return 5;/*VOICE_MAX_LEVEL * 
-						mMediaRecorder.getMaxAmplitude() / 32768 + 1;*/
+				return VOICE_MAX_LEVEL * mMediaRecorder.getMaxAmplitude() / 32768 + 1;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -157,4 +160,45 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 		this.mFileDir = path;
 	}
 	
+	/**
+	 * 获取音频文件播放长度
+	 * @param file
+	 * @return
+	 */
+	public static long getDuration(File file) {  
+		long duration = -1;  
+        int[] packedSize = { 12, 13, 15, 17, 19, 20, 26, 31, 5, 0, 0, 0, 0, 0, 0, 0 };  
+        RandomAccessFile randomAccessFile = null;  
+        try {  
+            randomAccessFile = new RandomAccessFile(file, "rw");  
+            long length = file.length();//文件的长度  
+            int pos = 6;//设置初始位置  
+            int frameCount = 0;//初始帧数  
+            int packedPos = -1;  
+            byte[] datas = new byte[1];//初始数据值  
+            while (pos <= length) {  
+                randomAccessFile.seek(pos);  
+                if (randomAccessFile.read(datas, 0, 1) != 1) {  
+                    duration = length > 0 ? ((length - 6) / 650) : 0;  
+                    break;  
+                }  
+                packedPos = (datas[0] >> 3) & 0x0F;  
+                pos += packedSize[packedPos] + 1;  
+                frameCount++;  
+            }  
+            duration += frameCount * 20;//帧数*20  
+        } catch (Exception e){
+        	e.printStackTrace();
+        }finally {  
+            try {
+				if (randomAccessFile != null) {  
+				    randomAccessFile.close();  
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  
+        }  
+        return duration;  
+    }  
 }

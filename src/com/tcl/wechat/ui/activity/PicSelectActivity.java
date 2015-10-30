@@ -7,10 +7,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.RelativeLayout;
@@ -39,9 +42,18 @@ import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.view.ListImageDirPopupWindow;
 import com.tcl.wechat.view.ListImageDirPopupWindow.OnImageDirSelected;
 
+/**
+ * 图片选择界面
+ * @author rex.lei
+ *
+ */
 public class PicSelectActivity extends Activity implements OnImageDirSelected{
 
 	private static final String TAG = PicSelectActivity.class.getSimpleName();
+	
+	private static final int MSG_SCAN_COMPLETED = 0x01;
+	
+	private static final int MSG_SELECT_COMPLETED = 0x02;
 	
 	private Context mContext;
 	
@@ -57,7 +69,8 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 	 * 所有的图片
 	 */
 	private List<String> mImgs;
-
+	
+	private Button mIndicatorBtn;
 	private GridView mGirdView;
 	private PicSelectAdapter mAdapter;
 	
@@ -77,7 +90,8 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 
 	private TextView mChooseDir;
 	private TextView mImageCount;
-	int totalCount = 0;
+	
+	private int mTotalCount = 0;
 
 	private int mScreenHeight;
 
@@ -88,6 +102,8 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		super.onCreate(savedInstanceState);
 		
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_picture_select);
 
 		mContext = this;
@@ -168,7 +184,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 							return false;
 						}
 					}).length;
-					totalCount += picSize;
+					mTotalCount += picSize;
 
 					imageFloder.setCount(picSize);
 					mImageFloders.add(imageFloder);
@@ -184,7 +200,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 				mDirPaths = null;
 
 				// 通知Handler扫描图片完成
-				mHandler.sendEmptyMessage(0);
+				mHandler.sendEmptyMessage(MSG_SCAN_COMPLETED);
 			}
 		}).start();
 	}
@@ -196,11 +212,13 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		mGirdView = (GridView) findViewById(R.id.gv_image_select);
 		mChooseDir = (TextView) findViewById(R.id.id_choose_dir);
 		mImageCount = (TextView) findViewById(R.id.id_total_count);
-
+		mIndicatorBtn = (Button) findViewById(R.id.btn_indicator);
+		
 		mBottomLy = (RelativeLayout) findViewById(R.id.layout_bottom_view);
 	}
 
 	private void initEvent(){
+		
 		/**
 		 * 为底部的布局设置点击事件，弹出popupWindow
 		 */
@@ -219,13 +237,26 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		});
 	}
 	
+	@SuppressLint("HandlerLeak") 
 	private Handler mHandler = new Handler(){
 		public void handleMessage(Message msg){
-			mProgressDialog.dismiss();
-			// 为View绑定数据
-			data2View();
-			// 初始化展示文件夹的popupWindw
-			initListDirPopupWindw();
+			switch (msg.what) {
+			case MSG_SCAN_COMPLETED:
+				mProgressDialog.dismiss();
+				// 为View绑定数据
+				data2View();
+				// 初始化展示文件夹的popupWindw
+				initListDirPopupWindw();
+				break;
+				
+			case MSG_SELECT_COMPLETED:
+				
+				break;
+				
+			default:
+				break;
+			}
+			
 		}
 	};
 
@@ -242,15 +273,17 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		/**
 		 * 可以看到文件夹的路径和图片的路径分开保存，极大的减少了内存的消耗；
 		 */
-		mAdapter = new PicSelectAdapter(getApplicationContext(), mImgs,
+		mAdapter = new PicSelectAdapter(mContext, mImgs,
 				R.layout.pic_select_grid_item, mImgDir.getAbsolutePath());
 		mGirdView.setAdapter(mAdapter);
-		mImageCount.setText(String.format(getString(R.string.pic_count), totalCount));
+		mImageCount.setText(String.format(getString(R.string.pic_count), mTotalCount));
+		mAdapter.setSelectPicIndicatorView(mIndicatorBtn);
 	};
 
 	/**
 	 * 初始化展示文件夹的popupWindw
 	 */
+	@SuppressLint("InflateParams") 
 	private void initListDirPopupWindw(){
 		mListImageDirPopupWindow = new ListImageDirPopupWindow(
 				LayoutParams.MATCH_PARENT, (int) (mScreenHeight * 0.7),
@@ -291,12 +324,53 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		 */
 		mAdapter = new PicSelectAdapter(getApplicationContext(), mImgs,
 				R.layout.pic_select_grid_item, mImgDir.getAbsolutePath());
+		mAdapter.setSelectPicIndicatorView(mIndicatorBtn);
 		mGirdView.setAdapter(mAdapter);
 		// mAdapter.notifyDataSetChanged();
 		mImageCount.setText(String.format(getString(R.string.pic_count), floder.getCount()));
 		mChooseDir.setText(floder.getName());
 		mListImageDirPopupWindow.dismiss();
-
+	}
+	
+	/**
+	 * 返回按钮
+	 * @param view
+	 */
+	public void backOnClick(View view){
+		
+		finish();
+	}
+	
+	/**
+	 * 菜单按钮
+	 * @param v
+	 */
+	public void onSendClick(View v){
+		String[] selectPics = mAdapter.getSelectedImage();
+		Intent intent = new Intent();
+		intent.putExtra("selectPic", selectPics);
+		setResult(0, intent);
+		finish();
+	}
+	
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+	}
+	
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
 	}
 
 }

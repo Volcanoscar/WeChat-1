@@ -97,6 +97,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
+		Log.i(TAG, "onResume-->>");
 		
 		bConnected = true;
 		
@@ -328,12 +329,14 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		Log.i(TAG, "onPause-->>");
 	}
 	
 	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		Log.i(TAG, "onStop-->>");
 		
 	}
 	

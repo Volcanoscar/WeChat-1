@@ -8,16 +8,24 @@
 package com.tcl.wechat.xmpp;
 
 import java.util.Map;
+
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.IQ;
+
+import android.os.AsyncTask;
 import android.util.Log;
 
-/**
- * @ClassName: QueryBinder
- */
+import com.tcl.wechat.WeApplication;
 
+/**
+ * 响应服务器
+ * @author rex.lei
+ *
+ */
 public class MsgResponse {
-	private String tag = "MsgResponse";
+	
+	private static final String TAG = MsgResponse.class.getSimpleName();
+	
 	private  XMPPConnection connection = null;
 	private String openid,msgid,msgtype;
 
@@ -31,33 +39,26 @@ public class MsgResponse {
 	
 
 	public void sentPacket(){
+		
+		new AsyncTask<Void, Void, Void>() {
 
-		new Thread(new Runnable() {
-			
 			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				try {
-					String content = "";				
-					content = "<replymsg xmlns=\"tcl:hc:wechat\">" 
-							+ "<openid>" + openid+ "</openid>" 
-							+"<msgid>"+msgid+"</msgid>"
-							+"<msgtype>"+msgtype+"</msgtype>"
-							+ "</replymsg>";
-				
-					IQ userContentIQ = new UserContentIQ(content);
-					userContentIQ.setType(IQ.Type.SET);
-					connection.sendPacket(userContentIQ);										
-					Log.d(tag, "发送MsgResponse"+userContentIQ.toXML());
-					
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
+			protected Void doInBackground(Void... params) {
+				String content = "";				
+				content = "<replymsg xmlns=\"tcl:hc:wechat\">" 
+						+ "<openid>" + openid + "</openid>" 
+						+ "<msgid>" + msgid + "</msgid>"
+						+ "<msgtype>" + msgtype + "</msgtype>"
+						+ "</replymsg>";
+			
+				IQ userContentIQ = new UserContentIQ(content);
+				userContentIQ.setType(IQ.Type.SET);
+				connection.sendPacket(userContentIQ);										
+				Log.d(TAG, "Send Response:" + userContentIQ.toXML());
+				return null;
 			}
-		}).start();		
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
-	
 }
 
 

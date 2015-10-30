@@ -12,13 +12,14 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.WeChatApplication;
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
-import com.tcl.wechat.db.WeiUserDao;
-import com.tcl.wechat.modle.BindUser;
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
-import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.database.WeiUserDao;
+import com.tcl.wechat.model.BindUser;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.ui.activity.ChatActivity;
+import com.tcl.wechat.utils.DataFileTools;
+import com.tcl.wechat.utils.SystemInfoUtil;
 
 /**
  * 微信消息通知实体类
@@ -44,7 +45,7 @@ public class WeiXinNotifier {
 
 	private WeiXinNotifier() {
 		super();
-		mContext = WeChatApplication.gContext;
+		mContext = WeApplication.getContext();
 		mNotificationManager = (NotificationManager)mContext.
 					getSystemService(Context.NOTIFICATION_SERVICE);
 		
@@ -82,9 +83,12 @@ public class WeiXinNotifier {
 		/**
 		 *  更新通知栏
 		 */
+		//获取绑定用户
+		BindUser bindUser =  WeiUserDao.getInstance().getUser(weiXinMsg.getOpenid());
 		//点击进入事件
-		Intent contentIntent = new Intent(WeChatApplication.gContext, ChatActivity.class);
+		Intent contentIntent = new Intent(WeApplication.getContext(), ChatActivity.class);
 		contentIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		contentIntent.putExtra("bindUser", bindUser);
 		PendingIntent pendingContentIntent = PendingIntent.getActivity(mContext, 0, contentIntent, 0);
 		//点击取消时间
 		Intent deleteIntent = new Intent();
@@ -98,7 +102,6 @@ public class WeiXinNotifier {
 		}
 		Bitmap userIcon = null;
 		String userName = null;
-		BindUser bindUser =  WeiUserDao.getInstance().getUser(weiXinMsg.getOpenid());
 		if (bindUser != null){
 			userIcon = DataFileTools.getInstance().getBindUserCircleIcon(bindUser.getHeadImageUrl());
 			userName = WeiUserDao.getInstance().getUser(weiXinMsg.getOpenid()).getNickName();
@@ -121,17 +124,21 @@ public class WeiXinNotifier {
 		 * 根据不同的消息类型，显示
 		 */
 		Notification.Builder builder = new Notification.Builder(mContext);
-		builder.setSmallIcon(R.drawable.ic_launcher)//设置状态栏里面的图标（小图标） 　　　　　　　　　　　　　　　　　　　　
-				.setLargeIcon(userIcon)		//下拉下拉列表里面的图标（大图标） 　　　　　　　
-				.setTicker(contentText) 	//设置状态栏的显示的信息  
-				.setWhen(System.currentTimeMillis())//设置时间发生时间  
-				.setAutoCancel(true)		//设置可以清除  
-				.setContentTitle(userName)	//设置下拉列表里的标题  
-				.setContentText(contentBuffer.toString())
-				.setDefaults(Notification.DEFAULT_SOUND)
-				.setContentIntent(pendingContentIntent)
-				.setDeleteIntent(pendingDeleteIntent);
 		
+		if (SystemInfoUtil.isTopActivity()){
+			builder.setDefaults(Notification.DEFAULT_SOUND);
+		} else {
+			builder.setSmallIcon(R.drawable.ic_launcher)//设置状态栏里面的图标（小图标） 　　　　　　　　　　　　　　　　　　　　
+			.setLargeIcon(userIcon)		//下拉下拉列表里面的图标（大图标） 　　　　　　　
+			.setTicker(contentText) 	//设置状态栏的显示的信息  
+			.setWhen(System.currentTimeMillis())//设置时间发生时间  
+			.setAutoCancel(true)		//设置可以清除  
+			.setContentTitle(userName)	//设置下拉列表里的标题  
+			.setContentText(contentBuffer.toString())
+			.setDefaults(Notification.DEFAULT_SOUND)
+			.setContentIntent(pendingContentIntent)
+			.setDeleteIntent(pendingDeleteIntent);
+		}
 		Notification notification = builder.build();
 		mNotificationManager.notify(NOTIFY_ID, notification);
 	}

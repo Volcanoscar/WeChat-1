@@ -9,7 +9,7 @@ package com.tcl.wechat.xmpp;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 
 /**
  * @ClassName: WeiMsgResultIQ

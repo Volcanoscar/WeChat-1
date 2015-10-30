@@ -1,6 +1,6 @@
 package com.tcl.wechat.view.listener;
 
-import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.model.BindUser;
 
 
 /**
@@ -12,6 +12,7 @@ public interface UserInfoEditListener {
 
 	/**
 	 * 删除用户事件
+	 * @param eventTag
 	 */
 	public void onDeleteUserEvent(String eventTag);
 	
@@ -27,6 +28,7 @@ public interface UserInfoEditListener {
 	
 	/**
 	 * 确定编辑用户操作
+	 * @param bindUser
 	 */
 	public void onConfirmEditUser(BindUser bindUser);
 }

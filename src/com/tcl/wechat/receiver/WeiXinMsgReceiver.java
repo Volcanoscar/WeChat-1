@@ -15,9 +15,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.common.WeiConstant.CommandType;
 import com.tcl.wechat.controller.WeiXinMsgManager;
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
 
 /**
@@ -60,6 +59,6 @@ public class WeiXinMsgReceiver extends BroadcastReceiver implements IConstant{
 		hashMap.put("openid",	weiXinMsg.getOpenid());
 		hashMap.put("msgtype",	weiXinMsg.getMsgtype());
 		hashMap.put("msgid", 	weiXinMsg.getMsgid());
-		new WeiXmppCommand(null, CommandType.COMMAND_MSGRESPONSE, hashMap).execute();
+		new WeiXmppCommand(EventType.TYPE_RESPONSE_SERVER, hashMap, null).execute();
 	}
 }

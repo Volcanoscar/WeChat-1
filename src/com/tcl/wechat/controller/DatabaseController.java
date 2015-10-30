@@ -5,11 +5,11 @@ import java.sql.Date;
 import android.content.Context;
 import android.util.Log;
 
-import com.tcl.wechat.db.AppInfoDao;
-import com.tcl.wechat.db.DeviceDao;
-import com.tcl.wechat.db.WeiQrDao;
-import com.tcl.wechat.db.WeiMsgRecordDao;
-import com.tcl.wechat.db.WeiUserDao;
+import com.tcl.wechat.database.AppInfoDao;
+import com.tcl.wechat.database.DeviceDao;
+import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.database.WeiQrDao;
+import com.tcl.wechat.database.WeiUserDao;
 
 /**
  * 数据库Controller

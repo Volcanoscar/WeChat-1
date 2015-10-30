@@ -20,7 +20,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -202,29 +201,97 @@ public class MsgBoardView extends LinearLayout{
 			mUserInfoViewUv.setUserName(userName);
 		}
 		
+		mMsgConentLayout.removeAllViews();
+		String time = recorder.getCreatetime();
+		mMsgReceiveTimeTv.setText(DateTimeUtil.getShortTime(time));
+		mMsgConentLayout.addView(getView(recorder));
+	}
+	
+	/**
+	 * 获取图片
+	 * @param msgType
+	 * @return
+	 */
+	private View getView(final WeiXinMsgRecorder recorder) {
+		View mView = null;
+		
 		//更新消息信息
 		Log.i(TAG, "recorder:" + recorder.toString());
 		String msgType = recorder.getMsgtype();
 		Log.i(TAG, "Msgtype:" + msgType);
-		
-		mMsgConentLayout.removeAllViews();
-		String time = recorder.getCreatetime();
-		mMsgReceiveTimeTv.setText(DateTimeUtil.getShortTime(time));
-		
 		if (ChatMsgType.TEXT.equals(msgType)){
-			mMsgConentLayout.addView(setupTextMsgView(recorder));
+			//加载文本显示控件
+			mView = setupTextMsgView(recorder);
+			
 		} else if (ChatMsgType.VOICE.equals(msgType)){
-			mMsgConentLayout.addView(setupVoiceMsgView(recorder));
+			//加载音频显示控件
+			mView = setupVoiceMsgView(recorder);
+			
 		} else if (ChatMsgType.VIDEO.equals(msgType) 
 				|| ChatMsgType.SHORTVIDEO.equals(msgType)){
-			mMsgConentLayout.addView(setupVideoMsgView(recorder));
+			//加载视频显示控件
+			mView = setupVideoMsgView(recorder);
+			
 		} else if (ChatMsgType.IMAGE.equals(msgType)){
-			mMsgConentLayout.addView(setupImageMsgView(recorder));
-		} else if (ChatMsgType.LOCATION.equals(msgType)){ //位置信息
-			mMsgConentLayout.addView(setupLocationView(recorder));
+			//加载图片显示控件
+			mView = setupImageMsgView(recorder);
+			
+		} else if (ChatMsgType.LOCATION.equals(msgType)){ 
+			//加载地理位置显示控件
+			mView = setupLocationView(recorder);
+			
 		} else if (ChatMsgType.LINK.equals(msgType)) {
-			mMsgConentLayout.addView(setupLinkView(recorder));
+			//加载链接显示控件
+			mView = setupLinkView(recorder);
 		}
+		
+		mView.setClickable(true);
+		mView.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = createIntent(recorder);
+				if (intent != null){
+					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					mContext.startActivity(intent);
+				}
+			}
+		});
+		return mView;
+	}
+	
+	private Intent createIntent(WeiXinMsgRecorder recorder) {
+		Intent mIntent = null;
+		String msgType = recorder.getMsgtype();
+		Log.i(TAG, "Msgtype:" + msgType);
+		if (ChatMsgType.TEXT.equals(msgType)){
+			mIntent = new Intent(mContext, ShowTextActivity.class);
+			mIntent.putExtra("Content", recorder.getContent());
+			
+		} else if (ChatMsgType.VOICE.equals(msgType)){
+			//加载音频显示控件
+			playAudio(recorder.getFileName());
+			
+		} else if (ChatMsgType.VIDEO.equals(msgType) 
+				|| ChatMsgType.SHORTVIDEO.equals(msgType)){
+			mIntent = new Intent(Intent.ACTION_VIEW);
+			String fileName = DataFileTools.getInstance().getVideoFilePath(recorder.getMediaid());
+			mIntent.setDataAndType(Uri.parse(fileName), "video/mp4");
+			
+		} else if (ChatMsgType.IMAGE.equals(msgType)){
+			mIntent = new Intent(mContext, ShowImageActivity.class);
+			mIntent.putExtra("fileName", recorder.getUrl());
+			
+		} else if (ChatMsgType.LOCATION.equals(msgType)){ 
+			mIntent = new Intent(mContext, BaiduMapActivity.class);
+			mIntent.putExtra("WeiXinMsgRecorder", recorder);
+			
+		} else if (ChatMsgType.LINK.equals(msgType)) {
+			mIntent = new Intent(mContext, WebViewActivity.class); 
+			mIntent.putExtra("LinkUrl", recorder.getUrl());
+		}
+		return mIntent;
 	}
 	
 	private Typeface getFontTypeface(String fontpath) {
@@ -251,17 +318,6 @@ public class MsgBoardView extends LinearLayout{
 		}
 		textInfoTv.setText(contentCharSeq);
 		textInfoTv.setTypeface(new FontUtil(mContext).getFont("fonts/regular.TTF"));
-		
-		final CharSequence content = contentCharSeq;
-		
-		mMsgView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				showTextInfo(content);
-			}
-		});
 		return mMsgView;
 	}
 	
@@ -304,18 +360,11 @@ public class MsgBoardView extends LinearLayout{
 	 * @return
 	 */
 	private View setupImageMsgView(final WeiXinMsgRecorder recorder){
-		ImageView imageView = new ImageView(mContext);
-		imageView.setScaleType(ScaleType.CENTER_INSIDE);
+		View mMsgView = null;
+		mMsgView = mInflater.inflate(R.layout.layout_chat_imageview, null);
+		ImageView imageView = (ImageView) mMsgView.findViewById(R.id.img_src_image);
 		updateImage(recorder.getUrl(), imageView);
-		imageView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				showPicture(recorder.getUrl());
-			}
-		});
-		return imageView;
+		return mMsgView;
 	}
 	
 	/**
@@ -330,18 +379,6 @@ public class MsgBoardView extends LinearLayout{
 		mMsgView.setLayoutParams(params);
 		TextView locationInfoTv = (TextView) mMsgView.findViewById(R.id.tv_location_info);
 		locationInfoTv.setText(recorder.getLabel());
-		mMsgView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent(mContext, BaiduMapActivity.class);
-				intent.putExtra("WeiXinMsgRecorder", recorder);
-				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				mContext.startActivity(intent);
-			}
-		});
-		
 		return mMsgView;
 	}
 	
@@ -360,28 +397,8 @@ public class MsgBoardView extends LinearLayout{
 			       		   "</a>";
 		String descHtml =  "<div>" + mRecorder.getDescription() + 
 				           "</div>";
-		Log.i(TAG, "titleHtml:" + titleHtml);
-		Log.i(TAG, "descHtml:" + descHtml);
-		
 		mTitleTv.setText(Html.fromHtml(titleHtml));
 		mDetailTv.setText(Html.fromHtml(descHtml));
-		
-		mMsgView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				try {
-					Intent intent = new Intent(mContext, WebViewActivity.class); 
-					intent.putExtra("LinkUrl", recorder.getUrl());
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					mContext.startActivity(intent);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}  
-			}
-		});
 		return mMsgView;
 	}
 
@@ -396,17 +413,6 @@ public class MsgBoardView extends LinearLayout{
 		mVideoView.setLayoutParams(params);
 		ImageView thumbnailsImg = (ImageView) mVideoView.findViewById(R.id.img_video_thumbnails);
 		updateImage(recorder.getUrl(), thumbnailsImg);
-		mVideoView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				String fileName = DataFileTools.getInstance().getVideoFilePath(recorder.getMediaid());
-                intent.setDataAndType(Uri.parse(fileName), "video/mp4");
-                mContext.startActivity(intent);
-			}
-		});
 		return mVideoView;
 	}
 	
@@ -438,28 +444,6 @@ public class MsgBoardView extends LinearLayout{
 			resetPlayAnim();
 		}
 		
-	}
-	
-	/**
-	 * 文本预览大图
-	 * @param url 文本内容
-	 */
-	private void showTextInfo(CharSequence content) {
-		Intent intent = new Intent(mContext, ShowTextActivity.class);
-		intent.putExtra("Content", content);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		mContext.startActivity(intent);
-	}
-	
-	/**
-	 * 图片大图预览
-	 * @param url 图片url地址
-	 */
-	private void showPicture(String url) {
-		Intent intent = new Intent(mContext, ShowImageActivity.class);
-		intent.putExtra("fileName", url);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		mContext.startActivity(intent);
 	}
 	
 	/**
@@ -495,7 +479,7 @@ public class MsgBoardView extends LinearLayout{
 					mImageView.setImageBitmap(bitmap);
 				}
 			}
-		}, 0, 0);
+		}, 400, 400);
 	}
 	
 	/**

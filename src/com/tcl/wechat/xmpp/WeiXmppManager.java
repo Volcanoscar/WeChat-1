@@ -255,7 +255,7 @@ public class WeiXmppManager {
 	 * @return
 	 */
 	private boolean isMacAddressLegal(){
-		macAddress = SystemInfoUtil.getMacAddr();
+		macAddress = SystemInfoUtil.getLocalMacAddress();
 		Log.i(TAG, "macAddress:" + macAddress);
 		if (TextUtils.isEmpty(macAddress)) {
 			Log.e(TAG,"Get Mac Address Failed, You should init DeviceDB first!");

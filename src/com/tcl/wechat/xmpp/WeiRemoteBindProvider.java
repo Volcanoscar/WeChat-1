@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import android.util.Log;
 
-import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.model.BindUser;
 
 /**
  * @ClassName: WeiNoticeMsgProvider

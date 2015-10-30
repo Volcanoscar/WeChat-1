@@ -79,6 +79,8 @@ public class ChatMsgImageView extends ImageView{
 	
 	/**
 	 * 是否需要上传图片，是：则要显示上传进度
+	 * 
+	 * 实现方案：先上传图片，上传完成后再发送消息 ---将发送消息模块单独隔离出来
 	 * @param flag
 	 */
 	public void setUploadImageFlag(boolean flag){
@@ -130,7 +132,7 @@ public class ChatMsgImageView extends ImageView{
 					setErrorImage();
 				}
 			}
-		}, 0, 0);
+		}, 400, 400);
 	}
 	
 	/**

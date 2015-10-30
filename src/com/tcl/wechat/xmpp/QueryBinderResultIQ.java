@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.BindUser;
+import com.tcl.wechat.model.BindUser;
 
 
 /**

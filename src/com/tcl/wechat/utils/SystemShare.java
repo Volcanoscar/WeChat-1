@@ -4,8 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.tcl.wechat.WeChatApplication;
-import com.tcl.wechat.common.WeiConstant.SystemShared;
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.SystemShared;
 
 /**
  * 本地数据存储帮助类
@@ -29,7 +29,6 @@ public class SystemShare {
 	
 	public static class SharedEditer {
 		
-		private Context mContext = WeChatApplication.gContext;
 		
 		private SharedPreferences mPreferences = null;
 		private SharedPreferences.Editor mEditor = null;
@@ -41,7 +40,7 @@ public class SystemShare {
 		@SuppressLint("CommitPrefEdits") 
 		public SharedEditer(String fileName) {
 			super();
-			mPreferences = mContext.getSharedPreferences(fileName, 
+			mPreferences = WeApplication.getContext().getSharedPreferences(fileName, 
 					Context.MODE_PRIVATE);
 			mEditor = mPreferences.edit();
 		}

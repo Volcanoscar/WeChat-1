@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import android.util.Log;
 
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 
 /**
  * WeiMsgProvider
@@ -59,9 +59,28 @@ public class WeiMsgProvider implements IQProvider {
 					weiXinMsg.setContent(content);
 				} else if (parser.getName().equals("url")){					
 					parser.next();		
-					String mediaurl = parser.getText();
-					weiXinMsg.setUrl(mediaurl);
-					Log.i("andy","mediaurl="+mediaurl);
+					String url = parser.getText();
+					weiXinMsg.setUrl(url);
+				}else if (parser.getName().equals("location_x")){					
+					parser.next();		
+					String locationx = parser.getText();
+					weiXinMsg.setLocation_x(locationx);
+				} else if (parser.getName().equals("location_y")){					
+					parser.next();		
+					String locationy = parser.getText();
+					weiXinMsg.setLocation_y(locationy);
+				}else if (parser.getName().equals("label")){					
+					parser.next();		
+					String label = parser.getText();
+					weiXinMsg.setLabel(label);
+				}else if (parser.getName().equals("title")){					
+					parser.next();		
+					String title = parser.getText();
+					weiXinMsg.setTitle(title);
+				}else if (parser.getName().equals("description")){					
+					parser.next();		
+					String description = parser.getText();
+					weiXinMsg.setDescription(description);
 				} else if (parser.getName().equals("format")){
 					parser.next();		
 					String format = parser.getText();
@@ -70,24 +89,14 @@ public class WeiMsgProvider implements IQProvider {
 					parser.next();		
 					String createtime = parser.getText();
 					weiXinMsg.setCreatetime(createtime);
-				} else if (parser.getName().equals("accesstoken")){
-					parser.next();		
-					String accesstoken = parser.getText();
-					weiXinMsg.setAccesstoken(accesstoken);
-				} else if (parser.getName().equals("mediaid")){
+				}  else if (parser.getName().equals("mediaid")){
 					parser.next();		
 					String mediaid = parser.getText();
-					Log.i("andy","xmpp mediaid="+mediaid);
 					weiXinMsg.setMediaid(mediaid);
-				} else if (parser.getName().equals("thumbmediaurl")){
+				} else if (parser.getName().equals("thumbmediaid")){
 					parser.next();		
 					String thumbmediaid = parser.getText();
-					Log.i("andy","thumbmediaid="+thumbmediaid);
 					weiXinMsg.setThumbmediaid(thumbmediaid);
-				} else if (parser.getName().equals("expiretime")){
-					parser.next();		
-					String expiretime = parser.getText();
-					weiXinMsg.setExpiretime(expiretime);
 				} else if (parser.getName().equals("openid")){
 					parser.next();		
 					String openid = parser.getText();
@@ -95,7 +104,7 @@ public class WeiMsgProvider implements IQProvider {
 				} else if (parser.getName().equals("recognition")){
 					parser.next();		
 					String recognition = parser.getText();
-					weiXinMsg.setContent(recognition); //语音，发送过来的是文字信息
+					weiXinMsg.setContent(recognition); 
 				} else if (parser.getName().equals("offlinemsg")){
 					parser.next();		
 					String offlinemsg = parser.getText();

@@ -1,6 +1,6 @@
 package com.tcl.wechat.controller.listener;
 
-import com.tcl.wechat.modle.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 
 /**
  * 新消息接收监听器

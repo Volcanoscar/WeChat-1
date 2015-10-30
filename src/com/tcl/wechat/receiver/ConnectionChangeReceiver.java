@@ -10,10 +10,11 @@ package com.tcl.wechat.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.util.Log;
 
-import com.tcl.wechat.common.WeiConstant;
-import com.tcl.wechat.utils.UIUtils;
+import com.tcl.wechat.common.IConstant.StartServiceMode;
+import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
@@ -21,29 +22,34 @@ import com.tcl.wechat.xmpp.WeiXmppService;
  * @ClassName: ConnectionChangeReceiver
  * @Description: 网络状态广播
  */
-
 public class ConnectionChangeReceiver extends BroadcastReceiver {
-	 private static boolean firstConnect = true;
+	
+	private static final String TAG = ConnectionChangeReceiver.class.getSimpleName();
+	
+	private static boolean firstConnect = true;
+	
 	@Override
-	public void onReceive(Context arg0, Intent arg1) {
+	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
-		Log.d("ConnectionChangeReceiver", "网络状态改变，weixin开启服务登陆");
-		if (UIUtils.isNetworkAvailable()){
-			if(firstConnect){
-				firstConnect = false;
-				Log.d("ConnectionChangeReceiver", "网络连接OK");
-				Intent serviceIntent = new Intent(arg0, WeiXmppService.class);
-		    	serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);  
-		    	serviceIntent.putExtra("startmode", WeiConstant.StartServiceMode.OWN);
-		    	arg0.startService(serviceIntent); 
+		
+		String action = intent.getAction();
+		if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)){
+			
+			if (NetWorkUtil.isWifiConnected()){
+				if (firstConnect){
+					firstConnect = false;
+					Log.d(TAG, "network connected!!");
+					Intent serviceIntent = new Intent(context, WeiXmppService.class);
+			    	serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);  
+			    	serviceIntent.putExtra("startmode", StartServiceMode.OWN);
+			    	context.startService(serviceIntent); 
+				}
+				
+			} else {
+				WeiXmppManager.getInstance().disconnection();
+				firstConnect = true;
+				Log.d(TAG, "network disConnected!!");
 			}
 		}
-		else{
-			Log.d("ConnectionChangeReceiver", "网 络已断开");		
-			WeiXmppManager.getInstance().disconnection(); 
-			firstConnect = true;
-		}
-		
 	}
-
 }

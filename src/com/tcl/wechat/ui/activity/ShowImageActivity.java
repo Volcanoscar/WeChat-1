@@ -1,12 +1,15 @@
 package com.tcl.wechat.ui.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -17,8 +20,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader.ImageContainer;
+import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
-import com.tcl.wechat.utils.DataFileTools;
+import com.tcl.wechat.WeApplication;
 
 /**
  * 图片预览控件
@@ -30,6 +36,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 	private static final String TAG = ShowImageActivity.class.getSimpleName();
 	
 	private ImageView imgv;  
+	private ProgressDialog mProgressDialog;
 	  
     private PointF point0 = new PointF();  
     private PointF pointM = new PointF();  
@@ -45,16 +52,16 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
     private Matrix matrix = new Matrix();  
     private Matrix savedMatrix = new Matrix();  
   
-    // 获取屏幕分辨率。以1920*1080为例  
+    // 获取屏幕分辨率。
     private int displayWidth = 1920;  
     private int displayHeight = 1080;  
   
-    private float minScale = 1f;  
+    private float minScale = 0.5f;  
     private float maxScale = 10f;  
     private float currentScale = 1f;  
     private float oldDist;  
   
-    private Bitmap mBitmap;  
+    private Bitmap mBitmap;
     private int mImgWidth;  
     private int mImgHeight; 
     
@@ -90,20 +97,64 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 		
         imgv = (ImageView) findViewById(R.id.img_preview);  
         imgv.setOnTouchListener(this);  
+        
+        // 显示进度条
+     	mProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
   
-        mBitmap = DataFileTools.getInstance().getChatImageIcon(fileName);  
+     	//方法一：直接从本地读取
+        /*mBitmap = DataFileTools.getInstance().getChatImageIcon(fileName);  
         if (mBitmap == null ){
         	mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
         }
         mImgWidth = mBitmap.getWidth();  
         mImgHeight = mBitmap.getHeight(); 
-        imgv.setImageBitmap(mBitmap);  
-        minScale = getMinScale();  
-        matrix.setScale(minScale, minScale);  
-        center();  
-        imgv.setImageMatrix(matrix);  
+        imgv.setImageBitmap(mBitmap);*/ 
+        //方法二：加载本地图片（防止OOM）
+        //ImageLoader.getInstance().loadImage(fileName, imgv);
+        //ImageSize size = ImageLoader.getInstance().getImageViewWidth(imgv);
+        //mImgWidth = size.getWidth();  
+        //mImgHeight = size.getHeight();
+        
+        //方法三：加载网络图片
+        WeApplication.getImageLoader().get(fileName, new ImageListener() {
+			
+			@Override
+			public void onErrorResponse(VolleyError arg0) {
+				// TODO Auto-generated method stub
+				Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
+				mImgWidth = bitmap.getWidth();  
+		        mImgHeight = bitmap.getHeight(); 
+		        imgv.setImageBitmap(bitmap);
+			}
+			
+			@Override
+			public void onResponse(ImageContainer arg0, boolean arg1) {
+				// TODO Auto-generated method stub
+				mBitmap = arg0.getBitmap();
+				if (mBitmap != null){
+					Message message = Message.obtain();
+					mHandler.sendMessage(message);
+				}
+			}
+		}, 0, 0);
     }  
-  
+	
+	/**
+	 * 通知显示imageview
+	 */
+	private Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			mProgressDialog.dismiss();
+			mImgWidth = mBitmap.getWidth();  
+	        mImgHeight = mBitmap.getHeight(); 
+	        imgv.setImageBitmap(mBitmap);  
+	        minScale = getMinScale();  
+	        matrix.setScale(minScale, minScale);  
+	        center();  
+	        imgv.setImageMatrix(matrix);  
+		};
+	};
+	
     @Override  
     public boolean onTouch(View v, MotionEvent event) {  
         ImageView imgv = (ImageView) v;  

@@ -28,8 +28,9 @@ public class RecorderDialogManager {
 	}
 	
 	private void initView(){
-		mRecorderDialog = new Dialog(mContext, R.style.RecorderDialogTheme);
+		mRecorderDialog = new Dialog(mContext, R.style.dialogStyle);
 		mRecorderDialog.setContentView(R.layout.dialog_recorder);
+		mRecorderDialog.setCancelable(false);
 		
 		mRecorderIconImg = (ImageView) mRecorderDialog.findViewById(R.id.img_recorder_icon);
 		mRecorderVoiceImg = (ImageView) mRecorderDialog.findViewById(R.id.img_recorder_voice);
@@ -49,11 +50,11 @@ public class RecorderDialogManager {
 	 */
 	public void recording(){
 		if (mRecorderDialog != null && mRecorderDialog.isShowing()){
-			mRecorderIconImg.setVisibility(View.VISIBLE);
+			mRecorderIconImg.setVisibility(View.INVISIBLE);
 			mRecorderVoiceImg.setVisibility(View.VISIBLE);
 			mRecorderHintTv.setVisibility(View.VISIBLE);
 			
-			mRecorderIconImg.setImageResource(R.drawable.recorder);
+			mRecorderVoiceImg.setImageResource(R.drawable.record_level9);
 			mRecorderHintTv.setText(R.string.slide_cancel_send);
 		}
 	}
@@ -64,7 +65,7 @@ public class RecorderDialogManager {
 	public void wanToCancel(){
 		if (mRecorderDialog != null && mRecorderDialog.isShowing()){
 			mRecorderIconImg.setVisibility(View.VISIBLE);
-			mRecorderVoiceImg.setVisibility(View.GONE);
+			mRecorderVoiceImg.setVisibility(View.INVISIBLE);
 			mRecorderHintTv.setVisibility(View.VISIBLE);
 			
 			mRecorderIconImg.setImageResource(R.drawable.recorder_cancel);
@@ -78,7 +79,7 @@ public class RecorderDialogManager {
 	public void tooShort(){
 		if (mRecorderDialog != null && mRecorderDialog.isShowing()){
 			mRecorderIconImg.setVisibility(View.VISIBLE);
-			mRecorderVoiceImg.setVisibility(View.GONE);
+			mRecorderVoiceImg.setVisibility(View.INVISIBLE);
 			mRecorderHintTv.setVisibility(View.VISIBLE);
 			
 			mRecorderIconImg.setImageResource(R.drawable.recorder_voice_too_short);
@@ -102,7 +103,7 @@ public class RecorderDialogManager {
 	 */
 	public void updateVoiceLevle(int level){
 		if (mRecorderDialog != null && mRecorderDialog.isShowing()){
-			int resId = mContext.getResources().getIdentifier("recorder_level" + level, 
+			int resId = mContext.getResources().getIdentifier("record_level" + level, 
 					"drawable", mContext.getPackageName());
 			mRecorderVoiceImg.setImageResource(resId);
 		}

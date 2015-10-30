@@ -9,6 +9,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.text.TextUtils;
 import android.util.Log;
 
 public class RecorderPlayerManager implements MediaPlayerImpl, 
@@ -49,6 +50,10 @@ public class RecorderPlayerManager implements MediaPlayerImpl,
 	@Override
 	public void play(String filePath) {
 		Log.i(TAG, "start to Play sound, filePath:" + filePath);
+		if (TextUtils.isEmpty(filePath)){
+			return ;
+		}
+		
 		if (mMediaPlayer == null){
 			mMediaPlayer = new MediaPlayer();
 		} else {
@@ -76,6 +81,13 @@ public class RecorderPlayerManager implements MediaPlayerImpl,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean isPlaying(){
+		if (mMediaPlayer != null && mMediaPlayer.isPlaying()){
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -123,10 +135,9 @@ public class RecorderPlayerManager implements MediaPlayerImpl,
 		if (mMediaPlayer != null){
 			mMediaPlayer.reset();
 		}
+		if (mListener != null){
+			mListener.onError(what);
+		}
 		return false;
 	}
-
-	
-	
-
 }

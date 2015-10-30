@@ -1,5 +1,7 @@
 package com.tcl.wechat.view;
 
+import java.io.File;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
@@ -12,9 +14,11 @@ import com.tcl.wechat.R;
 import com.tcl.wechat.action.recorder.Recorder;
 import com.tcl.wechat.action.recorder.RecorderAudioManager;
 import com.tcl.wechat.action.recorder.RecorderDialogManager;
+import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPrepareCompletedListener;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
-import com.tcl.wechat.modle.data.DataFileTools;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.utils.DataFileTools;
 
 /**
  * 录音按钮
@@ -183,7 +187,9 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 				mAudioManager.release();
 				
 				if (mListener != null){
-					mListener.onCompleted(new Recorder(mAudioManager.getCurrentPath(),mRecorderTime));
+					File file = new File(mAudioManager.getCurrentPath());
+					int duration = (int)(Math.ceil(RecorderAudioManager.getDuration(file) / 1000.0 ));
+					mListener.onCompleted(new Recorder(mAudioManager.getCurrentPath(), duration, file.length()));
 				}
 			} else if (mCurrentState == STATE_WANT_TO_CANCEL){
 				
@@ -207,6 +213,7 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 		bReady = false;
 		bRecording = false;
 		mRecorderTime = 0;
+		mHandler.removeMessages(MSG_VOICE_CHANGED);
 		changeState(STATE_NORMAL);
 	}
 
@@ -242,6 +249,10 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 				setBackgroundResource(R.drawable.msg_sound_reply_pressed);
 				if (bRecording){
 					mDialogManager.recording();
+					if (RecorderPlayerManager.getInstance().isPlaying()){
+						//暂停正在播放的音频文件
+						RecorderPlayerManager.getInstance().stop();
+					}
 				}
 				break;
 				

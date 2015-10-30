@@ -9,7 +9,7 @@ package com.tcl.wechat.xmpp;
 
 import org.jivesoftware.smack.packet.IQ;
 
-import com.tcl.wechat.modle.WeiNotice;
+import com.tcl.wechat.model.WeiNotice;
 
 /**
  * @ClassName: WeiNoticegResultIQ

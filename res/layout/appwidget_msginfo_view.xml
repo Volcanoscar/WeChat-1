@@ -40,8 +40,8 @@
         <!-- 图像显示控件 -->
         <ImageView 
             android:id="@+id/img_imagemsg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="240dp"
+            android:layout_height="190dp"
             android:layout_centerVertical="true"
             android:contentDescription="@string/contentDesc"
             android:background="@drawable/message_location_view_bg"

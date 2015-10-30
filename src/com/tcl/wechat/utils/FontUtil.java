@@ -7,11 +7,6 @@ public class FontUtil {
 	
 	private Context mContext;
 	
-	private FontUtil() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
 	public FontUtil(Context mContext) {
 		super();
 		this.mContext = mContext;

@@ -84,15 +84,14 @@ public class WeiXinLoginReceiver extends BroadcastReceiver {
 			editer.putString("localip", curIp);
 			final HashMap<String, String> hashMap = new HashMap<String, String>();
 			hashMap.put("deviceid",SystemInfoUtil.getDeviceId());
-			hashMap.put("lanip",curIp);
+			hashMap.put("lanip", curIp);
 			hashMap.put("messageboxid", "0000000000000000");
-			hashMap.put("mac",SystemInfoUtil.getMacAddr());
+			hashMap.put("mac", SystemInfoUtil.getLocalMacAddress());
 			hashMap.put("version", SystemInfoUtil.getVersionName());
 			new WeiXmppCommand(EventType.TYPE_REPORT_DEVICEINFO, hashMap, mListener).execute();
 		}
 	}
 	
-
 	private XmppEventListener mListener = new XmppEventListener() {
 		
 		@SuppressWarnings("unchecked")
