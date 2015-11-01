@@ -68,5 +68,8 @@
     <string name="cut">剪切</string>
     <string name="selectall">全选</string>
     <string name="no_message">no message !</string>
+    <string name="save_image">正在保存图片&#160;</string>
+    <string name="save_image_hint">图片已保存至%s</string>
+    <string name="save_image_failed">图片保存失败!</string>
     
 </resources>

@@ -37,19 +37,18 @@
 		            android:textSize="22sp"
 		            android:rotation="-2"/>
 	        </FrameLayout>
-            <TextView 
-	            android:id="@+id/tv_unread_msg_hint"
-	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content"
-	            android:layout_marginRight="@dimen/dp_20"
-	            android:layout_marginBottom="@dimen/dp_10"
-	            android:gravity="right"
-	            android:text="@string/page_Indicator"
-	            android:textSize="22sp"
-	            android:textColor="@color/black"
-	            android:visibility="gone"/>
         </LinearLayout>
-        
+       	<TextView 
+            android:id="@+id/tv_unread_msg_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp_70"
+            android:layout_below="@id/layout_familboard_msg"
+            android:gravity="right"
+            android:text="@string/page_Indicator"
+            android:textSize="22sp"
+            android:textColor="@color/black"
+            android:visibility="gone"/>
              
 	    <Button 
 	    	android:id="@+id/btn_familyborad_replay"
@@ -67,7 +66,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
 	        android:layout_below="@id/layout_familboard_msg"
-	        android:layout_marginTop="@dimen/dp_25"
+	        android:layout_marginTop="@dimen/dp_35"
 	        android:text=""
 	        android:textColor="@color/gray"
 	        android:textSize="18sp"

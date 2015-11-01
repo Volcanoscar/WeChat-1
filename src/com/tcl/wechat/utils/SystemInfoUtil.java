@@ -80,7 +80,7 @@ public class SystemInfoUtil {
 		FileInputStream wlanFis = null;
 		FileInputStream ethFis = null;
 		try{
-			String path="sys/class/net/wlan0/address";  
+			String path = "sys/class/net/wlan0/address";  
 			if((new File(path)).exists()){
 				wlanFis = new FileInputStream(path);  
 				byte[] buffer = new byte[8192];  
@@ -114,6 +114,7 @@ public class SystemInfoUtil {
 		}
 		return macAddr.trim();  
 	}
+	
 	
 	/**
 	 * 获取本地IP地址

@@ -36,10 +36,6 @@ public class WeiRemoteBindProvider implements IQProvider {
 					parser.next();		
 					String err = parser.getText();
 					iq.setErrorcode(err);
-				}else if (parser.getName().equals("memberid")){
-					parser.next();		
-					String memberid = parser.getText();
-//					TODO bindUser.setMemberId(memberid);
 				}else if (parser.getName().equals("openid")){
 					parser.next();		
 					String openid = parser.getText();
@@ -52,17 +48,10 @@ public class WeiRemoteBindProvider implements IQProvider {
 					parser.next();		
 					String sex = parser.getText();
 					bindUser.setSex(sex);
-					Log.d("WeiRemoteBindProvider", "sex"+sex);
 				}else if (parser.getName().equals("headimgurl")){
 					parser.next();		
 					String headimgurl = parser.getText();
 					bindUser.setHeadImageUrl(headimgurl);  
-					Log.d("WeiRemoteBindProvider", "headimgurl"+headimgurl);
-				}else if (parser.getName().equals("reply")){
-					parser.next();		
-					String reply = parser.getText();
-					bindUser.setReply(reply);
-					Log.d("WeiRemoteBindProvider", "reply"+reply);
 				}
 			} else if (eventType == XmlPullParser.END_TAG) {
 				if (parser.getName().equals("remotebind")) {

@@ -359,7 +359,8 @@ public class WeiXmppManager {
 							String deviceid_Mac = deviceid + macAddress;
 							String content = "<addmaindevice xmlns=\"tcl:hc:login\">"
 									+ "<deviceid>"
-									+ deviceid_Mac
+									//+ deviceid_Mac
+									+ deviceid
 									+ "</deviceid>"
 									+ "<password>"
 									+ password

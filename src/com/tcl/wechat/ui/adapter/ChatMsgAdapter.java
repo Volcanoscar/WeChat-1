@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
@@ -40,6 +41,7 @@ import com.tcl.wechat.R;
 import com.tcl.wechat.action.recorder.RecorderAudioManager;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.common.IConstant.ChatMsgRource;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.controller.WeiXinMsgManager;
 import com.tcl.wechat.database.WeiMsgRecordDao;
@@ -92,8 +94,6 @@ public class ChatMsgAdapter extends BaseAdapter{
 	private int mMinItemWidth ;
 	private int mMaxItemWidth;
 	
-	private boolean isUpload = false;
-	
 	public ChatMsgAdapter(Context context, BindUser bindUser, LinkedList<WeiXinMsgRecorder> recorders) {
 		super();
 		this.mContext = context;
@@ -112,10 +112,6 @@ public class ChatMsgAdapter extends BaseAdapter{
 		this.mAllRecorders = recorders;
 	}
 	
-	public void setUpload(boolean isUpload) {
-		this.isUpload = isUpload;
-	}
-
 	@Override
 	public int getCount() {
 		if (mBindUser == null || mAllRecorders == null ||
@@ -139,7 +135,10 @@ public class ChatMsgAdapter extends BaseAdapter{
 	@Override
 	public int getItemViewType(int position) {
 		WeiXinMsgRecorder recorder = mAllRecorders.get(position);
-		return recorder.isReceived() ? 1 : 0;
+		if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())) {
+			return 0; //接收
+		} 
+		return 1; //发送
 	}
 	
 	@Override
@@ -172,17 +171,28 @@ public class ChatMsgAdapter extends BaseAdapter{
 		View itemView = null;
 		String msgType = recorder.getMsgtype();
 		if (ChatMsgType.TEXT.equals(msgType)){
+			//文本消息显示控件
 			itemView = setupTextMsgView(recorder);
+			
 		} else if (ChatMsgType.IMAGE.equals(msgType)){
+			//图片消息显示控件
 			itemView = setupImageMsgView(recorder);
+			
 		} else if (ChatMsgType.VOICE.equals(msgType)) {
+			//音频消息显示控件
 			itemView = setupVoiceMsgView(recorder);
+			
 		} else if (ChatMsgType.VIDEO.equals(msgType) ||
 				ChatMsgType.SHORTVIDEO.equals(msgType)){
+			//视频消息显示控件
 			itemView = setupVideoMsgView(recorder);
+			
 		} else if (ChatMsgType.LOCATION.equals(msgType)){
+			//地理位置消息显示控件
 			itemView = setupLocationMsgView(recorder);
+			
 		} else if (ChatMsgType.LINK.equals(msgType)){
+			//链接消息显示控件
 			itemView = setupLinkMsgView(recorder);
 		}
 		
@@ -200,7 +210,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 			/**
 			 * 长按事件 复制 + 删除
 			 */
-			if (recorder.isReceived()){
+			if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 				// 0 是收到的消息，1是发送的消息
 				itemView.setOnLongClickListener(new popAction(convertView, position, 0));
 			} else {
@@ -217,7 +227,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 	 */
 	private View inflateConvertView(WeiXinMsgRecorder recorder){
 		View convertView = null;
-		if (recorder.isReceived()){
+		if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 			convertView = mInflater.inflate(R.layout.chat_msg_receive_item, null);
 		} else {
 			convertView = mInflater.inflate(R.layout.chat_msg_send_item, null);
@@ -237,7 +247,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 	 */
 	private View setupTextMsgView(WeiXinMsgRecorder recorder){
 		View mMsgView = null;
-		if (recorder.isReceived()){
+		if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 			mMsgView = mInflater.inflate(R.layout.layout_chat_text_leftview, null);
 		} else {
 			mMsgView = mInflater.inflate(R.layout.layout_chat_text_rightview, null);
@@ -270,8 +280,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 		//	mMsgView = mInflater.inflate(R.layout.layout_chat_image_rightview, null);
 		//}
 		ChatMsgImageView mChatMsgView = (ChatMsgImageView) mMsgView.findViewById(R.id.img_msg_imageview);
-		mChatMsgView.setUploadImageFlag(isUpload);
-		mChatMsgView.loadImage(recorder);
+		mChatMsgView.setBitmapImage(recorder);
 		return mMsgView;
 	}
 	
@@ -287,12 +296,12 @@ public class ChatMsgAdapter extends BaseAdapter{
 		if (!TextUtils.isEmpty(recorder.getFileName())){
 			File file = new File(recorder.getFileName());
 			if (file != null && file.exists()){
-				duration = (int)(Math.ceil(RecorderAudioManager.getDuration(file) / 1000.0 ));
+				duration = (int)(Math.round(RecorderAudioManager.getDuration(file) / 1000.0 ));
 			}
 		}
 		Log.i(TAG, "duration:" + duration);
 		View mRecordView = null;
-		if (recorder.isReceived()){
+		if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 			mRecordView = mInflater.inflate(R.layout.layout_chat_voice_leftview, null);
 		} else {
 			mRecordView = mInflater.inflate(R.layout.layout_chat_voice_rightview, null);
@@ -304,6 +313,12 @@ public class ChatMsgAdapter extends BaseAdapter{
 			lp.width = CHAT_VIEW_WIDTH;
 		}
 		TextView mMsgTime = (TextView) mRecordView.findViewById(R.id.tv_chat_recorder_time);
+		
+		if (!"2".equals(recorder.getReaded())) {
+			Drawable unPlayFlag = mContext.getResources().getDrawable(R.drawable.unread_flag);
+			unPlayFlag.setBounds(0, 0, 10, 10);
+			mMsgTime.setCompoundDrawables(null, unPlayFlag, null, null);
+		}
 		mMsgTime.setText(duration + "\"");
 		return mRecordView;
 	}
@@ -395,14 +410,17 @@ public class ChatMsgAdapter extends BaseAdapter{
 				return ;
 			}
 			
-			resetPlayAnim(recorder.isReceived());
 			
 			String msgType = recorder.getMsgtype();
 			if (ChatMsgType.VOICE.equals(msgType)){
 				
+				//更新状态
+				WeiMsgRecordDao.getInstance().updatePlayState(recorder.getMsgid());
+				((TextView)mView.findViewById(R.id.tv_chat_recorder_time)).setCompoundDrawables(null, null, null, null);
+
 				if (mAudioManager.isPlaying()){
+					resetPlayAnim(!ChatMsgRource.RECEIVEED.equals(recorder.getReceived()));
 					mAudioManager.stop();
-					return ;
 				}
 				
 				//播放音频
@@ -411,25 +429,26 @@ public class ChatMsgAdapter extends BaseAdapter{
 					Log.e(TAG, "filePath is NULL!!");
 					return ;
 				}
+				
 				mAudioManager.play(filePath);
 				mAudioManager.setPlayCompletedListener(new AudioPlayCompletedListener() {
 					
 					@Override
 					public void onError(int errorcode) {
 						// TODO Auto-generated method stub
-						resetPlayAnim(recorder.isReceived());
+						resetPlayAnim(ChatMsgRource.RECEIVEED.equals(recorder.getReceived()));
 					}
 					
 					@Override
 					public void onCompleted() {
 						// TODO Auto-generated method stub
-						resetPlayAnim(recorder.isReceived());
+						resetPlayAnim(ChatMsgRource.RECEIVEED.equals(recorder.getReceived()));
 					}
 				});
 				
 				//播放动画
 				mPlaySoundAnimView = mView.findViewById(R.id.view_chat_recorder_info);
-				if (recorder.isReceived()){
+				if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 					mPlaySoundAnimView.setBackgroundResource(R.drawable.play_sound_left_anim);
 				} else {
 					mPlaySoundAnimView.setBackgroundResource(R.drawable.play_sound_right_anim);
@@ -438,6 +457,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 				anim.start();
 			} else if (ChatMsgType.VIDEO.equals(msgType) 
 					|| ChatMsgType.SHORTVIDEO.equals(msgType)){
+				WeiMsgRecordDao.getInstance().updatePlayState(recorder.getMsgid());
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				String fileName = DataFileTools.getInstance().getVideoFilePath(recorder.getMediaid());
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

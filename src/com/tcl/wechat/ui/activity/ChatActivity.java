@@ -118,12 +118,7 @@ public class ChatActivity extends Activity {
 	/**
 	 * 聊天记录
 	 */
-	private LinkedList<WeiXinMsgRecorder> mALlUserRecorders;
-	
-	/**
-	 * 聊天记录
-	 */
-	private HashMap<String, WeiXinMsgRecorder> mAllUserRecorderMap;
+	private LinkedList<WeiXinMsgRecorder> mAllUserRecorders;
 	
 	/**
 	 * 静态表情列表
@@ -156,8 +151,7 @@ public class ChatActivity extends Activity {
 		mContext = ChatActivity.this;
 		mRecordDao = WeiMsgRecordDao.getInstance();
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
-		mALlUserRecorders = new LinkedList<WeiXinMsgRecorder>();
-		mAllUserRecorderMap = new HashMap<String, WeiXinMsgRecorder>();
+		mAllUserRecorders = new LinkedList<WeiXinMsgRecorder>();
 		mStaticFacesList = new ArrayList<String>();
 		
 		initData();
@@ -170,23 +164,6 @@ public class ChatActivity extends Activity {
 		super.onResume();
 		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		}
-	}
-	
-	/**
-	 * 添加历史记录数据到LinkList
-	 * @param recorders
-	 */
-	private void addHistoryData(ArrayList<WeiXinMsgRecorder> recorders){
-		int size = recorders.size();
-		for (int i = 0; i < size; i++) {
-			WeiXinMsgRecorder recorder = recorders.get(i);
-			if (!recorder.getOpenid().equals(mSysBindUser.getOpenId())){
-				recorder.setReceived(true);
-			} else {
-				recorder.setReceived(false);
-			}
-			mALlUserRecorders.addFirst(recorder);
 		}
 	}
 	
@@ -277,25 +254,12 @@ public class ChatActivity extends Activity {
 		Log.d(TAG, "PageCount:" + mPageCount);
 		
 		//1、先读取最新的15条历史记录，之后下拉刷新数据
-		//mALlUserRecorders = WeiMsgRecordDao.getInstance().getSystmAndUserRecorder(
+		//mAllUserRecorders = WeiMsgRecordDao.getInstance().getSystmAndUserRecorder(
         //				mBindUser.getOpenId(), mSysBindUser.getOpenId());
-		ArrayList<WeiXinMsgRecorder> recorders = mRecordDao.getUserRecorder(mCurPageIndex,
+		LinkedList<WeiXinMsgRecorder> recorders = mRecordDao.getUserRecorder(mCurPageIndex,
 				mBindUser.getOpenId());
-		addHistoryData(recorders);
 		
-		if (mALlUserRecorders != null){
-			int size = mALlUserRecorders.size();
-			Log.i(TAG, "Recorder size:" + size);
-			
-			for (WeiXinMsgRecorder recorder : mALlUserRecorders) {
-				if (recorder.getOpenid().equals(mBindUser.getOpenId())){
-					recorder.setReceived(true);
-				} else {
-					recorder.setReceived(false);
-				}
-				mAllUserRecorderMap.put(recorder.getMsgid(), recorder);
-			}
-		}
+		mAllUserRecorders.addAll(0, recorders);
 		
 		//静态表情初始化 
 		//TODO 表情后续要优化， 启动表情的时候再去加载
@@ -324,10 +288,10 @@ public class ChatActivity extends Activity {
 		
 		
 		//数据为空，则不再显示
-		if (mALlUserRecorders != null && !mALlUserRecorders.isEmpty()){
-			mAdapter = new ChatMsgAdapter(mContext, mBindUser, mALlUserRecorders);
+		if (mAllUserRecorders != null && !mAllUserRecorders.isEmpty()){
+			mAdapter = new ChatMsgAdapter(mContext, mBindUser, mAllUserRecorders);
 			mChatListView.setAdapter(mAdapter);
-			mChatListView.setSelection(mALlUserRecorders.size() - 1);
+			mChatListView.setSelection(mAllUserRecorders.size() - 1);
 		}
 		
 		//表情栏目
@@ -486,38 +450,33 @@ public class ChatActivity extends Activity {
 		@Override
 		public void onRefresh() {
 			// TODO Auto-generated method stub
-			new AsyncTask<Void, Void, Integer>(){
+			new AsyncTask<Void, Void, LinkedList<WeiXinMsgRecorder>>(){
 
 				@Override
-				protected Integer doInBackground(Void... params) {
+				protected LinkedList<WeiXinMsgRecorder> doInBackground(Void... params) {
 					mCurPageIndex++;
 					if (mCurPageIndex < mPageCount){
-						ArrayList<WeiXinMsgRecorder> recorders = mRecordDao.getUserRecorder(mCurPageIndex, 
-								mBindUser.getOpenId());
-						Log.d(TAG, "load More Data:" + recorders);
-						if (recorders != null){
-							addHistoryData(recorders);
-						}
-						return recorders == null ? 0 : recorders.size();
+						return mRecordDao.getUserRecorder(mCurPageIndex, mBindUser.getOpenId());
 					}
-					return 0;
+					return null;
 				}
-				protected void onPostExecute(final Integer result) {
+				protected void onPostExecute(final LinkedList<WeiXinMsgRecorder> result) {
 					mChatListView.onRefreshComplete();
 					mChatListView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_DISABLED);
-					Log.i(TAG, "result:" + result);
-					if (result > 0){
-						mAdapter.setData(mALlUserRecorders);
+					
+					Log.d(TAG, "load More Data:" + result);
+					if (result != null && result.size() > 0){
+						mAllUserRecorders.addAll(0, result);
+						mAdapter.setData(mAllUserRecorders);
 						mAdapter.notifyDataSetChanged();
 						mChatListView.post(new Runnable() {
 							
 							@Override
 							public void run() {
-								mChatListView.setSelection(result/*mALlUserRecorders.size() - 15*/);
+								mChatListView.setSelection(result.size()/*mAllUserRecorders.size() - 15*/);
 							}
 						});
-					} 
-					
+					}
 				};
 			}.executeOnExecutor(WeApplication.getExecutorPool());
 		}
@@ -532,7 +491,6 @@ public class ChatActivity extends Activity {
 		@Override
 		public void startToRecorder() {
 			// TODO Auto-generated method stub
-			
 		}
 		
 		@Override
@@ -548,12 +506,16 @@ public class ChatActivity extends Activity {
 			WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
 			String messageId = UUID.randomUUID().toString();
 			msgRecorder.setOpenid(mSysBindUser.getOpenId());
+			msgRecorder.setToOpenid(mBindUser.getOpenId());
 			msgRecorder.setMsgid(messageId);
 			msgRecorder.setMsgtype(ChatMsgType.VOICE);
 			msgRecorder.setContent(recorder.getFileName());
 			msgRecorder.setFileName(recorder.getFileName());
-			mALlUserRecorders.add(msgRecorder);
-			mAllUserRecorderMap.put(messageId, msgRecorder);
+			msgRecorder.setCreatetime(df.format(new Date()));
+			msgRecorder.setReaded("1");
+			msgRecorder.setReceived("1");
+			mAllUserRecorders.addLast(msgRecorder);
+			mRecordDao.addRecorder(msgRecorder);
 			
 			//2、发送消息
 			WeixinMsgInfo weixinMsgInfo = new WeixinMsgInfo();
@@ -582,8 +544,7 @@ public class ChatActivity extends Activity {
 			}
 			
 			if (recorder.getOpenid().equals(mBindUser.getOpenId())) {
-				recorder.setReceived(true);
-				mALlUserRecorders.add(recorder);
+				mAllUserRecorders.addLast(recorder);
 				update();
 			}
 		}
@@ -621,7 +582,7 @@ public class ChatActivity extends Activity {
 	 */
 	private void update(){
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mALlUserRecorders.size() -1);
+		mChatListView.setSelection(mAllUserRecorders.size() -1);
 	}
 	
 	/**
@@ -637,10 +598,13 @@ public class ChatActivity extends Activity {
 		String msgid = UUID.randomUUID().toString();
 		WeiXinMsgRecorder recorder = new WeiXinMsgRecorder();
 		recorder.setOpenid(mSysBindUser.getOpenId());
+		recorder.setToOpenid(mBindUser.getOpenId());
 		recorder.setMsgtype("text");
 		recorder.setMsgid(msgid);
 		recorder.setContent(content);
 		recorder.setCreatetime(df.format(new Date()));
+		recorder.setReaded("1");
+		recorder.setReceived("1");
 		
 		Log.i(TAG, "msgReply：" + recorder.toString());
 		
@@ -648,12 +612,12 @@ public class ChatActivity extends Activity {
 		reply(recorder);
 		
 		//2、保存
-		mRecordDao.addRecorder(recorder, mBindUser.getOpenId());
+		mRecordDao.addRecorder(recorder);
 		
 		//3、更新
-		mALlUserRecorders.add(recorder);
+		mAllUserRecorders.addLast(recorder);
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mALlUserRecorders.size() - 1);
+		mChatListView.setSelection(mAllUserRecorders.size() - 1);
 		mChatMsgEditText.setText("");
 	}
 	
@@ -721,35 +685,19 @@ public class ChatActivity extends Activity {
 		}
 		Log.i(TAG, "fileName:" + fileName);
 		
-		//1、更新数据库  ---后续要判断图片发送的状态，比如发送一半断网，取消发送等等情况。
 		WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
 		String messageId = UUID.randomUUID().toString();//生成msgid
 		msgRecorder.setOpenid(mSysBindUser.getOpenId());
+		msgRecorder.setToOpenid(mBindUser.getOpenId());
 		msgRecorder.setMsgid(messageId);
 		msgRecorder.setMsgtype(ChatMsgType.IMAGE);
 		msgRecorder.setFileName(fileName);
 		msgRecorder.setCreatetime(DateTimeUtil.getNowDateTime().toString());
-		msgRecorder.setReceived(false);
-		mAllUserRecorderMap.put(messageId, msgRecorder);
-		mALlUserRecorders.add(msgRecorder);
-		mRecordDao.addRecorder(msgRecorder, mBindUser.getOpenId());
-		
-		//2、发送消息
-		Recorder recorder = new Recorder();
-		recorder.setFileName(fileName);
-		
-		WeixinMsgInfo weixinMsgInfo = new WeixinMsgInfo();
-		weixinMsgInfo.setFromusername(mSysBindUser.getOpenId());
-		weixinMsgInfo.setTousername(mBindUser.getOpenId());
-		weixinMsgInfo.setMsgtype(ChatMsgType.IMAGE);
-		weixinMsgInfo.setRecorder(recorder);
-		weixinMsgInfo.setMessageid(messageId);
-		mWeiXinMsgManager.sendWeiXinMsg(weixinMsgInfo, mListener);
-		
-		//3、更新列表
-		mAdapter.setUpload(true);
+		msgRecorder.setReaded("1");
+		msgRecorder.setReceived("1");
+		mAllUserRecorders.addLast(msgRecorder);
+		mRecordDao.addRecorder(msgRecorder);
 		update();
-		
 	}
 	
 	@Override
@@ -868,27 +816,27 @@ public class ChatActivity extends Activity {
 				if (reason == EventReason.REASON_COMMON_SUCCESS){
 					ReplyResult result = (ReplyResult) event.getEventData();
 					String msgid = result.getMsgid();
-					WeiXinMsgRecorder recorder = mAllUserRecorderMap.get(msgid);
+//					WeiXinMsgRecorder recorder = mRecordDao.getRecorder(msgid);
 					String url = result.getResult();
 					if (!TextUtils.isEmpty(url)){
 						Log.i(TAG, "Result url:" + url);
 						//在此要判断是否添加成功
 						mRecordDao.updateRecorderUrl(msgid, result.getResult());
-						recorder.setUrl(url);
-						
-						int size = mALlUserRecorders.size();
-						mALlUserRecorders.set(size - 1, recorder);
-						runOnUiThread(new Runnable() {
-							
-							@Override
-							public void run() {
-								// TODO Auto-generated method stub
-								mAdapter.setUpload(false);
-								mAdapter.setData(mALlUserRecorders);
-								mAdapter.notifyDataSetChanged();
-								mChatListView.setSelection(mALlUserRecorders.size() -1);
-							}
-						});
+//						recorder.setUrl(url);
+//						
+//						int size = mAllUserRecorders.size();
+//						mAllUserRecorders.set(size - 1, recorder);
+//						runOnUiThread(new Runnable() {
+//							
+//							@Override
+//							public void run() {
+//								// TODO Auto-generated method stub
+//								mAdapter.setUpload(false);
+//								mAdapter.setData(mAllUserRecorders);
+//								mAdapter.notifyDataSetChanged();
+//								mChatListView.setSelection(mAllUserRecorders.size() -1);
+//							}
+//						});
 					}
 				}
 				break;

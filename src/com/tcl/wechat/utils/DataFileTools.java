@@ -318,6 +318,18 @@ public class DataFileTools {
     	return null;
     }
     
+    public static boolean fileExist(String dir, String fileName){
+    	File dirFile = new File(dir);
+    	if (dirFile == null || !dirFile.exists()) {
+    		return false;
+    	}
+    	File file = new File(dirFile, fileName);
+    	if (file != null && file.exists()) {
+    		return true;
+    	}
+    	return false;
+    }
+    
     /**
      * 获取缓存中图片的名称
      * @note 该名称有Volley开源架构生成
@@ -366,12 +378,22 @@ public class DataFileTools {
     		return ;
     	}
     	String cachePath = getRecordImagePath();
-    	String fileName = getCacheImageFileName(path);
-    	Log.i(TAG, "fileName:" + fileName);
-    	File file = new File(cachePath, fileName);
-    	if (file != null){
-    		Log.i(TAG, "file.exists():" + file.exists());
-    		file.delete();
+    	
+    	//大图原图
+    	String fileName1 = getCacheImageFileName(path);
+    	Log.i(TAG, "fileName:" + fileName1);
+    	File file1 = new File(cachePath, fileName1);
+    	if (file1 != null){
+    		Log.i(TAG, "file.exists():" + file1.exists());
+    		file1.delete();
+    	}
+    	//缩略图
+    	String fileName2 = getCacheImageFileName(path, 400,400);
+    	Log.i(TAG, "fileName:" + fileName2);
+    	File file2 = new File(cachePath, fileName2);
+    	if (file2 != null){
+    		Log.i(TAG, "file.exists():" + file2.exists());
+    		file2.delete();
     	}
     }
     

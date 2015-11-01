@@ -69,13 +69,13 @@ public class MsgBoardGroupView extends LinearLayout{
 		mAllRecorderInfos = new LinkedList<RecorderInfo>();
 		
 		//加载数据
-		loadMsgBoardData();
+		//loadMsgBoardData();
 	}
 	
 	/**
 	 * 加载用户聊天数据
 	 */
-	private void loadMsgBoardData(){
+	public void loadMsgBoardData(){
 		/**
 		 * 获取所有聊天用户的   最后一条  聊天信息
 		 */
@@ -96,7 +96,7 @@ public class MsgBoardGroupView extends LinearLayout{
 				for (int i = 0; i < size; i++) {
 					WeiXinMsgRecorder recorder = lastRecorders.get(i);
 					BindUser bindUser = WeiUserDao.getInstance().getUser(recorder.getOpenid());
-					mAllRecorderInfos.addFirst( new RecorderInfo(bindUser, recorder));
+					mAllRecorderInfos.addFirst(new RecorderInfo(bindUser, recorder));
 				}
 				return null;
 			};

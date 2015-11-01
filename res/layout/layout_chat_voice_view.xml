@@ -4,22 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
     
-    <View 
-	    android:id="@+id/view_chat_anim_view"
-	    android:layout_width="@dimen/dp_40"
-	    android:layout_height="@dimen/dp_40"
-	    android:layout_centerInParent="true"
-	    android:background="@drawable/voice_left"/>
-    
     <ImageButton
     	android:id="@+id/imgbtn_msgboard_voice"
     	android:layout_width="match_parent"
-    	android:layout_height="wrap_content"
+    	android:layout_height="@dimen/dp_220"
     	android:layout_marginLeft="@dimen/dp_20"
     	android:layout_marginRight="@dimen/dp_20"
     	android:layout_centerInParent="true"
-    	android:background="@drawable/msg_sound_selector"
+    	android:background="@drawable/message_voice_bg"
     	android:contentDescription="@string/contentDesc"/>
+    
+    <View 
+	    android:id="@+id/view_chat_anim_view"
+	    android:layout_width="@dimen/dp_60"
+	    android:layout_height="@dimen/dp_60"
+	    android:layout_centerInParent="true"
+	    android:background="@drawable/v_left_anim3"/>
     
     <TextView 
         android:id="@+id/tv_voice_palytime"
@@ -28,6 +28,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_below="@id/imgbtn_msgboard_voice"
         android:layout_centerHorizontal="true"
-        android:textSize="18sp"/>
+        android:textSize="18sp"
+        android:textColor="@color/black"/>
     
 </RelativeLayout>

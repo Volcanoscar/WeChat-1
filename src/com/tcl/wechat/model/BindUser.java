@@ -26,20 +26,12 @@ public class BindUser implements Parcelable{
 	 * 		比如：http://wx.qlogo.cn/mmopen/Vw948POqJQ8qP7qIhH4/0
 	 */
 	private String headImageUrl;//用户头像存储地址
-	private String newsNum;		//消息个数
-	/**
-	 * success 绑定成功，收到请求绑定
-	 * wait    等待服务器返回。
-	 * 		         默认是success
-	 */
-	private String status;
 	
 	/**
-	 * 服务器回复
-	 * 		disallow：不允许用户加入
-	 * 		allow：
+	 * true : 在线
+	 * false: 不在线
 	 */
-	private String reply;
+	private String status;
 	
 	@Override
 	public int describeContents() {
@@ -54,9 +46,7 @@ public class BindUser implements Parcelable{
 		dest.writeString(remarkName);
 		dest.writeString(sex);
 		dest.writeString(headImageUrl);
-		dest.writeString(newsNum);
 		dest.writeString(status);
-		dest.writeString(reply);
 	}
 	
 	public static Parcelable.Creator<BindUser> CREATOR = new Creator<BindUser>() {
@@ -87,23 +77,18 @@ public class BindUser implements Parcelable{
 		this.remarkName = source.readString();
 		this.sex = source.readString();
 		this.headImageUrl = source.readString();
-		this.newsNum = source.readString();
 		this.status = source.readString();
-		this.reply = source.readString();
 	}
 
 	public BindUser(String openId, String nickName, String remarkName,
-			String sex, String headImageUrl, String newsNum, String status,
-			String reply) {
+			String sex, String headImageUrl, String status) {
 		super();
 		this.openId = openId;
 		this.nickName = nickName;
 		this.remarkName = remarkName;
 		this.sex = sex;
 		this.headImageUrl = headImageUrl;
-		this.newsNum = newsNum;
 		this.status = status;
-		this.reply = reply;
 	}
 
 	public String getOpenId() {
@@ -146,14 +131,6 @@ public class BindUser implements Parcelable{
 		this.headImageUrl = headImageUrl;
 	}
 
-	public String getNewsNum() {
-		return newsNum;
-	}
-
-	public void setNewsNum(String newsNum) {
-		this.newsNum = newsNum;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -162,19 +139,10 @@ public class BindUser implements Parcelable{
 		this.status = status;
 	}
 
-	public String getReply() {
-		return reply;
-	}
-
-	public void setReply(String reply) {
-		this.reply = reply;
-	}
-
 	@Override
 	public String toString() {
 		return "BindUser [openId=" + openId + ", nickName=" + nickName
 				+ ", remarkName=" + remarkName + ", sex=" + sex
-				+ ", headImageUrl=" + headImageUrl + ", newsNum=" + newsNum
-				+ ", status=" + status + ", reply=" + reply + "]";
+				+ ", headImageUrl=" + headImageUrl + ", status=" + status + "]";
 	}
 }

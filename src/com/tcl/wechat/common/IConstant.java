@@ -141,6 +141,14 @@ public interface IConstant {
 	}
 	
 	/**
+	 * 消息来源
+	 */
+	public static final class ChatMsgRource{
+		public static final String RECEIVEED = "0";
+		public static final String SENDED = "1";
+	}
+	
+	/**
 	 * 微信消息类
 	 * @author rex.lei
 	 *

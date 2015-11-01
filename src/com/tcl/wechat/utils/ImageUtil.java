@@ -337,23 +337,29 @@ public class ImageUtil {
 	/**
 	 * 保存图片至本地
 	 * @param bitmap 图片Bitmap
-	 * @param fileName 文件路径
+	 * @param savaPath 文件路径
 	 * @return
 	 */
-	public boolean saveBitmap(Bitmap bitmap, String fileName){
-		if (TextUtils.isEmpty(fileName) || bitmap == null){
+	public boolean saveBitmap(Bitmap bitmap, String fileName, String savaPath){
+		if (TextUtils.isEmpty(savaPath) || bitmap == null){
 			return false;
 		}
 		
+		if (TextUtils.isEmpty(fileName)) {
+			fileName = System.currentTimeMillis() + "";
+		}
+		
 		boolean bRet = false;
-        File file = new File(DataFileTools.getInstance().getBindUserIconPath(fileName));
-        if(file.exists()){
-            file.delete();
+        File dir = new File(savaPath);
+        if(!dir.exists()){
+        	dir.mkdirs();
         }
+        File file = new File(dir, fileName + ".jpg");
+        
         FileOutputStream out = null;
         try{
             out = new FileOutputStream(file);
-            bRet = bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+            bRet = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

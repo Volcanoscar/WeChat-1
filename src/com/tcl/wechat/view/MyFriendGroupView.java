@@ -70,8 +70,7 @@ public class MyFriendGroupView extends LinearLayout {
 	/**
 	 * 轨迹，要根据移动的topMargn来确定
 	 */
-	private int[] track = new int[]{105, 120, 130, 90, 70};
-	
+	private int[] track = new int[]{110, 135, 160, 110, 75};
 	
 	private ActivityManager mActivityManager;
 	
@@ -98,7 +97,7 @@ public class MyFriendGroupView extends LinearLayout {
         loadBindUserData();
 	}
 	
-	public void loadBindUserData() {
+	private void loadBindUserData() {
 		// TODO Auto-generated method stub
 		new AsyncTask<Void, Void, Void>() {
 

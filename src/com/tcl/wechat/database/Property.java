@@ -14,9 +14,7 @@ public class Property {
 	public static final String COLUMN_REMARKNAME = "remarkname";
 	public static final String COLUMN_USERSEX = "sex";
 	public static final String COLUMN_HEADIMAGE_URL = "headimageurl";
-	public static final String COLUMN_NEWS_NUM = "newsnum";
 	public static final String COLUMN_STATUS = "status";
-	public static final String COLUMN_REPLY = "reply";
 	
 	/**
 	 * UserRecord数据库
@@ -37,9 +35,10 @@ public class Property {
 	public static final String COLUMN_THUMBMEDIAID = "thumbmediaid";
 	public static final String COLUMN_CREATE_TIME = "createtime";
 	public static final String COLUMN_READED = "readed";
-	public static final String COLUMN_FILENAME = "fileName";
-	public static final String COLUMN_FILESIZE = "fileSize";
-	public static final String COLUMN_FILETIME = "fileTime";
+	public static final String COLUMN_RECEIVED = "received";
+	public static final String COLUMN_FILENAME = "filename";
+	public static final String COLUMN_FILESIZE = "filesize";
+	public static final String COLUMN_FILETIME = "filetime";
 	
 	/**
 	 * AppInfo数据库
@@ -75,11 +74,9 @@ public class Property {
             Property.COLUMN_OPENID + " VACHAR(128)," +
             Property.COLUMN_NICKNAME + " VACHAR(128)," +
             Property.COLUMN_REMARKNAME+ " VACHAR(128)," +
-            Property.COLUMN_USERSEX + " VACHAR(64)," + 
+            Property.COLUMN_USERSEX + " VACHAR(32)," + 
             Property.COLUMN_HEADIMAGE_URL + " TEXT," +
-            Property.COLUMN_NEWS_NUM + " VACHAR(128)," +
-            Property.COLUMN_STATUS + " VACHAR(64)," +
-            Property.COLUMN_REPLY + " VACHAR(64)" + ")";
+            Property.COLUMN_STATUS + " VACHAR(64)" + ")";
 	
 	public static final String CREATE_TABLE_USERRECORD_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +
@@ -100,7 +97,8 @@ public class Property {
             Property.COLUMN_MDDIAID + " VACHAR(128)," +
             Property.COLUMN_THUMBMEDIAID + " TEXT," +
             Property.COLUMN_CREATE_TIME + " VACHAR(32)," +
-            Property.COLUMN_READED + " VACHAR(32)," +
+            Property.COLUMN_READED + " CHAR(1)," +
+            Property.COLUMN_RECEIVED+ " CHAR(1)," +
             Property.COLUMN_FILENAME + " TEXT," + 
             Property.COLUMN_FILESIZE + " INTEGER," +
             Property.COLUMN_FILETIME + " REAL" + ");" ;

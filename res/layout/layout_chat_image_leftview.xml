@@ -10,8 +10,7 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_gravity="center"
-	    android:minWidth="@dimen/dp_200"
-	    android:minHeight="@dimen/dp_200"
+	    android:scaleType="centerInside"
 	    android:maxWidth="@dimen/dp_400"
 	  	android:maxHeight="@dimen/dp_400"
 	  	android:adjustViewBounds="true"/>

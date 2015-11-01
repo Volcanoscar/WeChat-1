@@ -83,8 +83,19 @@ public class WeiXinMsgRecorder implements Parcelable {
 	/** 当msgtype是image、voice时，可以调用微信下载接口，下载缩略图*/
 	private String thumbmediaid;
 	
-	/** 判断当前是否已读*/
-	private String read;
+	/** 
+	 * 判断当前是否已读
+	 * "0" 未读
+	 * "1" 已读
+	 */
+	private String readed;
+	
+	/** 
+	 * 判断是否是接收消息
+	 * "0"：接收消息
+	 * "1"：发送消息
+	 */
+	private String received;
 	
 	/** 视频、音频、图片文件存储路径*/
 	private String fileName;
@@ -95,16 +106,11 @@ public class WeiXinMsgRecorder implements Parcelable {
 	/** 视频、音频文件时间长度*/
 	private String fileTime;
 	
-	/** 离线消息*/
+	/** 
+	 * 离线消息
+	 */
 	private String offlinemsg;
 	
-	/**
-	 * 消息来源
-	 * 	true：接收到的消息
-	 * 	false:发送出去的消息
-	 */
-	private boolean isReceived;
-
 	public WeiXinMsgRecorder() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -127,20 +133,20 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.createtime = source.readString();
 		this.mediaid = source.readString();
 		this.thumbmediaid = source.readString();
-		this.read = source.readString();
+		this.readed = source.readString();
+		this.received = source.readString();
 		this.fileName = source.readString();
 		this.fileSize = source.readString();
 		this.fileTime = source.readString();
 		this.offlinemsg = source.readString();
-		this.isReceived = (source.readByte() == 1) ? true : false;
 	}
 	
 	public WeiXinMsgRecorder(String openid, String toOpenid, String msgtype,
 			String msgid, String content, String url, String location_x,
 			String location_y, String label, String title, String description,
 			String format, String createtime, String mediaid,
-			String thumbmediaid, String read, String fileName, String fileSize,
-			String fileTime, String offlinemsg, boolean isReceived) {
+			String thumbmediaid, String readed, String received,
+			String fileName, String fileSize, String fileTime, String offlinemsg) {
 		super();
 		this.openid = openid;
 		this.toOpenid = toOpenid;
@@ -157,13 +163,14 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.createtime = createtime;
 		this.mediaid = mediaid;
 		this.thumbmediaid = thumbmediaid;
-		this.read = read;
+		this.readed = readed;
+		this.received = received;
 		this.fileName = fileName;
 		this.fileSize = fileSize;
 		this.fileTime = fileTime;
 		this.offlinemsg = offlinemsg;
-		this.isReceived = isReceived;
 	}
+
 	
 	public String getOpenid() {
 		return openid;
@@ -285,12 +292,20 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.thumbmediaid = thumbmediaid;
 	}
 
-	public String getRead() {
-		return read;
+	public String getReaded() {
+		return readed;
 	}
 
-	public void setRead(String read) {
-		this.read = read;
+	public void setReaded(String readed) {
+		this.readed = readed;
+	}
+
+	public String getReceived() {
+		return received;
+	}
+
+	public void setReceived(String received) {
+		this.received = received;
 	}
 
 	public String getFileName() {
@@ -325,15 +340,6 @@ public class WeiXinMsgRecorder implements Parcelable {
 		this.offlinemsg = offlinemsg;
 	}
 	
-	
-	public boolean isReceived() {
-		return isReceived;
-	}
-
-	public void setReceived(boolean isReceived) {
-		this.isReceived = isReceived;
-	}
-
 	@Override
 	public String toString() {
 		return "WeiXinMsgRecorder [openid=" + openid + ", toOpenid=" + toOpenid
@@ -343,9 +349,9 @@ public class WeiXinMsgRecorder implements Parcelable {
 				+ ", title=" + title + ", description=" + description
 				+ ", format=" + format + ", createtime=" + createtime
 				+ ", mediaid=" + mediaid + ", thumbmediaid=" + thumbmediaid
-				+ ", read=" + read + ", fileName=" + fileName + ", fileSize="
-				+ fileSize + ", fileTime=" + fileTime + ", offlinemsg="
-				+ offlinemsg + ", isReceived=" + isReceived + "]";
+				+ ", readed=" + readed + ", received=" + received
+				+ ", fileName=" + fileName + ", fileSize=" + fileSize
+				+ ", fileTime=" + fileTime + ", offlinemsg=" + offlinemsg + "]";
 	}
 
 	@Override
@@ -371,12 +377,12 @@ public class WeiXinMsgRecorder implements Parcelable {
 		dest.writeString(createtime);
 		dest.writeString(mediaid);
 		dest.writeString(thumbmediaid);
-		dest.writeString(read);
+		dest.writeString(readed );
+		dest.writeString(received);
 		dest.writeString(fileName);
 		dest.writeString(fileSize);
 		dest.writeString(fileTime);
 		dest.writeString(offlinemsg);
-		dest.writeByte((byte)(isReceived ? 1 : 0));
 	}
 	
 	public static Parcelable.Creator<WeiXinMsgRecorder> CREATOR = new Creator<WeiXinMsgRecorder>(){

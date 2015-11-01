@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="horizontal" >
     
     <FrameLayout 
         android:id="@+id/layout_chat_voice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_alignParentLeft="true"
+        android:layout_gravity="left|center_vertical"
         android:background="@drawable/chat_voice_left_selector">
         <View 
 	   	    android:id="@+id/view_chat_recorder_info"
@@ -19,14 +18,13 @@
 	   	    android:background="@drawable/voice_left"/>
     </FrameLayout>
     
-   	<TextView 
-   	    android:id="@+id/tv_chat_recorder_time"
-   	    android:layout_width="wrap_content"
-   	    android:layout_height="wrap_content"
-   	    android:layout_centerVertical="true"
-   	    android:gravity="center"
-   	    android:textColor="@color/gray"
-   	    android:textSize="18sp"
-   	    android:layout_toRightOf="@id/layout_chat_voice"/>
-
-</RelativeLayout>
+    <TextView 
+	    android:id="@+id/tv_chat_recorder_time"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_gravity="left|center_vertical"
+	    android:layout_marginLeft="@dimen/dp_10"
+	    android:gravity="center"
+	    android:textColor="@color/gray"
+	    android:textSize="18sp"/>
+</LinearLayout>

@@ -1,6 +1,7 @@
 package com.tcl.wechat.widget;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -191,6 +192,9 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			//播放音频
 			String fileName = mRecorder.getFileName();
 			if (!TextUtils.isEmpty(fileName)){
+				//更新播放状态
+				WeiMsgRecordDao.getInstance().updatePlayState(mRecorder.getMsgid());
+				//启动播放
 				mIntent = new Intent(android.content.Intent.ACTION_VIEW);
 				mIntent.setDataAndType(Uri.parse(fileName), "audio/amr");
 				mIntent.setComponent(new ComponentName("com.android.music", 
@@ -449,10 +453,11 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		if (!TextUtils.isEmpty(mRecorder.getFileName())){
 			File file = new File(mRecorder.getFileName());
 			if (file != null && file.exists()){
-				duration = (int)(Math.ceil(RecorderAudioManager.getDuration(file) / 1000.0 ));
+				new BigDecimal("2").setScale(0, BigDecimal.ROUND_HALF_UP);
+				duration = (int)(Math.round(RecorderAudioManager.getDuration(file) / 1000.0 ));
 			}
 		}
-		mRemoteViews.setTextViewText(R.id.msg_play_time, ((int)(Math.ceil(duration))) + "\"");
+		mRemoteViews.setTextViewText(R.id.msg_play_time, duration + "\"");
 	}
 	
 	/**

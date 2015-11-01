@@ -142,7 +142,6 @@ public class WeiUserDao {
 		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
 		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
 		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
-		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
 		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
 		if (db.insert(Property.TABLE_USER, null, values) != -1){
 			return true;
@@ -171,7 +170,6 @@ public class WeiUserDao {
 		try {
 			for (int i = 0; i < userList.size(); i++) {
 				BindUser bindUser = userList.get(i);
-				
 				//如果当前已经存在则直接更新即可
 				if (bindUserIsExist(bindUser.getOpenId())){
 					Log.e(TAG, "User already exist! openId = " + bindUser.getOpenId());
@@ -184,15 +182,16 @@ public class WeiUserDao {
 					}
 					continue;
 				}
+				//用户不存在，第一次添加状态为false
+				bindUser.setStatus("false");
+
 				ContentValues values = new ContentValues();
 				values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
 				values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
 				values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
 				values.put(Property.COLUMN_USERSEX, bindUser.getSex());
 				values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
-				values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
 				values.put(Property.COLUMN_STATUS, bindUser.getStatus());
-				values.put(Property.COLUMN_REPLY, bindUser.getReply());
 				if (db.insert(Property.TABLE_USER, null, values) != -1){
 					addedUserCnt ++;
 					bRet &= true;
@@ -236,9 +235,7 @@ public class WeiUserDao {
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 				cursor.close();
 			}
 		} catch (Exception e) {
@@ -263,9 +260,7 @@ public class WeiUserDao {
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 			cursor.close(); 
 		}
 		return user;
@@ -285,9 +280,7 @@ public class WeiUserDao {
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
-					cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 			cursor.close(); 
 		}
 		return user;
@@ -311,9 +304,7 @@ public class WeiUserDao {
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 					userList.add(user);
 				}
 				db.setTransactionSuccessful();
@@ -349,9 +340,7 @@ public class WeiUserDao {
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME)), 
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_USERSEX)),
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_HEADIMAGE_URL)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_NEWS_NUM)), 
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)),
-							cursor.getString(cursor.getColumnIndex(Property.COLUMN_REPLY)));
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 					userList.add(user);
 				}
 				db.setTransactionSuccessful();
@@ -448,73 +437,6 @@ public class WeiUserDao {
 	}
 
 	/**
-	 * 获取消息个数
-	 * @param openid
-	 * @return
-	 */
-	public int getNewsNum(String openid){
-		if (TextUtils.isEmpty(openid)){
-			return 0;
-		}
-		BindUser user = getUser(openid);
-		if (user != null){
-			String allNewsNum = user.getNewsNum();
-			if (allNewsNum != null){
-				return Integer.parseInt(allNewsNum);
-			}
-		}
-		return 0;
-	}
-	
-	
-	/**
-	 * 增加一条消息
-	 * @param openid
-	 * @return
-	 */
-	public boolean addOneNews(String openid){
-		if (bindUserIsExist(openid)){
-			BindUser user = getUser(openid);
-			return updateNewsNum(openid, increaseNewsNum(user.getNewsNum())) ;
-		}
-		return false;
-	}
-	
-	/**
-	 * 删除一条消息
-	 * @param openid
-	 * @return
-	 */
-	public boolean deleteOneNews(String openid){
-		if (bindUserIsExist(openid)){
-			BindUser user = getUser(openid);
-			return updateNewsNum(openid, reduceNewsNum(user.getNewsNum())) ;
-		}
-		return false;
-	}
-	
-	/**
-	 * 更新消息个数
-	 * @param openid
-	 * @param newsNum
-	 * @return
-	 */
-	public boolean updateNewsNum(String openid, String newsNum){
-		BindUser user = getUser(openid);
-		if (user != null){
-			SQLiteDatabase db = mDbHelper.getWritableDatabase();
-			ContentValues values = new ContentValues();
-			values.put(Property.COLUMN_NEWS_NUM, newsNum);
-			String whereClause = Property.COLUMN_OPENID + "=?";
-			String[] whereArgs = new String[]{openid};
-			if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){
-				return true;
-			}
-		}
-		return false ;
-	}
-	
-	/**
 	 * 获取状态
 	 * @param openid
 	 * @return
@@ -563,29 +485,6 @@ public class WeiUserDao {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * 消息数 + 1
-	 * @param newsNum
-	 */
-	private String increaseNewsNum(String newsNum){
-		if (TextUtils.isEmpty(newsNum)){
-			newsNum = "0";
-		}
-		return String.valueOf((Integer.valueOf(newsNum)+1));
-	}
-	
-	/**
-	 * 消息数 - 1
-	 * @param newsNum
-	 * @return
-	 */
-	private String reduceNewsNum(String newsNum){
-		if (TextUtils.isEmpty(newsNum) || Integer.valueOf(newsNum) <= 1){
-			newsNum = "0";
-		}
-		return String.valueOf((Integer.valueOf(newsNum) - 1));
 	}
 	
 	/**

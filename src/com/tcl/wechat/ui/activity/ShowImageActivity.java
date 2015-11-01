@@ -7,9 +7,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -19,12 +18,19 @@ import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.utils.DataFileTools;
+import com.tcl.wechat.utils.ImageUtil;
+import com.tcl.wechat.utils.MD5Util;
+import com.tcl.wechat.utils.ToastUtil;
 
 /**
  * 图片预览控件
@@ -35,8 +41,11 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 	
 	private static final String TAG = ShowImageActivity.class.getSimpleName();
 	
-	private ImageView imgv;  
-	private ProgressDialog mProgressDialog;
+	private RelativeLayout mLayout;
+	private LinearLayout mLinearLayout;
+	private ImageView mImageView;  
+	private ProgressDialog mDownloadProgressDialog;
+	private ProgressDialog mSaveProgressDialog;
 	  
     private PointF point0 = new PointF();  
     private PointF pointM = new PointF();  
@@ -56,14 +65,18 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
     private int displayWidth = 1920;  
     private int displayHeight = 1080;  
   
+    private int mDegree = 90;
     private float minScale = 0.5f;  
     private float maxScale = 10f;  
     private float currentScale = 1f;  
     private float oldDist;  
   
-    private Bitmap mBitmap;
     private int mImgWidth;  
     private int mImgHeight; 
+    
+    private String mFileName;
+    private Bitmap mBitmap;
+    
     
     @Override  
     protected void onCreate(Bundle arg0) {
@@ -89,17 +102,19 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 			return ;
 		}
 		
-		String fileName = bundle.getString("fileName");
-		Log.d(TAG, "fileName:" + fileName);
-		if (TextUtils.isEmpty(fileName)){
+		mFileName = bundle.getString("fileName");
+		Log.d(TAG, "fileName:" + mFileName);
+		if (TextUtils.isEmpty(mFileName)){
 			return ;
 		}
 		
-        imgv = (ImageView) findViewById(R.id.img_preview);  
-        imgv.setOnTouchListener(this);  
+		mLayout = (RelativeLayout) findViewById(R.id.layout_imagepreview);
+		mLinearLayout = (LinearLayout) findViewById(R.id.layout_imgfun);
+        mImageView = (ImageView) findViewById(R.id.img_preview);  
+        mImageView.setOnTouchListener(this);  
         
         // 显示进度条
-     	mProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
+        mDownloadProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
   
      	//方法一：直接从本地读取
         /*mBitmap = DataFileTools.getInstance().getChatImageIcon(fileName);  
@@ -108,56 +123,126 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
         }
         mImgWidth = mBitmap.getWidth();  
         mImgHeight = mBitmap.getHeight(); 
-        imgv.setImageBitmap(mBitmap);*/ 
+        mImageView.setImageBitmap(mBitmap);*/ 
         //方法二：加载本地图片（防止OOM）
-        //ImageLoader.getInstance().loadImage(fileName, imgv);
-        //ImageSize size = ImageLoader.getInstance().getImageViewWidth(imgv);
+        //ImageLoader.getInstance().loadImage(fileName, mImageView);
+        //ImageSize size = ImageLoader.getInstance().getImageViewWidth(mImageView);
         //mImgWidth = size.getWidth();  
         //mImgHeight = size.getHeight();
         
         //方法三：加载网络图片
-        WeApplication.getImageLoader().get(fileName, new ImageListener() {
+        WeApplication.getImageLoader().get(mFileName, new ImageListener() {
 			
 			@Override
 			public void onErrorResponse(VolleyError arg0) {
 				// TODO Auto-generated method stub
-				Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
-				mImgWidth = bitmap.getWidth();  
-		        mImgHeight = bitmap.getHeight(); 
-		        imgv.setImageBitmap(bitmap);
+				mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
+		        mImageView.setImageBitmap(mBitmap);
 			}
 			
 			@Override
 			public void onResponse(ImageContainer arg0, boolean arg1) {
 				// TODO Auto-generated method stub
 				mBitmap = arg0.getBitmap();
-				if (mBitmap != null){
-					Message message = Message.obtain();
-					mHandler.sendMessage(message);
+				if (mBitmap == null){
+					return ;
 				}
+				mDownloadProgressDialog.dismiss();
+				mImgWidth = mBitmap.getWidth();  
+		        mImgHeight = mBitmap.getHeight(); 
+		        Log.i(TAG, "mImgWidth:" + mImgWidth + ", mImgHeight:" + mImgHeight);
+		        mImageView.setImageBitmap(mBitmap);  
+		        minScale = getMinScale();  
+		        matrix.setScale(minScale, minScale);  
+		        center();  
+		        mImageView.setImageMatrix(matrix);  
 			}
 		}, 0, 0);
     }  
 	
 	/**
-	 * 通知显示imageview
+	 * 预览上一个图片
+	 * @param view
 	 */
-	private Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			mProgressDialog.dismiss();
-			mImgWidth = mBitmap.getWidth();  
-	        mImgHeight = mBitmap.getHeight(); 
-	        imgv.setImageBitmap(mBitmap);  
-	        minScale = getMinScale();  
-	        matrix.setScale(minScale, minScale);  
-	        center();  
-	        imgv.setImageMatrix(matrix);  
-		};
-	};
+	public void previousView(View view) {
+		
+		
+	}
+	
+	/**
+	 * 预览下一张图片
+	 * @param View
+	 */
+	public void nextView(View View) {
+		
+	}
+	
+	/**
+	 * 下载图片
+	 * @param view
+	 */
+	public void downloadView(View view) {
+		
+		mSaveProgressDialog = ProgressDialog.show(this, null, getString(R.string.save_image));
+		mSaveProgressDialog.setCancelable(false);
+		
+		new AsyncTask<Void, Void, Boolean>() {
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				String fileName = MD5Util.hashKeyForDisk(mFileName);
+				String savePath = DataFileTools.getInstance().getTempPath();
+				//如果已经保存，则不再保存
+				//if (DataFileTools.fileExist(savePath, fileName)){
+				//	return true;
+				//}
+				return ImageUtil.getInstance().saveBitmap(mBitmap, fileName, 
+						savePath);
+			}
+			
+			protected void onPostExecute(Boolean result) {
+				mSaveProgressDialog.dismiss();
+				if (result) {
+					ToastUtil.showToastForced(String.format(getString(R.string.save_image_hint), 
+							DataFileTools.getInstance().getTempPath()));
+				} else {
+					ToastUtil.showToastForced(String.format(getString(R.string.save_image_failed), 
+							DataFileTools.getInstance().getTempPath()));
+				}
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+	
+	/**
+	 * 图片旋转
+	 * @param view
+	 */
+	public void rotationView(View view) {
+		int bmpWidth = mBitmap.getWidth();
+		int bmpHeight = mBitmap.getHeight();
+
+		Matrix matrix = new Matrix();
+		matrix.postRotate(mDegree);
+		mDegree += 90;
+		Bitmap resizeBmp = Bitmap.createBitmap(mBitmap, 0, 0, bmpWidth, bmpHeight,
+				matrix, true);
+		
+		mLayout.removeAllViews();
+		ImageView imageView = new ImageView(this);
+		imageView.setImageBitmap(resizeBmp);
+		imageView.setOnTouchListener(this);  
+		RelativeLayout.LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, 
+				LayoutParams.MATCH_PARENT);
+		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		mLayout.addView(imageView, params);
+		mLayout.addView(mLinearLayout);
+		setContentView(mLayout);
+	}
 	
     @Override  
     public boolean onTouch(View v, MotionEvent event) {  
-        ImageView imgv = (ImageView) v;  
+        ImageView mImageView = (ImageView) v;  
         switch (event.getAction() & MotionEvent.ACTION_MASK) {  
         case MotionEvent.ACTION_DOWN:  
             savedMatrix.set(matrix);  
@@ -185,7 +270,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
             break;  
   
         }  
-        imgv.setImageMatrix(matrix);  
+        mImageView.setImageMatrix(matrix);  
         checkView();  
         return true;  
     }  

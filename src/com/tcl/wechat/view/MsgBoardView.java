@@ -10,6 +10,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -33,6 +35,7 @@ import com.tcl.wechat.action.recorder.RecorderAudioManager;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.database.WeiMsgRecordDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.ui.activity.BaiduMapActivity;
@@ -54,6 +57,10 @@ import com.tcl.wechat.view.pageview.TextPageView;
 public class MsgBoardView extends LinearLayout{
 
 	private static final String TAG = MsgBoardView.class.getSimpleName();
+	
+	private static final int MSG_MSGCNT_REDUCE = 0x01;
+	
+	private static final int MSG_MSGCNT_EMPTY = 0x02;
 	
 	private Context mContext;
 	
@@ -106,6 +113,13 @@ public class MsgBoardView extends LinearLayout{
 	 */
 	private View mPlaySoundAnimView; 
 	
+	private WeiMsgRecordDao mRecordDao;
+	
+	/**
+	 * 未读消息
+	 */
+	private int mAllUnReadedMsgCnt = 0;
+	private int mUnReadedMsgCnt = 0;;
 	
 	public MsgBoardView(Context context) {
 		this(context, null);
@@ -116,6 +130,7 @@ public class MsgBoardView extends LinearLayout{
 		mContext = context;
 		mInflater = LayoutInflater.from(context);
 		mAudioManager = RecorderPlayerManager.getInstance();
+		mRecordDao = WeiMsgRecordDao.getInstance();
 	}
 	
 	public void setupView(int screen){
@@ -137,6 +152,7 @@ public class MsgBoardView extends LinearLayout{
 		mMsgReceiveTimeTv.setTypeface(getFontTypeface("fonts/oop.TTF"));
 		mUnReadMsgIndicatorTv.setText(String.format(getResources().getString(R.string.page_Indicator), 0, 0));
 		
+		updateMsgStatue();
 		mReplyBtn.setOnClickListener(replyClick);
 	}
 	
@@ -148,7 +164,8 @@ public class MsgBoardView extends LinearLayout{
 	public void addData(BindUser bindUser, WeiXinMsgRecorder recorder){
 		mBindUser = bindUser;
 		mRecorder = recorder;
-				
+		mAllUnReadedMsgCnt = mRecordDao.getAllUnreadedMsgCnt(mBindUser.getOpenId());
+		mUnReadedMsgCnt = mAllUnReadedMsgCnt;
 		upadteView(mBindUser, mRecorder);
 	}
 	
@@ -157,11 +174,14 @@ public class MsgBoardView extends LinearLayout{
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
+			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_EMPTY, 1000);
+			
 			Intent intent = new Intent(mContext, ChatActivity.class);
 			Bundle bundle = new Bundle();
 			bundle.putParcelable("bindUser", mBindUser);
 			intent.putExtras(bundle);
 			mContext.startActivity(intent);
+			
 		}
 	};
 	
@@ -174,7 +194,14 @@ public class MsgBoardView extends LinearLayout{
 		if (bindUser == null || recorder == null){
 			return ;
 		}
-		addData(bindUser, recorder);
+		
+		mBindUser = bindUser;
+		mRecorder = recorder;
+		mAllUnReadedMsgCnt = mRecordDao.getAllUnreadedMsgCnt(mBindUser.getOpenId());
+		if (mUnReadedMsgCnt < mAllUnReadedMsgCnt) {
+			mUnReadedMsgCnt ++;
+		}
+		upadteView(mBindUser, mRecorder);
 	}
 	
 	/**
@@ -205,7 +232,42 @@ public class MsgBoardView extends LinearLayout{
 		String time = recorder.getCreatetime();
 		mMsgReceiveTimeTv.setText(DateTimeUtil.getShortTime(time));
 		mMsgConentLayout.addView(getView(recorder));
+		updateMsgStatue();
 	}
+	
+	private void updateMsgStatue(){
+		if (mAllUnReadedMsgCnt > 0){
+			mUnReadMsgIndicatorTv.setVisibility(View.VISIBLE);
+			mUnReadMsgIndicatorTv.setText(String.format(mContext.getString(R.string.page_Indicator), 
+					mUnReadedMsgCnt, mAllUnReadedMsgCnt));
+		} else {
+			mUnReadMsgIndicatorTv.setVisibility(View.GONE);
+		}
+	}
+	
+	private Handler mHandler = new Handler(){
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_MSGCNT_REDUCE:
+				if (mUnReadedMsgCnt > 0 && "0".equals(mRecorder.getReaded())){
+					mRecorder.setReaded("1");
+					mUnReadedMsgCnt --;
+					updateMsgStatue();
+					mRecordDao.updateMessageState(mRecorder.getMsgid());
+				}
+				break;
+
+			case MSG_MSGCNT_EMPTY:
+				mAllUnReadedMsgCnt = 0;
+				mUnReadedMsgCnt = 0;
+				updateMsgStatue();
+				mRecordDao.updateAllMessageState(mBindUser.getOpenId());
+				break;
+			default:
+				break;
+			}
+		};
+	};
 	
 	/**
 	 * 获取图片
@@ -253,6 +315,10 @@ public class MsgBoardView extends LinearLayout{
 				// TODO Auto-generated method stub
 				Intent intent = createIntent(recorder);
 				if (intent != null){
+					//更新消息状态
+					mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_REDUCE, 1000);
+					
+					//启动Activity
 					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					mContext.startActivity(intent);
 				}
@@ -339,7 +405,7 @@ public class MsgBoardView extends LinearLayout{
 		if (!TextUtils.isEmpty(fileName)){
 			File file = new File(fileName);
 			if (file != null && file.exists()){
-				duration = (int)(Math.ceil(RecorderAudioManager.getDuration(file) / 1000.0 ));
+				duration = (int)(Math.round(RecorderAudioManager.getDuration(file) / 1000.0 ));
 			}
 		}
 		Log.i(TAG, "duration:" + duration);
@@ -428,6 +494,10 @@ public class MsgBoardView extends LinearLayout{
 		}
 		
 		if (!mAudioManager.isPlaying()){
+			//更新消息状态
+			mRecordDao.updatePlayState(mRecorder.getMsgid());
+			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_REDUCE, 1000);
+			
 			//播放音频
 			if (!TextUtils.isEmpty(fileName) ){
 				mAudioManager.play(fileName);
@@ -506,6 +576,6 @@ public class MsgBoardView extends LinearLayout{
 		if (mPlaySoundAnimView == null){
 			return ;
 		}
-		mPlaySoundAnimView.setBackgroundResource(R.drawable.voice_left);
+		mPlaySoundAnimView.setBackgroundResource(R.drawable.v_left_anim3);
 	}
 }

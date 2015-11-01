@@ -38,18 +38,20 @@
 		            android:textColor="@color/black"
 		            android:textSize="22sp"/>
         	</FrameLayout>
-            <TextView 
-	            android:id="@+id/tv_unread_msg_hint"
-	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content"
-	            android:layout_marginRight="@dimen/dp_20"
-	            android:layout_marginBottom="@dimen/dp_10"
-	            android:gravity="right"
-	            android:text="@string/page_Indicator"
-	            android:textSize="22sp"
-	            android:textColor="@color/black"
-	            android:visibility="gone"/>
         </LinearLayout>
+        <TextView 
+            android:id="@+id/tv_unread_msg_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_20"
+            android:layout_marginRight="@dimen/dp_80"
+            android:layout_below="@id/layout_familboard_msg"
+            android:gravity="right"
+            android:text="@string/page_Indicator"
+            android:textSize="22sp"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            android:rotation="-13"/>
         
         <Button 
          	android:id="@+id/btn_familyborad_replay"
@@ -66,7 +68,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
 	        android:layout_below="@id/layout_familboard_msg"
-         	android:layout_marginTop="@dimen/dp_50"
+         	android:layout_marginTop="@dimen/dp_60"
 	        android:text=""
 	        android:textColor="@color/gray"
 	        android:textSize="18sp"

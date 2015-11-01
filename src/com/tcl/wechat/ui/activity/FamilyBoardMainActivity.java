@@ -2,12 +2,17 @@
 package com.tcl.wechat.ui.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -40,9 +45,13 @@ import com.tcl.wechat.xmpp.WeiXmppManager;
  * @author rex.lei
  *
  */
-public class FamilyBoardMainActivity extends Activity implements IConstant{
+public class FamilyBoardMainActivity extends Activity implements IConstant, OnGestureListener{
 	
 	private static final String TAG = "FamilyBoardMainActivity";
+	
+	private static final int MSG_UPDATE_SYSUSER = 0x01;
+	private static final int MSG_UPDATE_MSGBORAD = 0x02;
+	
 	
 	private Context mContext;
 	
@@ -131,6 +140,8 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		intent.setAction(CommandAction.ACTION_MSG_UPDATE);
 		WeApplication.getContext().sendBroadcast(intent);
 		
+		//注册广播事件
+		registerBroadcast();
 	}
 	
 	/**
@@ -143,6 +154,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		mWeiXinMsgManager.addNewMessageListener(mNewMsgListener);
 		mWeiXinMsgManager.addBindListener(mBindListener);
 		mWeiXinMsgManager.addOnLineStatusListener(mOnLineChanagedListener);
+		
 	}
 	
 	/**
@@ -152,8 +164,6 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		mSystemUserInfo = (UserInfoView) findViewById(R.id.uv_system_user_info);
 		mAddFriend = (UserInfoView) findViewById(R.id.uv_add_fiend);
 		mAddFriend.setUserName("");
-		
-		updateSystemUser();
 		
 		mSystemUserInfo.setUserIconClickListener(new UserIconClickListener() {
 			
@@ -191,10 +201,59 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
 		mMsgBoardGroupView = (MsgBoardGroupView) findViewById(R.id.msgboard_group);
 		
+		//通知更新用户信息和留言板
+		mHandler.sendEmptyMessage(MSG_UPDATE_SYSUSER);
+		mHandler.sendEmptyMessage(MSG_UPDATE_MSGBORAD);
+		
 		//字体
 		setFont(mMyFriendWord, "fonts/oop.TTF");
 		setFont(mMyFamilyBoardWord, "fonts/oop.TTF");
 	}
+	
+	
+	/**
+	 * 注册广播
+	 */
+	private void registerBroadcast() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(CommandAction.ACTION_UPDATE_SYSTEMUSER);
+		registerReceiver(receiver, filter);
+	}
+	
+	/**
+	 * 广播接收器
+	 */
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			//用户解绑或者绑定
+			if (CommandAction.ACTION_UPDATE_SYSTEMUSER.equals(action)){
+				updateSystemUser();
+			}  
+		}
+	};
+	
+	private Handler mHandler = new Handler(){
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_SYSUSER:
+				updateSystemUser();
+				break;
+				
+			case MSG_UPDATE_MSGBORAD:
+				if (mMsgBoardGroupView != null) {
+					mMsgBoardGroupView.loadMsgBoardData();
+				}
+				break;
+
+			default:
+				break;
+			}
+		};
+	};
+	
 	
 	private OnLineChanagedListener mOnLineChanagedListener = new OnLineChanagedListener() {
 		
@@ -208,7 +267,6 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 			}
 		}
 	};
-	
 	
 	/**
 	 * 新消息监听器
@@ -321,7 +379,25 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 				mInputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 
 						InputMethodManager.HIDE_NOT_ALWAYS);  
 			}  
-		}  
+		} 
+		
+		
+		int action = event.getAction();
+		switch (action) {
+		case MotionEvent.ACTION_DOWN:
+			
+			break;
+			
+		case MotionEvent.ACTION_MOVE:
+			break;
+			
+		case MotionEvent.ACTION_UP:
+			break;
+			
+
+		default:
+			break;
+		}
 		return super.onTouchEvent(event);  
 	}  
 	
@@ -345,6 +421,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		bConnected = false;
+		unregisterReceiver(receiver);
 		if (mWeiXinMsgManager != null){
 			mWeiXinMsgManager.removeNewMessageListener(mNewMsgListener);
 		}
@@ -360,6 +437,44 @@ public class FamilyBoardMainActivity extends Activity implements IConstant{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public boolean onDown(MotionEvent e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+			float distanceY) {
+		Log.i(TAG, "distanceX:" + distanceX + ", distanceY" + distanceY);
+		return false;
+	}
+
+	@Override
+	public void onLongPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	

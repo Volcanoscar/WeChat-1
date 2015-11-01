@@ -177,7 +177,7 @@ public class WeiXinMsgManager implements IConstant{
 		BindUser bindUser = new BindUser(weiNotice.getOpenId(), 
 				weiNotice.getNickName(), 
 				weiNotice.getNickName(), weiNotice.getSex(), 
-				weiNotice.getHeadImageUrl(), "0", "false", "");
+				weiNotice.getHeadImageUrl(), "false");
 		
 		int size = WeiXinMsgManager.mBindListeners.size();
 		
@@ -229,6 +229,9 @@ public class WeiXinMsgManager implements IConstant{
 	 */
 	public void receiveWeiXinMsg(WeiXinMsgRecorder recorder){
 		
+		recorder.setReaded("0"); //未读
+		recorder.setReceived("0");//接收
+		
 		String msgType = recorder.getMsgtype();
 		/*if (ChatMsgType.IMAGE.equals(msgType)){
 			//视频文件,图片，先下载后通知
@@ -252,7 +255,7 @@ public class WeiXinMsgManager implements IConstant{
 	public void notifyUserReceive(WeiXinMsgRecorder weiXinMsg){
 		
 			//1、保存消息记录
-		if (WeiMsgRecordDao.getInstance().addRecorder(weiXinMsg, "")){
+		if (WeiMsgRecordDao.getInstance().addRecorder(weiXinMsg)){
 			//2、消息提示
 			mWeiXinNotifier.notify(weiXinMsg);
 			notifyAppWidget(weiXinMsg);
@@ -607,7 +610,6 @@ public class WeiXinMsgManager implements IConstant{
 		HttpMultipartPost post = new HttpMultipartPost(uploadFile.getAbsolutePath(), 
 				new UploadResult(msgInfo, eventListener));
 		post.executeOnExecutor(WeApplication.getExecutorPool(), buffer.toString());
-		
 //		RequestMap params = new RequestMap();
 //		params.put("uploadedfile", uploadFile);
 //		
@@ -639,7 +641,7 @@ public class WeiXinMsgManager implements IConstant{
 	 * @param msgInfo
 	 * @param handler
 	 */
-	private void replyMessage(XmppEventListener listener, WeixinMsgInfo msgInfo){
+	public void replyMessage(XmppEventListener listener, WeixinMsgInfo msgInfo){
 		Map<String, String> valus = new HashMap<String, String>();
 		valus.put("msgid", msgInfo.getMessageid());
 		valus.put("tousername", msgInfo.getTousername());
@@ -756,6 +758,9 @@ public class WeiXinMsgManager implements IConstant{
 		public void onProgressUpdate(int progress) {
 			// TODO Auto-generated method stub
 			//更新进度
+			
+			
+			
 		}
 
 		@Override
