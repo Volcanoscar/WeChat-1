@@ -28,6 +28,8 @@ public interface IConstant {
 	//显示链接内容
 	public static final String ACTION_SHOW_LINK = "android.appwidget.action.SHOW_LINK";
 	
+	public static final String ACTION_UPDATE_AUDIO_ANMI = "android.appwidget.action.UPDATE_AUDIO_ANMI";
+	
 	//闹铃
 	public static final String ACTION_ONLINE_ALARM = "com.tcl.wechat.action.user_online_monitor";
 		

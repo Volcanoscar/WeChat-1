@@ -26,6 +26,8 @@ import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.action.recorder.RecorderAudioManager;
+import com.tcl.wechat.action.recorder.RecorderPlayerManager;
+import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.database.WeiMsgRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
@@ -59,6 +61,13 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	private static BindUser mBindUser;
 	
 	private static WeiXinMsgRecorder mRecorder;
+	
+	private static int mUpdateCnt = 0;
+	
+	private static boolean bPlaying = false;
+	
+	private static RecorderPlayerManager mAudioManager = RecorderPlayerManager.getInstance();
+	
 	
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
@@ -117,9 +126,23 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	        updateAppWidget(appWidgetManger, appWidgetIds);
 		} else if (ACTION_MAINVIEW.equals(action)){
 			//进入主界面
+			resetPlayAnim();
 			Intent mainintent = new Intent(context, LoginActivity.class);
 			mainintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(mainintent);
+		} else if (ACTION_UPDATE_AUDIO_ANMI.equals(action)){
+			//更新播放动画
+			int layoutId = mContext.getResources().getIdentifier("v_left_anim" + (mUpdateCnt++ % 3 + 1), 
+					"drawable", mContext.getPackageName());
+			if (mRemoteViews == null){
+				initRemoteViews();
+			}
+			mRemoteViews.setViewVisibility(R.id.img_voicemsg_detail, View.VISIBLE);
+			mRemoteViews.setImageViewResource(R.id.img_voicemsg_detail, layoutId);
+			
+			AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(mContext);
+	        int[] appWidgetIds = appWidgetManger.getAppWidgetIds(new ComponentName(mContext, WeChatWidget.class));
+	        appWidgetManger.updateAppWidget(appWidgetIds, mRemoteViews);
 		} else {
 			//启动Activity
 			Intent actionIntent = createIntent(context, action);
@@ -153,6 +176,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		
 		if (ACTION_CHATVIEW.equals(action)) {
 			//进入聊天界面
+			resetPlayAnim();
 			mRecorder = WeiMsgRecordDao.getInstance().getLatestRecorder(mBindUser.getOpenId());
 			if (mBindUser != null && mRecorder != null){
 				mIntent = new Intent(context, ChatActivity.class);
@@ -169,7 +193,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 				if (SystemTool.isEmail(mRecorder.getContent())){
 					//识别为邮箱
 					
-					
 				} else {
 					contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(context, 
 							new StringBuffer(contentCharSeq));
@@ -178,7 +201,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 					mIntent.putExtra("Content", contentCharSeq);
 					mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				}
-				
 			} 
 		} else if (ACTION_SHOW_IMAGE.equals(action)) {
 			//显示图像
@@ -192,14 +214,16 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			//播放音频
 			String fileName = mRecorder.getFileName();
 			if (!TextUtils.isEmpty(fileName)){
+				
+				playAudio(fileName);
 				//更新播放状态
-				WeiMsgRecordDao.getInstance().updatePlayState(mRecorder.getMsgid());
-				//启动播放
-				mIntent = new Intent(android.content.Intent.ACTION_VIEW);
-				mIntent.setDataAndType(Uri.parse(fileName), "audio/amr");
-				mIntent.setComponent(new ComponentName("com.android.music", 
-						"com.android.music.MediaPlaybackActivity"));
-				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//				WeiMsgRecordDao.getInstance().updatePlayState(mRecorder.getMsgid());
+//				//启动播放
+//				mIntent = new Intent(android.content.Intent.ACTION_VIEW);
+//				mIntent.setDataAndType(Uri.parse(fileName), "audio/amr");
+//				mIntent.setComponent(new ComponentName("com.android.music", 
+//						"com.android.music.MediaPlaybackActivity"));
+//				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			}
 		} else if (ACTION_PLAY_VIDEO.equals(action)) {
 			//播放视频
@@ -228,6 +252,85 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		}
 		return mIntent;
 	}
+	
+	/**
+	 * 播放音频
+	 * @param recorder
+	 */
+	private void playAudio(String fileName){
+		
+		
+		if (mAudioManager == null){
+			Log.e(TAG, "RecorderPlayerManager is not init!!");
+			return ;
+		}
+		
+		if (!mAudioManager.isPlaying()){
+			
+			//播放音频
+			if (!TextUtils.isEmpty(fileName) ){
+				mAudioManager.play(fileName);
+				mAudioManager.setPlayCompletedListener(playCompletedListener);
+			}
+			bPlaying = true;
+			mUpdateCnt = 0;
+			new Thread(mPlayIngRunnable).start();
+		} else { //如果正在播放，点击后，则需要暂停当前播放
+			mAudioManager.stop();
+			resetPlayAnim();
+		}
+	}
+	
+	private Runnable mPlayIngRunnable = new Runnable() {
+		
+		@Override
+		public void run() {
+			while (bPlaying) {
+				Intent intent = new Intent(ACTION_UPDATE_AUDIO_ANMI);
+				mContext.sendBroadcast(intent);
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	};
+	
+	/**
+	 * 音频播放完成监听器
+	 */
+	private AudioPlayCompletedListener playCompletedListener = new AudioPlayCompletedListener() {
+		
+		@Override
+		public void onCompleted() {
+			resetPlayAnim();
+		}
+
+		@Override
+		public void onError(int errorcode) {
+			// TODO Auto-generated method stub
+			resetPlayAnim();
+		}
+	};
+	
+	private void resetPlayAnim(){
+		mUpdateCnt = 0;
+		bPlaying = false;
+		if (mAudioManager != null && mAudioManager.isPlaying()) {
+			mAudioManager.stop();
+		}
+		if (mRemoteViews == null){
+			initRemoteViews();
+		}		
+		mRemoteViews.setImageViewResource(R.id.img_voicemsg_detail, R.drawable.v_left_anim3);
+		
+		AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(mContext);
+        int[] appWidgetIds = appWidgetManger.getAppWidgetIds(new ComponentName(mContext, WeChatWidget.class));
+        appWidgetManger.updateAppWidget(appWidgetIds, mRemoteViews);
+	}
+	
 	
 	/**
 	 * 点击事件监听器

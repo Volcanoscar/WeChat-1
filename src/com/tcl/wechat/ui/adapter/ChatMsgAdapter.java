@@ -14,7 +14,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
@@ -180,7 +179,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 			
 		} else if (ChatMsgType.VOICE.equals(msgType)) {
 			//音频消息显示控件
-			itemView = setupVoiceMsgView(recorder);
+			itemView = setupAudioMsgView(recorder);
 			
 		} else if (ChatMsgType.VIDEO.equals(msgType) ||
 				ChatMsgType.SHORTVIDEO.equals(msgType)){
@@ -254,14 +253,14 @@ public class ChatMsgAdapter extends BaseAdapter{
 		}
 		TextView textInfoTv = (TextView) mMsgView.findViewById(R.id.tv_text_view);
 		
-		CharSequence contentCharSeq = recorder.getContent();
-		if (!TextUtils.isEmpty(contentCharSeq)){
-			contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
-					new StringBuffer(contentCharSeq));
-			
-		} else {
-			contentCharSeq = mContext.getString(R.string.no_message);
+		String content = recorder.getContent();
+		Log.i(TAG, "content11:" + content);
+		if (!TextUtils.isEmpty(content)) {
+			content = content.replace("<![CDATA[", "").replace("]]>", "");
+			Log.i(TAG, "content22:" + content);
 		}
+		CharSequence contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+					new StringBuffer(content));
 		textInfoTv.setText(contentCharSeq);
 		textInfoTv.setTypeface(new FontUtil(mContext).getFont("fonts/regular.TTF"));
 		mMsgView.setTag(contentCharSeq);
@@ -274,11 +273,11 @@ public class ChatMsgAdapter extends BaseAdapter{
 	 */
 	private View setupImageMsgView(WeiXinMsgRecorder recorder){
 		View mMsgView = null;
-		//if (recorder.isReceived()){
+		if (ChatMsgRource.RECEIVEED.equals(recorder.getReceived())){
 			mMsgView = mInflater.inflate(R.layout.layout_chat_image_leftview, null);
-		//} else {
-		//	mMsgView = mInflater.inflate(R.layout.layout_chat_image_rightview, null);
-		//}
+		} else {
+			mMsgView = mInflater.inflate(R.layout.layout_chat_image_rightview, null);
+		}
 		ChatMsgImageView mChatMsgView = (ChatMsgImageView) mMsgView.findViewById(R.id.img_msg_imageview);
 		mChatMsgView.setBitmapImage(recorder);
 		return mMsgView;
@@ -289,7 +288,7 @@ public class ChatMsgAdapter extends BaseAdapter{
 	 * @param recorder
 	 * @return
 	 */
-	private View setupVoiceMsgView(WeiXinMsgRecorder recorder){
+	private View setupAudioMsgView(WeiXinMsgRecorder recorder){
 		//TODO 获取音频文件播放的长度
 		int duration  = 0;
 		Log.i(TAG, "FileName:" + recorder.getFileName());
@@ -314,11 +313,12 @@ public class ChatMsgAdapter extends BaseAdapter{
 		}
 		TextView mMsgTime = (TextView) mRecordView.findViewById(R.id.tv_chat_recorder_time);
 		
-		if (!"2".equals(recorder.getReaded())) {
-			Drawable unPlayFlag = mContext.getResources().getDrawable(R.drawable.unread_flag);
-			unPlayFlag.setBounds(0, 0, 10, 10);
-			mMsgTime.setCompoundDrawables(null, unPlayFlag, null, null);
-		}
+		//显示未读标识
+		//if (!"2".equals(recorder.getReaded())) {
+		//	Drawable unPlayFlag = mContext.getResources().getDrawable(R.drawable.unread_flag);
+		//	unPlayFlag.setBounds(0, 0, 10, 10);
+		//	mMsgTime.setCompoundDrawables(null, unPlayFlag, null, null);
+		//}
 		mMsgTime.setText(duration + "\"");
 		return mRecordView;
 	}
@@ -464,7 +464,7 @@ public class ChatMsgAdapter extends BaseAdapter{
                 intent.setDataAndType(Uri.parse(fileName), "video/mp4");
                 mContext.startActivity(intent);
 			} else if (ChatMsgType.IMAGE.equals(msgType)){
-				String url = recorder.getUrl();
+				String url = WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid());
 				Intent intent = new Intent(mContext, ShowImageActivity.class);
 				intent.putExtra("fileName", url);
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

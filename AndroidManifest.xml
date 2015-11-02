@@ -86,7 +86,7 @@
         <activity android:name="com.tcl.wechat.ui.activity.FamilyBoardMainActivity"
             android:screenOrientation="landscape"
             android:launchMode="singleTask"
-            android:theme="@android:style/Theme.Translucent"/>
+            android:theme="@style/Anim_fade"/>
         <!-- 聊天界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.ChatActivity"
             android:windowSoftInputMode="stateHidden|adjustResize"
@@ -133,7 +133,7 @@
         <receiver 
             android:name="com.tcl.wechat.widget.WeChatWidget"
             android:label="@string/app_name"
-            android:icon="@drawable/ic_launcher">
+            android:icon="@drawable/icon_appwidget">
             <intent-filter >
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="android.appwidget.action.WEIXIN_MSG_UPDATE"/>
@@ -146,6 +146,7 @@
                 <action android:name="android.appwidget.action.SHOW_TEXT"/>
                 <action android:name="android.appwidget.action.SHOW_LOCATION"/>
                 <action android:name="android.appwidget.action.SHOW_LINK"/>
+                <action android:name="android.appwidget.action.UPDATE_AUDIO_ANMI"/>
             </intent-filter>
             <meta-data 
                 android:name="android.appwidget.provider"

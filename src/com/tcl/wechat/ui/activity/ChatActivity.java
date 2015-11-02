@@ -152,7 +152,6 @@ public class ChatActivity extends Activity {
 		mRecordDao = WeiMsgRecordDao.getInstance();
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		mAllUserRecorders = new LinkedList<WeiXinMsgRecorder>();
-		mStaticFacesList = new ArrayList<String>();
 		
 		initData();
 		initView();
@@ -261,18 +260,18 @@ public class ChatActivity extends Activity {
 		
 		mAllUserRecorders.addAll(0, recorders);
 		
-		//静态表情初始化 
-		//TODO 表情后续要优化， 启动表情的时候再去加载
-		try {
-			String[] faces = getAssets().list("face/png");
-			for (int i = 0; i < faces.length; i++) {
-				Log.i(TAG, "faces[i]:" + faces[i]);
-				mStaticFacesList.add(faces[i]);
-			}
-			mStaticFacesList.remove("emotion_del_normal.png");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		//静态表情初始化 
+//		//TODO 表情后续要优化， 启动表情的时候再去加载
+//		try {
+//			String[] faces = getAssets().list("face/png");
+//			for (int i = 0; i < faces.length; i++) {
+//				Log.i(TAG, "faces[i]:" + faces[i]);
+//				mStaticFacesList.add(faces[i]);
+//			}
+//			mStaticFacesList.remove("emotion_del_normal.png");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	/**
@@ -292,6 +291,27 @@ public class ChatActivity extends Activity {
 			mAdapter = new ChatMsgAdapter(mContext, mBindUser, mAllUserRecorders);
 			mChatListView.setAdapter(mAdapter);
 			mChatListView.setSelection(mAllUserRecorders.size() - 1);
+		}
+	}
+	
+	/**
+	 * 初始化表情view
+	 */
+	private void initFaceView(){
+		if (mStaticFacesList != null) {
+			return ;
+		}
+		//静态表情初始化 
+		mStaticFacesList = new ArrayList<String>();
+		try {
+			String[] faces = getAssets().list("face/png");
+			for (int i = 0; i < faces.length; i++) {
+				Log.i(TAG, "faces[i]:" + faces[i]);
+				mStaticFacesList.add(faces[i]);
+			}
+			mStaticFacesList.remove("emotion_del_normal.png");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		//表情栏目
@@ -608,17 +628,17 @@ public class ChatActivity extends Activity {
 		
 		Log.i(TAG, "msgReply：" + recorder.toString());
 		
-		//1、回复
-		reply(recorder);
-		
-		//2、保存
-		mRecordDao.addRecorder(recorder);
-		
-		//3、更新
+		//1、更新
 		mAllUserRecorders.addLast(recorder);
 		mAdapter.notifyDataSetChanged();
 		mChatListView.setSelection(mAllUserRecorders.size() - 1);
 		mChatMsgEditText.setText("");
+		
+		//2、保存
+		mRecordDao.addRecorder(recorder);
+		
+		//3、回复
+		reply(recorder);
 	}
 	
 	/**
@@ -650,6 +670,7 @@ public class ChatActivity extends Activity {
 	public void replyFaceClick(View v){
 		
 		if (mFaceLayout.getVisibility() == View.GONE){
+			initFaceView();
 			mFaceLayout.setVisibility(View.VISIBLE);
 			
 //			if (mMessageLayout.getVisibility() == View.GONE){
@@ -658,7 +679,6 @@ public class ChatActivity extends Activity {
 //				mChatMsgEditText.setFocusable(true);
 //				mChatMsgEditText.setFocusableInTouchMode(true);
 //			}
-			
 		} else {
 			mFaceLayout.setVisibility(View.GONE);
 //			mMessageLayout.setVisibility(View.GONE);

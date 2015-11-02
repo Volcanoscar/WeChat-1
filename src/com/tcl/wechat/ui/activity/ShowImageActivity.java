@@ -1,5 +1,8 @@
 package com.tcl.wechat.ui.activity;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
@@ -77,6 +80,10 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
     private String mFileName;
     private Bitmap mBitmap;
     
+    /**
+     * 图片加载超时定时器
+     */
+    private Timer mLoadImageTimer;
     
     @Override  
     protected void onCreate(Bundle arg0) {
@@ -115,6 +122,22 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
         
         // 显示进度条
         mDownloadProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
+        mLoadImageTimer = new Timer();
+        mLoadImageTimer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						mDownloadProgressDialog.dismiss();
+						ToastUtil.showToastForced(R.string.load_img_failed);
+					}
+				});
+			}
+		}, 5 * 1000);
   
      	//方法一：直接从本地读取
         /*mBitmap = DataFileTools.getInstance().getChatImageIcon(fileName);  
@@ -146,6 +169,9 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 				mBitmap = arg0.getBitmap();
 				if (mBitmap == null){
 					return ;
+				}
+				if (mLoadImageTimer != null){
+					mLoadImageTimer.cancel();
 				}
 				mDownloadProgressDialog.dismiss();
 				mImgWidth = mBitmap.getWidth();  

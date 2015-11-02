@@ -180,6 +180,9 @@ public class LoginActivity extends Activity implements IConstant{
     @Override
     protected void onPause() {
     	super.onPause();
+    	if (mTimer != null){
+			mTimer.cancel();
+		}
     }
     
     @Override
@@ -190,11 +193,6 @@ public class LoginActivity extends Activity implements IConstant{
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-
 		unregisterReceiver(receiver);
-		
-		if (mTimer != null){
-			mTimer.cancel();
-		}
     }
 }

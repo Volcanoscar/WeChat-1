@@ -5,20 +5,16 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 
 import com.android.http.RequestManager;
 import com.android.http.RequestManager.RequestListener;
@@ -35,7 +31,6 @@ import com.tcl.wechat.controller.listener.UploadListener;
 import com.tcl.wechat.database.WeiMsgRecordDao;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.model.WeixinMsgInfo;
-import com.tcl.wechat.utils.DensityUtil;
 import com.tcl.wechat.utils.http.HttpMultipartPost;
 import com.tcl.wechat.xmpp.ReplyResult;
 import com.tcl.wechat.xmpp.XmppEvent;
@@ -46,61 +41,37 @@ import com.tcl.wechat.xmpp.XmppEventListener;
  * @author rex.lei
  *
  */
-public class ChatMsgImageView extends ImageView implements IConstant{
+public class ChatMsgImageView extends LinearLayout implements IConstant{
 	
 	private static final String TAG = ChatMsgImageView.class.getSimpleName();
 	
-	private int mProgress = 0; //进度
-	
-	private int mWidth, mHeight;
-
-	private Paint mPaint;//画笔
+	private ImageView mSrcImageView;
+	private ProgressView mProgressView;
 	
 	private boolean bUploadImageFlag = false; //是否正在上传图片  是：显示进度，否：不显示
 	
-	public ChatMsgImageView(Context context){
+	private WeiXinMsgRecorder mRecorder;
+
+	public ChatMsgImageView(Context context) {
 		this(context, null);
+		// TODO Auto-generated constructor stub
 	}
-
-	public ChatMsgImageView(Context context, AttributeSet attrs){
+	
+	public ChatMsgImageView(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
+		// TODO Auto-generated constructor stub
 	}
 
-	public ChatMsgImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+	public ChatMsgImageView(Context context, AttributeSet attrs,
+			int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		mPaint = new Paint();
+		initView(context);
 	}
-	
 
-	@SuppressLint("DrawAllocation") 
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		if(!bUploadImageFlag){
-			return ;
-		}
-        mPaint.setAntiAlias(true); 
-        mPaint.setStyle(Paint.Style.FILL); 
-        
-        mWidth = getWidth();
-        mHeight = getHeight();
-        mPaint.setColor(Color.parseColor("#70000000"));
-        canvas.drawRect(0, 0, mWidth, mHeight - mHeight * mProgress / 100, mPaint);
-        
-        mPaint.setColor(Color.parseColor("#00000000"));
-        canvas.drawRect(0, mHeight - mHeight * mProgress / 100, mWidth,  mHeight, mPaint);
-        
-        mPaint.setTextSize(30);
-        mPaint.setColor(Color.parseColor("#FFFFFF"));
-		mPaint.setStrokeWidth(2);
-		Rect rect = new Rect();
-		mPaint.getTextBounds("100%", 0, "100%".length(), rect);
-		canvas.drawText(mProgress + "%", mWidth / 2 - rect.width() / 2, mWidth / 2, mPaint);
-	}
-	
-	public void setProgress(int progress){
-		this.mProgress = progress;
-		postInvalidate();
+	private void initView(Context context) {
+		View view = LayoutInflater.from(context).inflate(R.layout.layout_image, this);
+		mSrcImageView = (ImageView) view.findViewById(R.id.img_updateimage);
+		mProgressView = (ProgressView) view.findViewById(R.id.img_progressview);
 	}
 	
 	/**
@@ -111,16 +82,21 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 		if (recorder == null){
 			return ;
 		}
-		//重新请求url
-		String url = WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid());
 		
-		if (TextUtils.isEmpty(url)){//Url为空，上传图片
+		mRecorder = recorder;
+		
+		if (bUploadImageFlag) {
+			return ;
+		}
+		mRecorder.setUrl(WeiMsgRecordDao.getInstance()
+				.getRecorderUrl(recorder.getMsgid()));
+		if (TextUtils.isEmpty(mRecorder.getUrl())){//Url为空，上传图片
 			bUploadImageFlag = true;
 			loadImage(recorder.getFileName());
-			uploadImage(recorder);
+			uploadImage();
 		} else { //URL不为空，加载图片
 			bUploadImageFlag = false;
-			loadImage(recorder);
+			loadImage();
 		}
 	}
 	
@@ -154,7 +130,6 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 	
 	/**
 	 * 计算inSampleSize，用于压缩图片
-	 * 
 	 * @param options
 	 * @param reqWidth
 	 * @param reqHeight
@@ -176,18 +151,17 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 		return inSampleSize;
 	}
 	
-	private void loadImage( String path){
+	private void loadImage(String path){
 		Bitmap bm = decodeSampledBitmapFromResource(path, 300, 300 );
-		setImageBitmap(bm);
+		mSrcImageView.setImageBitmap(bm);
 	}
 
 	/**
 	 * 加载图片
-	 * @param recorder
 	 */
-	private void loadImage(final WeiXinMsgRecorder recorder){
+	private void loadImage(){
 		
-		String url = recorder.getUrl();//WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid());
+		String url = mRecorder.getUrl();//WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid());
 		if (TextUtils.isEmpty(url)){
 			setErrorImage();
 			return ;
@@ -207,7 +181,7 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 				
 				Log.i(TAG, "bitmap:" + bitmap);
 				if (bitmap != null){
-					setImageBitmap(bitmap);
+					mSrcImageView.setImageBitmap(bitmap);
 				} else {
 					setErrorImage();
 				}
@@ -221,14 +195,14 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 	private void setErrorImage(){
 		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), 
 				R.drawable.pictures_no);
-		setImageBitmap(bitmap);
+		mSrcImageView.setImageBitmap(bitmap);
 	}
 	
 	/**
 	 * 上传图片
 	 * @param msgInfo 图片消息信息
 	 */
-	private void uploadImage(final WeiXinMsgRecorder recorder){
+	private void uploadImage(){
 		
 		//请求接入令牌
 		RequestManager.getInstance().get(Config.URL_ACCESS_TOKEN, new RequestListener() {
@@ -240,7 +214,7 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 					String accesstoken = response;
 					Log.i(TAG, "accesstoken:" + accesstoken);
 					if (!TextUtils.isEmpty(accesstoken)){
-						upload(accesstoken, recorder);
+						upload(accesstoken, mRecorder);
 					}
 				}
 				
@@ -268,6 +242,7 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 			if (TextUtils.isEmpty(fileName) || TextUtils.isEmpty(accesstoken)) {
 				return ;
 			}
+			mProgressView.setVisibility(View.VISIBLE);
 			
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(URL_TICKET).append("access_token=").append(accesstoken)
@@ -282,6 +257,7 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 					
 					try {
 						if (!TextUtils.isEmpty(result)){
+							setTag("");//清除标签
 							JSONObject object = new JSONObject(result);
 							String mediaid = (String)object.get("media_id");
 							
@@ -308,7 +284,10 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 				public void onProgressUpdate(int progress) {
 					// TODO Auto-generated method stub
 					Log.i(TAG, "progress:" + progress);
-					setProgress(progress);
+					mProgressView.setProgress(progress);
+					if (progress == 100) {
+						mProgressView.setVisibility(View.GONE);	
+					}
 				}
 				
 				@Override
@@ -340,6 +319,8 @@ public class ChatMsgImageView extends ImageView implements IConstant{
 							//在此要判断是否添加成功
 							WeiMsgRecordDao.getInstance().updateRecorderUrl(msgid, url);
 						}
+						mRecorder.setUrl(url);
+						bUploadImageFlag = false;
 					}
 					break;
 					

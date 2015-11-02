@@ -62,7 +62,7 @@
 	            android:layout_width="match_parent"
 	            android:layout_height="0dp"
 	            android:layout_weight="1"
-	            android:src="@drawable/msg_audio"
+	            android:src="@drawable/v_left_anim3"
 	            android:scaleType="center"
 	            android:background="@drawable/message_voice_bg"
 	            android:contentDescription="@string/contentDesc"/>

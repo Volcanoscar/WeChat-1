@@ -287,7 +287,7 @@ public class MsgBoardView extends LinearLayout{
 			
 		} else if (ChatMsgType.VOICE.equals(msgType)){
 			//加载音频显示控件
-			mView = setupVoiceMsgView(recorder);
+			mView = setupAudioMsgView(recorder);
 			
 		} else if (ChatMsgType.VIDEO.equals(msgType) 
 				|| ChatMsgType.SHORTVIDEO.equals(msgType)){
@@ -392,7 +392,7 @@ public class MsgBoardView extends LinearLayout{
 	 * @param recorder 消息内容
 	 * @return
 	 */
-	private View setupVoiceMsgView(WeiXinMsgRecorder recorder){
+	private View setupAudioMsgView(WeiXinMsgRecorder recorder){
 		//创建音频显示视图
 		View mVoiceView = mInflater.inflate(R.layout.layout_chat_voice_view, null);
 		ImageButton imageBtn = (ImageButton) mVoiceView.findViewById(R.id.imgbtn_msgboard_voice);
@@ -513,7 +513,6 @@ public class MsgBoardView extends LinearLayout{
 			mAudioManager.stop();
 			resetPlayAnim();
 		}
-		
 	}
 	
 	/**

@@ -1,12 +1,14 @@
 package com.tcl.wechat.ui.activity;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -44,9 +46,8 @@ public class PersonalInfoActivity extends Activity{
 	
 	private static final String PHOTO_FILE_NAME = "system.jpg";
 	
-	/**
-	 * @note
-	 */
+	private Uri imageUri;
+	
 	private static Bitmap mBitmap;
 
 	private File tempFile;
@@ -150,12 +151,14 @@ public class PersonalInfoActivity extends Activity{
 		startActivityForResult(intent, PHOTO_REQUEST_CAMERA);
 	}
 	
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == PHOTO_REQUEST_GALLERY) {
 			if (data != null) {
 				// 得到图片的全路径
 				Uri uri = data.getData();
+				imageUri = uri;
 				crop(uri);
 			}
 		} else if (requestCode == PHOTO_REQUEST_CAMERA) {
@@ -166,7 +169,7 @@ public class PersonalInfoActivity extends Activity{
 			} 
 		} else if (requestCode == PHOTO_REQUEST_CUT) {
 			try {
-				mBitmap = data.getParcelableExtra("data");
+				mBitmap = decodeUriAsBitmap(imageUri);//decode bitmap/*data.getParcelableExtra("data")*/;
 				if (mBitmap != null){
 					mBitmap = ImageUtil.getInstance().zoomBitmap(mBitmap, 240, 240);
 					Bitmap newUserIcon = ImageUtil.getInstance().createCircleImage(mBitmap);
@@ -183,12 +186,19 @@ public class PersonalInfoActivity extends Activity{
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
+	private Bitmap decodeUriAsBitmap(Uri uri){
+		Bitmap bitmap = null;
+		try {
+			bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return bitmap;
+	}
+	
 	/**
 	 * 剪切图片
-	 * @function:
-	 * @author:Jerry
-	 * @date:2013-12-30
-	 * @param uri
 	 */
 	private void crop(Uri uri) {
 		// 裁剪图片意图
@@ -202,9 +212,10 @@ public class PersonalInfoActivity extends Activity{
 		intent.putExtra("outputX", 240);
 		intent.putExtra("outputY", 240);
 		// 图片格式
+		intent.putExtra("scale", true);
 		intent.putExtra("outputFormat", "PNG");
 		intent.putExtra("noFaceDetection", true);// 取消人脸识别
-		intent.putExtra("return-data", true);// true:不返回uri，false：返回uri
+		intent.putExtra("return-data", false);
 		startActivityForResult(intent, PHOTO_REQUEST_CUT);
 	}
 	

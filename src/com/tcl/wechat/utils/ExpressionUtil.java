@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
+import android.util.Log;
 
 /**
  * 表情解析工具类
@@ -60,7 +61,7 @@ public class ExpressionUtil {
 			int indexOfKey = Integer.parseInt(key);
 			
 			if (indexOfKey > -1 && indexOfKey < QQ_STRINGS.length){
-				smiley = QQ_STRINGS[indexOfKey];
+				smiley = "<![CDATA[" + QQ_STRINGS[indexOfKey] + "]]>";
 			} 
 			String repalce = tempString.substring(start, end + 2);
 			content = tempString.replace(repalce, smiley);
@@ -75,7 +76,7 @@ public class ExpressionUtil {
      * @return
      */
     public CharSequence StringToSpannale(Context context, StringBuffer content){
-		CharSequence contentCharSeq = content.toString();		
+		CharSequence contentCharSeq = content.toString();
 		//如果新收到的聊天内容中有/:标识，则进行表情字符匹配
 		Pattern p = Pattern.compile("/:");
 		Matcher m = p.matcher(content.toString());
@@ -101,7 +102,7 @@ public class ExpressionUtil {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-    public void dealExpression(Context context,SpannableString spannableString, Pattern patten, int start) throws SecurityException, NoSuchFieldException, NumberFormatException, IllegalArgumentException, IllegalAccessException {
+    public void dealExpression(Context context, SpannableString spannableString, Pattern patten, int start) throws SecurityException, NoSuchFieldException, NumberFormatException, IllegalArgumentException, IllegalAccessException {
     	Matcher matcher = patten.matcher(spannableString);
     	int indexOfKey = -1;
     	while (matcher.find()) {
@@ -114,7 +115,6 @@ public class ExpressionUtil {
             	continue;
             }else{
 				try {
-					
 					Bitmap mBitmap = BitmapFactory.decodeStream(context.getAssets()
 							.open("face/png/smiley_" + decimalFormat.format(indexOfKey) + ".png"));
 					if (mBitmap != null) {
