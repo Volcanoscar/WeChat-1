@@ -1,10 +1,3 @@
-/* 
-* -------------------------------------------------------------
- * Copyright (c) 2011 TCL, All Rights Reserved.
- * ---------------------------------------------------------
- * @author:zhangjunjian
- * @version V1.0
- */
 package com.tcl.wechat.database;
 
 import java.text.SimpleDateFormat;
@@ -19,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.controller.OnLineStatusMonitor;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
@@ -674,6 +668,33 @@ public class WeiMsgRecordDao {
 			cursor.close();
 		}
 		return url;
+	}
+	
+	/**
+	 * 获取用户所有的图片url
+	 * @param openid 
+	 * @param toOpenid 
+	 * @return
+	 */
+	public ArrayList<String> getAllRecorderUrl(String openid) {
+		ArrayList<String> allUrls = new ArrayList<String>();
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		String selection = Property.COLUMN_OPENID + "=? or " + Property.COLUMN_TOOPENID + 
+				" =? and " + Property.COLUMN_MSGTYPE + "=?";
+		String[] selectionArgs = new String[]{openid, openid, ChatMsgType.IMAGE};
+		String orderBy = Property.COLUMN_ID;
+		String[] columns = new String[]{Property.COLUMN_URL};
+		Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, columns , selection, selectionArgs, null, null, orderBy);
+		if (cursor != null ) {
+			while (cursor.moveToNext()) {
+				String url = cursor.getString(cursor.getColumnIndex(Property.COLUMN_URL));
+				if (!TextUtils.isEmpty(url)) {
+					allUrls.add(url);
+				}
+			}
+			cursor.close();
+		}
+		return allUrls;
 	}
 	
 	/**

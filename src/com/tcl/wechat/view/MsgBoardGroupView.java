@@ -11,8 +11,11 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.tcl.wechat.WeApplication;
@@ -27,7 +30,7 @@ import com.tcl.wechat.utils.DensityUtil;
  * 留言板视图类
  * @author rex.lei
  */
-public class MsgBoardGroupView extends LinearLayout{
+public class MsgBoardGroupView extends LinearLayout implements OnTouchListener{
 
 	private static final String TAG = MsgBoardGroupView.class.getSimpleName();
 	
@@ -50,7 +53,14 @@ public class MsgBoardGroupView extends LinearLayout{
 	/*
 	 * 轨迹，根据移动的leftMargn来确定
 	 */
-	private int[] track = new int[]{0, 0, 0, 0, 0}; 
+	private int[] track = new int[]{0, 0, 0, 0, 0};
+	
+	private HorizontalScrollView mHorizontalScrollView = null;
+	
+	public void setScrollView(HorizontalScrollView scrollView){
+        mHorizontalScrollView = scrollView;
+        mHorizontalScrollView.setOnTouchListener(this);
+    }
 	
 	public MsgBoardGroupView(Context context) {
 		this(context, null);
@@ -292,5 +302,30 @@ public class MsgBoardGroupView extends LinearLayout{
 		if (bindUser != null){
 			addRecorder(bindUser, recorder);
 		}
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		// TODO Auto-generated method stub
+		int action = event.getAction();
+		switch (action) {
+		case MotionEvent.ACTION_DOWN:
+			
+			break;
+			
+		case MotionEvent.ACTION_MOVE:
+			float x = event.getX();
+			float y = event.getY();
+			Log.i(TAG, "[x:" + x + ",y:" + y + "]");
+			break;
+			
+		case MotionEvent.ACTION_UP:
+			break;
+			
+
+		default:
+			break;
+		}
+		return false;
 	}
 }

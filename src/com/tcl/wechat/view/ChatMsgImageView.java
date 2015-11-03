@@ -11,10 +11,7 @@ import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.android.http.RequestManager;
 import com.android.http.RequestManager.RequestListener;
@@ -41,16 +38,24 @@ import com.tcl.wechat.xmpp.XmppEventListener;
  * @author rex.lei
  *
  */
-public class ChatMsgImageView extends LinearLayout implements IConstant{
+public class ChatMsgImageView extends ImageView implements IConstant{
 	
 	private static final String TAG = ChatMsgImageView.class.getSimpleName();
-	
-	private ImageView mSrcImageView;
-	private ProgressView mProgressView;
 	
 	private boolean bUploadImageFlag = false; //是否正在上传图片  是：显示进度，否：不显示
 	
 	private WeiXinMsgRecorder mRecorder;
+	
+	private UploadCompleteListener mListener;
+	
+	public interface UploadCompleteListener{
+		public void onComplete(WeiXinMsgRecorder recorder);
+	}
+	
+	public void setUploadCompleteListener(UploadCompleteListener listener) {
+		mListener = listener;
+	}
+	
 
 	public ChatMsgImageView(Context context) {
 		this(context, null);
@@ -65,14 +70,8 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 	public ChatMsgImageView(Context context, AttributeSet attrs,
 			int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		initView(context);
 	}
 
-	private void initView(Context context) {
-		View view = LayoutInflater.from(context).inflate(R.layout.layout_image, this);
-		mSrcImageView = (ImageView) view.findViewById(R.id.img_updateimage);
-		mProgressView = (ProgressView) view.findViewById(R.id.img_progressview);
-	}
 	
 	/**
 	 * 设置图片
@@ -153,7 +152,7 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 	
 	private void loadImage(String path){
 		Bitmap bm = decodeSampledBitmapFromResource(path, 300, 300 );
-		mSrcImageView.setImageBitmap(bm);
+		setImageBitmap(bm);
 	}
 
 	/**
@@ -166,7 +165,6 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 			setErrorImage();
 			return ;
 		}
-		
 		Log.i(TAG, "loadImage url:" + url);
 		WeApplication.getImageLoader().get(url, new ImageListener() {
 			
@@ -181,7 +179,7 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 				
 				Log.i(TAG, "bitmap:" + bitmap);
 				if (bitmap != null){
-					mSrcImageView.setImageBitmap(bitmap);
+					setImageBitmap(bitmap);
 				} else {
 					setErrorImage();
 				}
@@ -195,7 +193,7 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 	private void setErrorImage(){
 		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), 
 				R.drawable.pictures_no);
-		mSrcImageView.setImageBitmap(bitmap);
+		setImageBitmap(bitmap);
 	}
 	
 	/**
@@ -242,8 +240,6 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 			if (TextUtils.isEmpty(fileName) || TextUtils.isEmpty(accesstoken)) {
 				return ;
 			}
-			mProgressView.setVisibility(View.VISIBLE);
-			
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(URL_TICKET).append("access_token=").append(accesstoken)
 								.append("&type=").append(ChatMsgType.IMAGE);
@@ -284,10 +280,10 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 				public void onProgressUpdate(int progress) {
 					// TODO Auto-generated method stub
 					Log.i(TAG, "progress:" + progress);
-					mProgressView.setProgress(progress);
-					if (progress == 100) {
-						mProgressView.setVisibility(View.GONE);	
-					}
+					//mProgressView.setProgress(progress);
+					//if (progress == 100) {
+					//	mProgressView.setVisibility(View.GONE);	
+					//}
 				}
 				
 				@Override
@@ -318,9 +314,12 @@ public class ChatMsgImageView extends LinearLayout implements IConstant{
 							Log.i(TAG, "Result url:" + url);
 							//在此要判断是否添加成功
 							WeiMsgRecordDao.getInstance().updateRecorderUrl(msgid, url);
+							mRecorder.setUrl(url);
+							bUploadImageFlag = false;
+							if (mListener != null) {
+								mListener.onComplete(mRecorder);
+							}
 						}
-						mRecorder.setUrl(url);
-						bUploadImageFlag = false;
 					}
 					break;
 					

@@ -1,7 +1,7 @@
 package com.tcl.wechat.ui.activity;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -30,6 +30,9 @@ import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.ChatMsgRource;
+import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.MD5Util;
@@ -81,9 +84,14 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
     private Bitmap mBitmap;
     
     /**
-     * 图片加载超时定时器
+     * 消息内容
      */
-    private Timer mLoadImageTimer;
+    private WeiXinMsgRecorder mRecorder;
+    
+    private int mCurImageIndex = 0;
+    private ArrayList<String> mAllUserImageUrl;
+    
+    private Semaphore mSemaphore ;
     
     @Override  
     protected void onCreate(Bundle arg0) {
@@ -108,10 +116,8 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 		if (bundle == null){
 			return ;
 		}
-		
-		mFileName = bundle.getString("fileName");
-		Log.d(TAG, "fileName:" + mFileName);
-		if (TextUtils.isEmpty(mFileName)){
+		mRecorder = bundle.getParcelable("WeiXinMsgRecorder");
+		if (mRecorder == null){
 			return ;
 		}
 		
@@ -122,24 +128,42 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
         
         // 显示进度条
         mDownloadProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
-        mLoadImageTimer = new Timer();
-        mLoadImageTimer.schedule(new TimerTask() {
-			
+        mDownloadProgressDialog.setCancelable(true);
+        
+        mSemaphore = new Semaphore(1);
+        mFileName = mRecorder.getUrl();
+        //预加载所有图片的url
+        loadImageUrl();
+       
+        //加载显示当前图片
+        loadImage();
+    }  
+	
+	/**
+	 * 加载当前用户的所有图片url
+	 */
+	private void loadImageUrl() {
+		new AsyncTask<Void, Void, Void>(){
+
 			@Override
-			public void run() {
-				runOnUiThread(new Runnable() {
-					
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						mDownloadProgressDialog.dismiss();
-						ToastUtil.showToastForced(R.string.load_img_failed);
-					}
-				});
-			}
-		}, 5 * 1000);
-  
-     	//方法一：直接从本地读取
+			protected Void doInBackground(Void... params) {
+				if (ChatMsgRource.RECEIVEED.equals(mRecorder.getReceived())) {
+					mAllUserImageUrl = WeiMsgRecordDao.getInstance().getAllRecorderUrl(mRecorder.getOpenid());
+				} else {
+					mAllUserImageUrl = WeiMsgRecordDao.getInstance().getAllRecorderUrl(mRecorder.getToOpenid());
+				}
+				mCurImageIndex = mAllUserImageUrl.indexOf(mRecorder.getUrl());
+				mSemaphore.release();
+				return null;
+			} 
+		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+
+	/**
+	 * 加载当前显示图片
+	 */
+	private void loadImage(){
+		//方法一：直接从本地读取
         /*mBitmap = DataFileTools.getInstance().getChatImageIcon(fileName);  
         if (mBitmap == null ){
         	mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
@@ -152,6 +176,14 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
         //ImageSize size = ImageLoader.getInstance().getImageViewWidth(mImageView);
         //mImgWidth = size.getWidth();  
         //mImgHeight = size.getHeight();
+		
+		if (TextUtils.isEmpty(mFileName)) {
+			if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+				mDownloadProgressDialog.dismiss();
+			}
+			ToastUtil.showToastForced(R.string.load_img_failed);
+			return ;
+		}
         
         //方法三：加载网络图片
         WeApplication.getImageLoader().get(mFileName, new ImageListener() {
@@ -170,10 +202,9 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 				if (mBitmap == null){
 					return ;
 				}
-				if (mLoadImageTimer != null){
-					mLoadImageTimer.cancel();
+				if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+					mDownloadProgressDialog.dismiss();
 				}
-				mDownloadProgressDialog.dismiss();
 				mImgWidth = mBitmap.getWidth();  
 		        mImgHeight = mBitmap.getHeight(); 
 		        Log.i(TAG, "mImgWidth:" + mImgWidth + ", mImgHeight:" + mImgHeight);
@@ -184,15 +215,50 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 		        mImageView.setImageMatrix(matrix);  
 			}
 		}, 0, 0);
-    }  
+	}
 	
 	/**
 	 * 预览上一个图片
 	 * @param view
 	 */
 	public void previousView(View view) {
+		if (mDownloadProgressDialog == null ){
+			mDownloadProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
+		} else {
+			mDownloadProgressDialog.show();
+		}
 		
-		
+		new AsyncTask<Void, Void, Boolean>(){
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				try {
+					//防止在第一次进入，快速查看图片是，未加载完成问题
+					if (mAllUserImageUrl == null) {
+						mSemaphore.acquire();
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return true;
+			}
+			
+			protected void onPostExecute(Boolean result) {
+				mDownloadProgressDialog.dismiss();
+				if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
+					if (mCurImageIndex > 0) {
+						mCurImageIndex --;
+					} else {
+						ToastUtil.showToastForced(R.string.is_first_image);
+						return ;
+					}
+					mFileName = mAllUserImageUrl.get(mCurImageIndex);
+				}
+				loadImage();
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
 	/**
@@ -200,7 +266,42 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 	 * @param View
 	 */
 	public void nextView(View View) {
+		if (mDownloadProgressDialog == null ){
+			mDownloadProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading));
+		} else {
+			mDownloadProgressDialog.show();
+		}
 		
+		new AsyncTask<Void, Void, Boolean>(){
+
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				try {
+					if (mAllUserImageUrl == null) {
+						mSemaphore.acquire();
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return true;
+			}
+			
+			protected void onPostExecute(Boolean result) {
+				mDownloadProgressDialog.dismiss();
+				if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
+					if (mCurImageIndex < mAllUserImageUrl.size() - 1) {
+						mCurImageIndex ++;
+					} else {
+						ToastUtil.showToastForced(R.string.is_last_image);
+						return ;
+					}
+					mFileName = mAllUserImageUrl.get(mCurImageIndex);
+				}
+				loadImage();
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
 	/**
@@ -210,7 +311,6 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 	public void downloadView(View view) {
 		
 		mSaveProgressDialog = ProgressDialog.show(this, null, getString(R.string.save_image));
-		mSaveProgressDialog.setCancelable(false);
 		
 		new AsyncTask<Void, Void, Boolean>() {
 
@@ -255,13 +355,13 @@ public class ShowImageActivity extends Activity implements OnTouchListener{
 				matrix, true);
 		
 		mLayout.removeAllViews();
-		ImageView imageView = new ImageView(this);
-		imageView.setImageBitmap(resizeBmp);
-		imageView.setOnTouchListener(this);  
+		mImageView = new ImageView(this);
+		mImageView.setImageBitmap(resizeBmp);
+		mImageView.setOnTouchListener(this);  
 		RelativeLayout.LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, 
 				LayoutParams.MATCH_PARENT);
 		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-		mLayout.addView(imageView, params);
+		mLayout.addView(mImageView, params);
 		mLayout.addView(mLinearLayout);
 		setContentView(mLayout);
 	}

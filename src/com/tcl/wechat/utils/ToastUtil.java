@@ -9,6 +9,7 @@ import android.widget.Toast;
  * Toast帮助类
  * @author rex.lei
  *
+ * TODO 需要重新定义，防止多次弹出Toast
  */
 public class ToastUtil {
 	

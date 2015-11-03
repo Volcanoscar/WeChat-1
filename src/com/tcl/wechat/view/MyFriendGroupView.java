@@ -18,7 +18,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import com.tcl.wechat.R;
@@ -46,7 +48,7 @@ import com.tcl.wechat.xmpp.XmppEventListener;
  *
  */
 @SuppressLint("InflateParams") 
-public class MyFriendGroupView extends LinearLayout {
+public class MyFriendGroupView extends LinearLayout implements OnTouchListener{
 
 	private static final String TAG = MyFriendGroupView.class.getSimpleName();
 	
@@ -73,6 +75,13 @@ public class MyFriendGroupView extends LinearLayout {
 	private int[] track = new int[]{110, 135, 160, 110, 75};
 	
 	private ActivityManager mActivityManager;
+	
+	private HorizontalScrollView mHorizontalScrollView = null;
+	
+	public void setScrollView(HorizontalScrollView scrollView){
+        mHorizontalScrollView = scrollView;
+        mHorizontalScrollView.setOnTouchListener(this);
+    }
 	
 	public MyFriendGroupView(Context context) {
 		this(context, null);
@@ -105,6 +114,13 @@ public class MyFriendGroupView extends LinearLayout {
 			protected Void doInBackground(Void... params) {
 				// TODO Auto-generated method stub
 				mAllBindUsers = WeiUserDao.getInstance().getBindUsers();
+				
+				
+				int size = 10;
+				for (int i = 0; i < size; i++) {
+					mAllBindUsers.add(mAllBindUsers.get(0));
+				}
+				
 				return null;
 			}
 			
@@ -462,5 +478,31 @@ public class MyFriendGroupView extends LinearLayout {
 		WeiXinMsgManager.getInstance().notifyUserStatusChaned(status);
 				
 	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		// TODO Auto-generated method stub
+		int action = event.getAction();
+		switch (action) {
+		case MotionEvent.ACTION_DOWN:
+			
+			break;
+			
+		case MotionEvent.ACTION_MOVE:
+			float x = event.getX();
+			float y = event.getY();
+			Log.i(TAG, "[x:" + x + ",y:" + y + "]");
+			break;
+			
+		case MotionEvent.ACTION_UP:
+			break;
+			
+
+		default:
+			break;
+		}
+		return false;
+	}
+	
 }
 

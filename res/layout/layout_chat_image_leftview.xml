@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/message_location_view_bg"
     android:clickable="true"
     android:layout_gravity="left"
     android:gravity="left"
@@ -12,7 +11,9 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_gravity="left"
-	    android:maxWidth="@dimen/dp_500"
-	  	android:maxHeight="@dimen/dp_500"
-	  	android:adjustViewBounds="true"/>
+	    android:gravity="left"
+	    android:maxWidth="@dimen/dp_400"
+	  	android:maxHeight="@dimen/dp_400"
+	  	android:adjustViewBounds="true"
+	  	android:background="@drawable/message_location_view_bg"/>
 </LinearLayout>

@@ -78,7 +78,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		initData();
 		initRemoteViews();
 		initEvent(context, appWidgetManager, appWidgetIds);
-		updateAppWidget(appWidgetManager, appWidgetIds);
+		updateAppWidget(context, appWidgetManager, appWidgetIds);
 	}
 	
 	@Override
@@ -109,7 +109,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			}
 			AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(context);
 	        int[] appWidgetIds = appWidgetManger.getAppWidgetIds(new ComponentName(context, WeChatWidget.class));
-	        updateAppWidget(appWidgetManger, appWidgetIds);
+	        updateAppWidget(context, appWidgetManger, appWidgetIds);
 		}  else if (ACTION_UNBIND_ENENT.equals(action)){
 			//用户绑定解绑事件
 			mBindUser = WeiUserDao.getInstance().getLastBindUser();
@@ -123,7 +123,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			
 			AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(context);
 	        int[] appWidgetIds = appWidgetManger.getAppWidgetIds(new ComponentName(context, WeChatWidget.class));
-	        updateAppWidget(appWidgetManger, appWidgetIds);
+	        updateAppWidget(context, appWidgetManger, appWidgetIds);
 		} else if (ACTION_MAINVIEW.equals(action)){
 			//进入主界面
 			resetPlayAnim();
@@ -207,7 +207,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			String url = mRecorder.getUrl();
 			if (!TextUtils.isEmpty(url)){
 				mIntent = new Intent(context, ShowImageActivity.class);
-				mIntent.putExtra("fileName", url);
+				mIntent.putExtra("WeiXinMsgRecorder", mRecorder);
 				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			}
 		} else if (ACTION_PLAY_AUDIO.equals(action)) {
@@ -412,7 +412,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 更新控件信息
 	 * 
 	 */
-	private void updateAppWidget(AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+	private void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 		
 		if (mRemoteViews == null){
 			initRemoteViews();
@@ -432,7 +432,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			
 			if (ChatMsgType.TEXT.equals(msgType)){
 				//文字显示控件
-				setupTextView();
+				setupTextView(context);
 				
 			} else if (ChatMsgType.IMAGE.equals(msgType)) {
 				//图像显示控件
@@ -511,16 +511,17 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	/**
 	 * 显示文本信息
 	 */
-	public void setupTextView(){
+	public void setupTextView(Context context){
 		mRemoteViews.setViewVisibility(R.id.tv_textmsg_detail, View.VISIBLE);
 		CharSequence contentCharSeq = mRecorder.getContent();
 		if (!TextUtils.isEmpty(contentCharSeq)){
-			contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+			contentCharSeq = ExpressionUtil.getInstance().StringToCharacters(context, 
 					new StringBuffer(contentCharSeq));
 		} else {
-			contentCharSeq = mContext.getString(R.string.no_message);
+			contentCharSeq = context.getString(R.string.no_message);
 		}
-		mRemoteViews.setTextViewText(R.id.tv_textmsg_detail, contentCharSeq);
+		Log.i(TAG, "contentCharSeq:" + contentCharSeq);
+		mRemoteViews.setTextViewText(R.id.tv_textmsg_detail, Html.fromHtml(contentCharSeq.toString()));
 	}
 	
 	/**

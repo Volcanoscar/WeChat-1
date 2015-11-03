@@ -72,5 +72,7 @@
     <string name="save_image">正在保存图片&#160;</string>
     <string name="save_image_hint">图片已保存至%s</string>
     <string name="save_image_failed">图片保存失败!</string>
+    <string name="is_first_image">已是第一张图片</string>
+    <string name="is_last_image">已是最后一张图片</string>
     
 </resources>

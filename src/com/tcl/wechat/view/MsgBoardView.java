@@ -347,7 +347,7 @@ public class MsgBoardView extends LinearLayout{
 			
 		} else if (ChatMsgType.IMAGE.equals(msgType)){
 			mIntent = new Intent(mContext, ShowImageActivity.class);
-			mIntent.putExtra("fileName", recorder.getUrl());
+			mIntent.putExtra("WeiXinMsgRecorder", recorder);
 			
 		} else if (ChatMsgType.LOCATION.equals(msgType)){ 
 			mIntent = new Intent(mContext, BaiduMapActivity.class);
@@ -382,6 +382,7 @@ public class MsgBoardView extends LinearLayout{
 		} else {
 			contentCharSeq = mContext.getString(R.string.no_message);
 		}
+		Log.i(TAG, "contentCharSeq:" + contentCharSeq);
 		textInfoTv.setText(contentCharSeq);
 		textInfoTv.setTypeface(new FontUtil(mContext).getFont("fonts/regular.TTF"));
 		return mMsgView;

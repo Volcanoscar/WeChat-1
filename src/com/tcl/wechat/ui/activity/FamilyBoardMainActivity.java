@@ -15,9 +15,11 @@ import android.util.Log;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
@@ -60,6 +62,8 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 	private TextView mMyFriendWord;
 	private TextView mMyFamilyBoardWord;
 	
+	private HorizontalScrollView mFriendHorizontalSV;
+	private HorizontalScrollView mMsgBoardHorizontalSV;
 	private MyFriendGroupView mFriendGroupView;
 	private MsgBoardGroupView mMsgBoardGroupView;
 	
@@ -200,6 +204,14 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		mMyFriendWord = (TextView)findViewById(R.id.myfriend_word);
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
 		mMsgBoardGroupView = (MsgBoardGroupView) findViewById(R.id.msgboard_group);
+		
+		/**
+		 * 滑动监听
+		 */
+		mFriendHorizontalSV = (HorizontalScrollView) findViewById(R.id.horizontalSV);
+		mFriendGroupView.setScrollView(mFriendHorizontalSV);
+		mMsgBoardHorizontalSV = (HorizontalScrollView) findViewById(R.id.msgBoardhorizontalSV);
+		mMsgBoardGroupView.setScrollView(mMsgBoardHorizontalSV);
 		
 		//通知更新用户信息和留言板
 		mHandler.sendEmptyMessage(MSG_UPDATE_SYSUSER);
@@ -389,6 +401,9 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 			break;
 			
 		case MotionEvent.ACTION_MOVE:
+			float x = event.getX();
+			float y = event.getY();
+			Log.i(TAG, "[x:" + x + ",y:" + y + "]");
 			break;
 			
 		case MotionEvent.ACTION_UP:

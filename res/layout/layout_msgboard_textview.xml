@@ -13,6 +13,5 @@
         android:maxLines="5"
         android:ellipsize="end"
         android:textSize="28sp"
-        android:textColor="@color/black"
-        android:autoLink="web"/>
+        android:textColor="@color/black"/>
 </LinearLayout>

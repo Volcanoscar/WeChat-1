@@ -54,6 +54,7 @@ import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ExpressionUtil;
 import com.tcl.wechat.utils.FontUtil;
 import com.tcl.wechat.view.ChatMsgImageView;
+import com.tcl.wechat.view.ChatMsgImageView.UploadCompleteListener;
 
 /**
  * 消息列表栏目适配器
@@ -279,7 +280,18 @@ public class ChatMsgAdapter extends BaseAdapter{
 			mMsgView = mInflater.inflate(R.layout.layout_chat_image_rightview, null);
 		}
 		ChatMsgImageView mChatMsgView = (ChatMsgImageView) mMsgView.findViewById(R.id.img_msg_imageview);
+		recorder.setUrl(WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid()));
 		mChatMsgView.setBitmapImage(recorder);
+		mChatMsgView.setUploadCompleteListener(new UploadCompleteListener() {
+			
+			@Override
+			public void onComplete(WeiXinMsgRecorder recorder) {
+				// TODO Auto-generated method stub
+				mAllRecorders.removeLast();
+				mAllRecorders.addLast(recorder);
+				notifyDataSetChanged();
+			}
+		});
 		return mMsgView;
 	}
 	
@@ -464,9 +476,9 @@ public class ChatMsgAdapter extends BaseAdapter{
                 intent.setDataAndType(Uri.parse(fileName), "video/mp4");
                 mContext.startActivity(intent);
 			} else if (ChatMsgType.IMAGE.equals(msgType)){
-				String url = WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid());
+				recorder.setUrl(WeiMsgRecordDao.getInstance().getRecorderUrl(recorder.getMsgid()));
 				Intent intent = new Intent(mContext, ShowImageActivity.class);
-				intent.putExtra("fileName", url);
+				intent.putExtra("WeiXinMsgRecorder", recorder);
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				mContext.startActivity(intent);
 			} else if (ChatMsgType.LOCATION.equals(msgType)){

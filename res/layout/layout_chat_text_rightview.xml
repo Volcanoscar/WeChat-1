@@ -14,6 +14,5 @@
         android:textColor="@color/black"
         android:lineSpacingMultiplier="1.2"
         android:maxWidth="@dimen/dp_800"
-	  	android:adjustViewBounds="true"
-	  	android:autoLink="web"/>
+	  	android:adjustViewBounds="true"/>
 </LinearLayout>

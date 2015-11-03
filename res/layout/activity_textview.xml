@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:layout_marginTop="@dimen/dp_50"
 	    android:layout_marginBottom="@dimen/dp_50"
+	    android:baselineAligned="true"
         android:orientation="vertical">
         <TextView 
 	        android:id="@+id/tv_text_info_view"
@@ -22,7 +23,7 @@
 	        android:singleLine="false" 
 	        android:scrollbars="vertical" 
 	        android:maxLines="18" 
-	        android:lineSpacingMultiplier="1.5"
+	        android:lineSpacingMultiplier="1.2"
 	        android:scrollbarFadeDuration="2000" 
 	        android:scrollbarStyle="insideOverlay" 
 	        android:textColor="@color/black"
