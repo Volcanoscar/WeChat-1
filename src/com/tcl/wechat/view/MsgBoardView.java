@@ -361,7 +361,12 @@ public class MsgBoardView extends LinearLayout{
 	}
 	
 	private Typeface getFontTypeface(String fontpath) {
+		try {
 			return Typeface.createFromAsset(getContext().getAssets(), fontpath);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return null;	
 	}
 	
 	/**

@@ -7,7 +7,7 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="-50dp"
         android:layout_marginTop="@dimen/dp_100"
         android:layout_marginRight="@dimen/dp_150"
         android:background="@drawable/chat_left_bg"
@@ -18,7 +18,7 @@
             android:layout_height="@dimen/dp_300"
             android:paddingRight="@dimen/dp_50"
             android:layout_marginTop="@dimen/dp_150"
-            android:text="超出取值范围的值将被恢复为默认值"
+            android:gravity="center"
             android:background="#45F0F0F0"
             android:textColor="@color/black"
             android:textSize="22sp"/>

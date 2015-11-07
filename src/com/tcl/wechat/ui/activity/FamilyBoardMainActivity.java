@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -36,8 +35,9 @@ import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.OnLineStatus;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.utils.ToastUtil;
+import com.tcl.wechat.view.GroupScrollView;
 import com.tcl.wechat.view.MsgBoardGroupView;
-import com.tcl.wechat.view.MyFriendGroupView;
+import com.tcl.wechat.view.MyFriendViewGroup;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 import com.tcl.wechat.xmpp.WeiXmppManager;
@@ -62,9 +62,9 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 	private TextView mMyFriendWord;
 	private TextView mMyFamilyBoardWord;
 	
-	private HorizontalScrollView mFriendHorizontalSV;
-	private HorizontalScrollView mMsgBoardHorizontalSV;
-	private MyFriendGroupView mFriendGroupView;
+	private GroupScrollView mFriendHorizontalSV;
+	private GroupScrollView mMsgBoardHorizontalSV;
+	private MyFriendViewGroup mFriendViewGroup;
 	private MsgBoardGroupView mMsgBoardGroupView;
 	
 	/**
@@ -196,7 +196,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		/**
 		 * 好友列表布局
 		 */
-		mFriendGroupView = (MyFriendGroupView) findViewById(R.id.friendgroup);
+		mFriendViewGroup = (MyFriendViewGroup) findViewById(R.id.friendgroup);
 		
 		/**
 		 * 留言板布局
@@ -208,9 +208,9 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		/**
 		 * 滑动监听
 		 */
-		mFriendHorizontalSV = (HorizontalScrollView) findViewById(R.id.horizontalSV);
-		mFriendGroupView.setScrollView(mFriendHorizontalSV);
-		mMsgBoardHorizontalSV = (HorizontalScrollView) findViewById(R.id.msgBoardhorizontalSV);
+		mFriendHorizontalSV = (GroupScrollView) findViewById(R.id.horizontalSV);
+		mFriendViewGroup.setScrollView(mFriendHorizontalSV);
+		mMsgBoardHorizontalSV = (GroupScrollView) findViewById(R.id.msgBoardhorizontalSV);
 		mMsgBoardGroupView.setScrollView(mMsgBoardHorizontalSV);
 		
 		//通知更新用户信息和留言板
@@ -275,7 +275,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 			Log.i(TAG, "onStatusChanged opendId:" + openId + ", bOnLine:" + bOnLine);
 			BindUser bindUser = WeiUserDao.getInstance().getUser(openId);
 			if (bindUser != null){
-				mFriendGroupView.onUserOlineStatusChanged(bindUser, bOnLine);
+				mFriendViewGroup.onUserOlineStatusChanged(bindUser, bOnLine);
 			}
 		}
 	};
@@ -288,7 +288,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		@Override
 		public void onNewMessage(WeiXinMsgRecorder recorder) {
 			// TODO Auto-generated method stub
-			if (mFriendGroupView == null || recorder == null){
+			if (mFriendViewGroup == null || recorder == null){
 				return ;
 			}
 			
@@ -310,7 +310,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 				//如果当前用户状态为不在线，则要开始监听(在线的用户，在进入主应用时，已经开始监听所有在线用户了)
 				OnLineStatus status = new OnLineStatus(recorder.getOpenid(), recorder.getCreatetime());
 				OnLineStatusMonitor.getInstance().startMonitor(status);
-				mFriendGroupView.onUserOlineStatusChanged(bindUser, true);
+				mFriendViewGroup.onUserOlineStatusChanged(bindUser, true);
 			} 
 		}
 	};
@@ -331,7 +331,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 					// TODO Auto-generated method stub
 					BindUser unBindUser = WeiUserDao.getInstance().getUser(openId);
 					if (unBindUser != null){
-						mFriendGroupView.removeUser(unBindUser);
+						mFriendViewGroup.removeUser(unBindUser);
 						mMsgBoardGroupView.removeRecorder(unBindUser);
 						ToastUtil.showToastForced(String.format(getResources().getString(R.string.user_unbind), 
 								unBindUser.getRemarkName()));
@@ -351,7 +351,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 					// TODO Auto-generated method stub
 					BindUser newUser = WeiUserDao.getInstance().getUser(openId);
 					if (newUser != null){
-						mFriendGroupView.addUser(newUser);
+						mFriendViewGroup.addUser(newUser);
 						ToastUtil.showToastForced(String.format(getResources().getString(R.string.user_bind), 
 								newUser.getNickName()));
 					}

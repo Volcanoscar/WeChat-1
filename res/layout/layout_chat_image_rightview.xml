@@ -10,8 +10,8 @@
 	    android:layout_height="wrap_content"
 	    android:layout_gravity="right"
 	    android:gravity="right"
+	    android:padding="@dimen/dp_5"
 	    android:maxWidth="@dimen/dp_400"
 	  	android:maxHeight="@dimen/dp_400"
-	  	android:adjustViewBounds="true"
-	  	android:background="@drawable/message_location_view_bg"/>
+	  	android:adjustViewBounds="true"/>
 </LinearLayout>

@@ -3,6 +3,7 @@
     android:minWidth="180dp"
     android:minHeight="320dp"
     android:resizeMode="none"
+    android:previewImage="@drawable/icon_appwidget"
     android:initialLayout="@layout/appwidget_view"
     android:widgetCategory="home_screen">
 </appwidget-provider>

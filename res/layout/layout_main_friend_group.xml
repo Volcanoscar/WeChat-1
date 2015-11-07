@@ -41,17 +41,17 @@
         android:layout_toRightOf="@id/myfriend"
         android:orientation="horizontal" >
 
-        <HorizontalScrollView
+        <com.tcl.wechat.view.GroupScrollView
             android:id="@+id/horizontalSV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none" >
 
-            <com.tcl.wechat.view.MyFriendGroupView
+            <com.tcl.wechat.view.MyFriendViewGroup
                 android:id="@+id/friendgroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-        </HorizontalScrollView>
+        </com.tcl.wechat.view.GroupScrollView>
     </LinearLayout>
     
 <!--    	<include  -->

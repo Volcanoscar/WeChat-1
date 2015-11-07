@@ -10,9 +10,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
@@ -40,6 +43,10 @@ public class LoginActivity extends Activity implements IConstant{
 	
 	private SharedEditer mEditer ;
 	
+	private EditText mUserNameEdt;
+	
+	private EditText mPassWordEdt;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,15 +57,32 @@ public class LoginActivity extends Activity implements IConstant{
         setContentView(R.layout.activity_login);
         
         mEditer = new SharedEditer();
+        
+//        initView();
     }
     
-    @Override
+    private void initView() {
+		// TODO Auto-generated method stub
+    	mUserNameEdt = (EditText) findViewById(R.id.userName);
+    	mPassWordEdt = (EditText) findViewById(R.id.passWord);
+	}
+    
+    public void login(View view) {
+    	String userName = mUserNameEdt.getText().toString();
+    	String password = mPassWordEdt.getText().toString();
+    	
+    	if (!TextUtils.isEmpty(userName) && !TextUtils.isEmpty(password)) {
+    		
+    	}
+    }
+
+	@Override
     protected void onStart() {
     	// TODO Auto-generated method stub
     	super.onStart();
     	
 		registerBoradcast();
-		startLogin(); 
+//		startLogin(); 
     }
     
     /**
