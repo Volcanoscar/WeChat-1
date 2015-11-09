@@ -221,8 +221,9 @@ public class ImageLoader{
 	private synchronized void addTask(Runnable runnable){
 		try {
 			// 请求信号量，防止mPoolThreadHander为null
-			if (mPoolThreadHander == null)
+			if (mPoolThreadHander == null){
 				mSemaphore.acquire();
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

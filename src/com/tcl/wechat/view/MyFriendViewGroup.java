@@ -111,14 +111,6 @@ public class MyFriendViewGroup extends LinearLayout{
 			protected Void doInBackground(Void... params) {
 				// TODO Auto-generated method stub
 				mAllBindUsers = WeiUserDao.getInstance().getBindUsers();
-				
-				//for test
-				if (mAllBindUsers != null && mAllBindUsers.size() > 0) {
-					BindUser user = mAllBindUsers.get(0);
-					for (int i = 0; i < 10; i++) {
-						mAllBindUsers.add(user);
-					}
-				}
 				return null;
 			}
 			

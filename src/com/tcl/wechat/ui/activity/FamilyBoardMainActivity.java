@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
@@ -36,7 +35,7 @@ import com.tcl.wechat.model.OnLineStatus;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.view.GroupScrollView;
-import com.tcl.wechat.view.MsgBoardGroupView;
+import com.tcl.wechat.view.MsgBoardViewGroup;
 import com.tcl.wechat.view.MyFriendViewGroup;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.view.listener.UserIconClickListener;
@@ -65,7 +64,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 	private GroupScrollView mFriendHorizontalSV;
 	private GroupScrollView mMsgBoardHorizontalSV;
 	private MyFriendViewGroup mFriendViewGroup;
-	private MsgBoardGroupView mMsgBoardGroupView;
+	private MsgBoardViewGroup mMsgBoardGroupView;
 	
 	/**
 	 * 系统用户
@@ -203,7 +202,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		 */
 		mMyFriendWord = (TextView)findViewById(R.id.myfriend_word);
 		mMyFamilyBoardWord = (TextView) findViewById(R.id.my_messageborad_word);
-		mMsgBoardGroupView = (MsgBoardGroupView) findViewById(R.id.msgboard_group);
+		mMsgBoardGroupView = (MsgBoardViewGroup) findViewById(R.id.msgboard_group);
 		
 		/**
 		 * 滑动监听
