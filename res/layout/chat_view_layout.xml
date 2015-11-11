@@ -51,19 +51,21 @@
 			         	android:layout_height="wrap_content"
 			         	android:layout_weight="1"
 			         	android:layout_gravity="center"
-			         	android:layout_marginTop="@dimen/dp_20"
+			         	android:layout_marginTop="@dimen/dp_10"
+			         	android:layout_marginBottom="@dimen/dp_10"
 			         	android:background="@drawable/chat_msg_edit_bg"
-			         	android:textSize="22sp"
+			         	android:textSize="24sp"
 			         	android:inputType="text"/> 
 			        <Button 
 			            android:id="@+id/btn_msg_send"
 			            android:layout_width="wrap_content"
 			            android:layout_height="wrap_content"
 			            android:layout_gravity="center"
-			            android:layout_marginTop="@dimen/dp_15"
+			            android:layout_marginTop="@dimen/dp_10"
+			            android:layout_marginBottom="@dimen/dp_10"
 			            android:padding="@dimen/dp_13"
 			            android:text="@string/send"
-			            android:textSize="22sp"
+			            android:textSize="24sp"
 			            android:textColor="@color/white"
 			            android:background="@drawable/send_btn_selector"
 			            android:onClick="sendMessage"/>
@@ -90,7 +92,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/dp_65"
+        android:layout_marginTop="@dimen/dp_30"
         android:layout_marginLeft="@dimen/dp_325"
         android:src="@drawable/chat_clip_1"
         android:contentDescription="@string/contentDesc"/>
@@ -99,7 +101,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="@dimen/dp_50"
+        android:layout_marginTop="@dimen/dp_40"
         android:layout_marginRight="@dimen/dp_300"
         android:src="@drawable/chat_clip_2"
         android:contentDescription="@string/contentDesc"/>
@@ -110,8 +112,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/dp_175"
-        android:orientation="horizontal" >
+        android:layout_marginTop="@dimen/dp_150"
+        android:orientation="horizontal"
+        android:rotation="-4" >
         <com.tcl.wechat.view.UserInfoView
             android:id="@+id/img_chat_usericon"
             android:layout_width="wrap_content"
@@ -122,12 +125,16 @@
         
         <TextView 
             android:id="@+id/tv_chat_username"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dp_800"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp_125"
+            android:layout_marginTop="@dimen/dp_130"
+            android:layout_marginLeft="@dimen/dp_10"
             android:padding="@dimen/dp_8"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:maxEms="32" 
             android:text="" 
-            android:textSize="22sp"
+            android:textSize="28sp"
             android:textColor="@color/black"/>
     </LinearLayout>
     

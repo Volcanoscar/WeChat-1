@@ -2,8 +2,8 @@ package com.tcl.wechat.common;
 
 
 public interface IConstant {
-	
-	public static final int LOGIN_TIME_OUT = 10 * 1000;
+	//5s超时时间
+	public static final int LOGIN_TIME_OUT = 5 * 1000;
 	
 	//进入主界面
 	public static final String ACTION_MAINVIEW = "android.appwidget.action.MAINVIEW";

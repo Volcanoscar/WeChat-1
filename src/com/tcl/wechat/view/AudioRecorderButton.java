@@ -17,7 +17,6 @@ import com.tcl.wechat.action.recorder.RecorderDialogManager;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPrepareCompletedListener;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
 import com.tcl.wechat.utils.DataFileTools;
 
 /**

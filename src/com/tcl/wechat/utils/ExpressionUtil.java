@@ -1,5 +1,7 @@
 package com.tcl.wechat.utils;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,11 +76,19 @@ public class ExpressionUtil {
 			String key = smiley.substring(smiley.indexOf("_") + 1, smiley.indexOf("."));
 			int indexOfKey = Integer.parseInt(key);
 			
-			if (indexOfKey > -1 && indexOfKey < QQ_STRINGS.length){
-				smiley = "<![CDATA[" + QQ_STRINGS[indexOfKey] + "]]>";
-			} 
+			//add by rex.lei 2015-11-10
+			//
+			//if (indexOfKey > -1 && indexOfKey < QQ_STRINGS.length){
+			//	smiley = "<![CDATA[" + QQ_STRINGS[indexOfKey] + "]]>";
+			//} 
 			String repalce = tempString.substring(start, end + 2);
-			content = tempString.replace(repalce, smiley);
+			content = tempString.replace(repalce, QQ_STRINGS[indexOfKey]);
+		}
+    	try {
+			return "<![CDATA[" + URLEncoder.encode(content, "UTF-8") + "]]>";
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
     	return content;
     }

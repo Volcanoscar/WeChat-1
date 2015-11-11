@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.CommandAction;
 import com.tcl.wechat.common.IConstant.EventReason;
 import com.tcl.wechat.common.IConstant.EventType;
 import com.tcl.wechat.common.IConstant.SystemShared;
@@ -24,9 +26,7 @@ import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.utils.SystemShare.SharedEditer;
-import com.tcl.wechat.xmpp.InitFinish;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
-import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.XmppEvent;
 import com.tcl.wechat.xmpp.XmppEventListener;
 
@@ -121,9 +121,13 @@ public class WeiXinLoginReceiver extends BroadcastReceiver {
 					}
 				} 
 				
+				/**
+				 * fix by rex.lei 2015-10-09
+				 * 修改为在登录成功后，直接进行监听
+				 */
 				//发送接收离线消息
-				InitFinish initfinish = new InitFinish(WeiXmppManager.getInstance().getConnection(), null);	
-				initfinish.sentPacket();
+				//InitFinish initfinish = new InitFinish(WeiXmppManager.getInstance().getConnection(), null);	
+				//initfinish.sentPacket();
 				break;
 			default:
 				break;
@@ -166,10 +170,14 @@ public class WeiXinLoginReceiver extends BroadcastReceiver {
 	 */
 	private void commandCompleted(){
 		mRequestCnt = 0;
+		WeApplication.bLoginSuccess = true;
 		SharedEditer editer = new SharedEditer();
 		if (!editer.getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false)){
 			editer.putBoolean(SystemShared.KEY_REGISTENER_SUCCESS, true);
 		}
+		
+		//发送广播通知更新
+		Intent intent = new Intent(CommandAction.ACTION_UPDATE_BINDUSER);
+		WeApplication.getContext().sendBroadcast(intent);
 	}
-	
 }

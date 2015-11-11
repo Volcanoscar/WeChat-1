@@ -20,6 +20,7 @@
             android:layout_marginTop="@dimen/dp_150"
             android:gravity="center"
             android:background="#45F0F0F0"
+            android:text="@string/no_message"
             android:textColor="@color/black"
             android:textSize="22sp"/>
     </RelativeLayout>

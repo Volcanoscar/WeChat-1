@@ -13,9 +13,9 @@
     <Button 
         android:id="@+id/btn_indicator"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_height="@dimen/dp_60"
         android:layout_alignParentRight="true"
+        android:layout_marginTop="@dimen/dp_5"
         android:layout_marginRight="@dimen/dp_10"
         android:paddingLeft="@dimen/dp_10"
         android:paddingRight="@dimen/dp_10"
@@ -23,7 +23,7 @@
         android:textSize="18sp"
         android:textColor="@color/white"
         android:onClick="onSendClick"
-        android:background="@drawable/send_btn_selector"/>
+        android:background="@drawable/send_btn_disable"/>
     
     <GridView
         android:id="@+id/gv_image_select"

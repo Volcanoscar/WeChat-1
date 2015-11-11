@@ -2,7 +2,7 @@ package com.tcl.wechat.common;
 
 public class Config {
 	
-	/** 家庭云端口号：8348 */
+	/** 家庭云端口号：8343 */
 	public static final int httpServicePort = 8843;
 	
 	/** Xmpp服务器地址 */

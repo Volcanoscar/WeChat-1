@@ -33,6 +33,4 @@ public class ActivityManager {
 	public void setUserInfoEditListener(UserInfoEditListener listener) {
 		this.mUserInfoEditListener = listener;
 	}
-	
-	
 }

@@ -4,26 +4,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.utils.SystemInfoUtil;
-import com.tcl.wechat.utils.SystemShare.SharedEditer;
-import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
@@ -41,11 +31,9 @@ public class LoginActivity extends Activity implements IConstant{
 	 */
 	private Timer mTimer;
 	
-	private SharedEditer mEditer ;
+	private Thread initThread = null;
 	
-	private EditText mUserNameEdt;
-	
-	private EditText mPassWordEdt;
+	private boolean bLoading = false;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,57 +44,40 @@ public class LoginActivity extends Activity implements IConstant{
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
         
-        mEditer = new SharedEditer();
-        
-//        initView();
+        bLoading = true;
+        WeApplication.bLoginSuccess = false;
     }
     
-    private void initView() {
-		// TODO Auto-generated method stub
-    	mUserNameEdt = (EditText) findViewById(R.id.userName);
-    	mPassWordEdt = (EditText) findViewById(R.id.passWord);
-	}
-    
-    public void login(View view) {
-    	String userName = mUserNameEdt.getText().toString();
-    	String password = mPassWordEdt.getText().toString();
-    	
-    	if (!TextUtils.isEmpty(userName) && !TextUtils.isEmpty(password)) {
-    		
-    	}
-    }
-
 	@Override
-    protected void onStart() {
-    	// TODO Auto-generated method stub
-    	super.onStart();
-    	
-		registerBoradcast();
-//		startLogin(); 
-    }
-    
-    /**
-	 * 注册广播，用于监听登陆是否成功
-	 */
-	private void registerBoradcast() {
+	protected void onResume() {
 		// TODO Auto-generated method stub
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(CommandAction.ACTION_LOGIN_SUCCESS);
-		registerReceiver(receiver, filter);
+		super.onResume();
+		
+		startLogin();
+		
+		if( initThread != null){
+ 			initThread.interrupt();
+ 			initThread = null;
+ 		}
+		initThread = new Thread(initRun);
+		initThread.start();
 	}
 	
-	private BroadcastReceiver receiver = new BroadcastReceiver(){
-
+	private Runnable initRun = new Runnable() {
+		
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void run() {
 			// TODO Auto-generated method stub
-			if (CommandAction.ACTION_LOGIN_SUCCESS.equals(intent.getAction())){
-				startToEnter();
+			while (bLoading) {
+				if (WeApplication.bLoginSuccess){
+					startToEnter();
+					return ;
+				} 
+				waitFor();
 			}
 		}
 	};
 	
-
 	/**
 	 * 开始登陆
 	 */
@@ -115,71 +86,39 @@ public class LoginActivity extends Activity implements IConstant{
 		Log.d(TAG, "start Login...");
 		if (WeiXmppManager.getInstance().isRegister()){//用户已经注册
 			
+			//网络不可用
+			//if (!NetWorkUtil.isNetworkAvailable()){
+			//	ToastUtil.showToastForced(R.string.notwork_not_available);
+			//	//add by Rex:网络不可用
+			//	if (WeiXmppManager.getInstance().isRegister()) {//已经注册，直接进入
+			//		startToEnter();
+			//	} else {  //未注册，退出
+			//		ToastUtil.showToastForced(R.string.no_register);
+			//	}
+			//	return;
+			//} 
+			/**
+			 * 增加超時处理 (可直接使用timer即可)
+			 */
 			//设置超时监听
 			mTimer = new Timer();
 			mTimer.schedule(mTimeoutTask, LOGIN_TIME_OUT);
 			
-			//网络不可用
-			if (!NetWorkUtil.isNetworkAvailable()){
-				ToastUtil.showToastForced(R.string.notwork_not_available);
-				//add by Rex:网络不可用
-				if (WeiXmppManager.getInstance().isRegister()) {//已经注册，直接进入
-					startToEnter();
-				} else {  //未注册，退出
-					ToastUtil.showToastForced(R.string.no_register);
-				}
-				return;
-			} 
-			
 			//长连接已存在，并且已经注册
 			if (WeiXmppManager.getInstance().isConnected()) {
-				startToEnter();
+				WeApplication.bLoginSuccess = true;
 			} else {
 				WeiXmppManager.getInstance().login();
 			}
-			return;
+			
+		}  else {
+			
+			//未注册用户，则启动服务开始注册
+			Intent serviceIntent = new Intent(LoginActivity.this, 
+					WeiXmppService.class);
+			serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);        	 			
+			startService(serviceIntent);
 		}
-		
-		//未注册用户，则启动服务开始注册
-		Intent serviceIntent = new Intent(LoginActivity.this, WeiXmppService.class);
-		serviceIntent.putExtra("startmode", StartServiceMode.OWN);
-    	serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);        	 			
-    	startService(serviceIntent);
-		
-	}
-	
-	/**
-	 * 进入主界面（此处已经注册成功）
-	 */
-	private void startToEnter(){
-		
-		new AsyncTask<Void, Void, Boolean>(){
-
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				while (true) {
-					if (mEditer.getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false)){
-						return true;
-					} 
-					waitFor();
-					
-				}
-			}
-			protected void onPostExecute(Boolean result) {
-				if (result) {
-					if (SystemInfoUtil.isTopActivity() &&  
-							WeiXmppManager.getInstance().isRegister()){
-						Intent intent = new Intent(LoginActivity.this, 
-								FamilyBoardMainActivity.class);
-						startActivity(intent);
-					} 
-					if (mTimer != null){
-						mTimer.cancel();
-					}
-					finish();
-				}
-			};
-		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
 	private TimerTask mTimeoutTask = new TimerTask() {
@@ -190,6 +129,22 @@ public class LoginActivity extends Activity implements IConstant{
 		}
 	};
 	
+	/**
+	 * 进入主应用
+	 */
+	private void startToEnter() {
+		Log.i(TAG, "start to enter main view!");
+		if (SystemInfoUtil.isTopActivity()) {
+			Intent intent = new Intent(LoginActivity.this, 
+					FamilyBoardMainActivity.class);
+			startActivity(intent);
+		}
+		finish();
+	}
+
+	/**
+	 * 等待
+	 */
 	private void waitFor(){
 		try {
 			Log.i(TAG, "waitFor....");
@@ -204,9 +159,6 @@ public class LoginActivity extends Activity implements IConstant{
     @Override
     protected void onPause() {
     	super.onPause();
-    	if (mTimer != null){
-			mTimer.cancel();
-		}
     }
     
     @Override
@@ -217,6 +169,18 @@ public class LoginActivity extends Activity implements IConstant{
     @Override
     protected void onDestroy() {
     	super.onDestroy();
-		unregisterReceiver(receiver);
+    	
+    	bLoading = false;
+    	WeApplication.bLoginSuccess = false;
+    	
+    	if (mTimer != null) {
+    		mTimer.cancel();
+    		mTimer = null;
+    	}
+    	
+    	if( initThread != null){
+ 			initThread.interrupt();
+ 			initThread = null;
+ 		}
     }
 }

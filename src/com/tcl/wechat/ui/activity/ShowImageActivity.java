@@ -366,6 +366,9 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 	 * @param view
 	 */
 	public void rotationView(View view) {
+		if (mBitmap == null){
+			return ;
+		}
 		int bmpWidth = mBitmap.getWidth();
 		int bmpHeight = mBitmap.getHeight();
 

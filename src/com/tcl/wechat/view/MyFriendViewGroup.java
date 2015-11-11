@@ -103,7 +103,7 @@ public class MyFriendViewGroup extends LinearLayout{
         loadBindUserData();
 	}
 	
-	private void loadBindUserData() {
+	public void loadBindUserData() {
 		// TODO Auto-generated method stub
 		new AsyncTask<Void, Void, Void>() {
 
@@ -122,6 +122,31 @@ public class MyFriendViewGroup extends LinearLayout{
 					if (bindUser != null){
 						addUserColumn(bindUser, i);
 					}
+				}
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+	
+	/**
+	 * 更新用户列表
+	 */
+	public void updateBindUser(){	
+		new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				mAllBindUsers = WeiUserDao.getInstance().getBindUsers();
+				return null;
+			}
+			
+			protected void onPostExecute(Void result) {
+				if (mAllBindUsers == null) {
+					return ;
+				}
+				
+				int childCount = getChildCount();
+				for (int i = 0; i < childCount; i++) {
+					attachUserToView(mAllBindUsers.get(i));
 				}
 			};
 		}.executeOnExecutor(WeApplication.getExecutorPool());
@@ -255,7 +280,8 @@ public class MyFriendViewGroup extends LinearLayout{
 	 * @param userInfoView
 	 * @param bindUser
 	 */
-	public void attachUserToView(BindUser bindUser){
+	private void attachUserToView(BindUser bindUser){
+		Log.i(TAG, "attachUserToView-->>");
 		if (bindUser == null){
 			return ;
 		}
@@ -350,10 +376,15 @@ public class MyFriendViewGroup extends LinearLayout{
 	public void updateAllUser(){
 		Log.i(TAG, "updateAllUser");
 		//更新界面
-		int size = mAllUserViews.size();
-		for (int i = 0; i < size; i++) {
-			UserView uv = mAllUserViews.get(i);
-			uv.invalidate();
+		//int size = mAllUserViews.size();
+		//for (int i = 0; i < size; i++) {
+		//	UserView uv = mAllUserViews.get(i);
+		//	uv.invalidate();
+		//}
+		int childCount = getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			UserView uv = (UserView) getChildAt(i);
+			uv.getUserInfoView().invalidate();
 		}
 	}
 	

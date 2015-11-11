@@ -199,6 +199,7 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 				e.printStackTrace();
 			}  
         }  
+        Log.i(TAG, "duration:" + duration);
         return duration;  
     }  
 }

@@ -70,6 +70,13 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	
 	
 	@Override
+	public void onEnabled(Context context) {
+		// TODO Auto-generated method stub
+		super.onEnabled(context);
+		Log.i(TAG, "onEnabled-->>");
+	}
+
+	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
 		

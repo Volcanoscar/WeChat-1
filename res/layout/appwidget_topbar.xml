@@ -20,5 +20,5 @@
         android:gravity="bottom"
         android:text="@string/main_title"
         android:textColor="@color/white"
-        android:textSize="32sp"	/>
+        android:textSize="30sp"	/>
 </RelativeLayout>

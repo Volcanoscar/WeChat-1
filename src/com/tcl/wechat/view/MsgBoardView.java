@@ -47,6 +47,7 @@ import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.DateTimeUtil;
 import com.tcl.wechat.utils.ExpressionUtil;
 import com.tcl.wechat.utils.FontUtil;
+import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.view.pageview.TextPageView;
 
 /**
@@ -181,7 +182,6 @@ public class MsgBoardView extends LinearLayout{
 			bundle.putParcelable("bindUser", mBindUser);
 			intent.putExtras(bundle);
 			mContext.startActivity(intent);
-			
 		}
 	};
 	
@@ -205,6 +205,24 @@ public class MsgBoardView extends LinearLayout{
 	}
 	
 	/**
+	 * 更新用户信息
+	 */
+	public void updateBindUser(BindUser bindUser){
+		Log.i(TAG, "updateBindUser-->>");
+		if (bindUser == null) {
+			return ;
+		}
+		//更新用户信息
+		String headImageUrl = bindUser.getHeadImageUrl();
+		String userName = bindUser.getRemarkName();
+		
+		if (headImageUrl != null && userName != null){
+			mUserInfoViewUv.setUserIcon(headImageUrl, false);
+			mUserInfoViewUv.setUserName(userName);
+		}
+	}
+	
+	/**
 	 * 更新界面
 	 * @param bindUser
 	 * @param recorders
@@ -219,24 +237,27 @@ public class MsgBoardView extends LinearLayout{
 			return ;
 		}
 		
-		//更新用户信息
-		String headImageUrl = bindUser.getHeadImageUrl();
-		String userName = bindUser.getRemarkName();
-		
-		if (headImageUrl != null && userName != null){
-			mUserInfoViewUv.setUserIcon(headImageUrl, false);
-			mUserInfoViewUv.setUserName(userName);
-		}
-		
+		updateBindUser(bindUser);
 		mMsgConentLayout.removeAllViews();
 		String time = recorder.getCreatetime();
 		mMsgReceiveTimeTv.setText(DateTimeUtil.getShortTime(time));
 		mMsgConentLayout.addView(getView(recorder));
 		updateMsgStatue();
+		
+		//更新未读消息状态
+		if (SystemInfoUtil.isActivityForeground(ChatActivity.class.getName())) {
+			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_REDUCE, 1000);
+		}
 	}
 	
+	/**
+	 * 更新未读消息提示状态
+	 */
 	private void updateMsgStatue(){
-		if (mAllUnReadedMsgCnt > 0){
+		
+		Log.i(TAG, "22AllUnReadedMsgCnt:" + mAllUnReadedMsgCnt + ", UnReadedMsgCnt:" + mUnReadedMsgCnt);
+		
+		if (mUnReadedMsgCnt > 0){
 			mUnReadMsgIndicatorTv.setVisibility(View.VISIBLE);
 			mUnReadMsgIndicatorTv.setText(String.format(mContext.getString(R.string.page_Indicator), 
 					mUnReadedMsgCnt, mAllUnReadedMsgCnt));
@@ -249,12 +270,13 @@ public class MsgBoardView extends LinearLayout{
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_MSGCNT_REDUCE:
+				Log.i(TAG, "AllUnReadedMsgCnt:" + mAllUnReadedMsgCnt + ", UnReadedMsgCnt:" + mUnReadedMsgCnt);
 				if (mUnReadedMsgCnt > 0 && "0".equals(mRecorder.getReaded())){
 					mRecorder.setReaded("1");
 					mUnReadedMsgCnt --;
 					updateMsgStatue();
 					mRecordDao.updateMessageState(mRecorder.getMsgid());
-				}
+				} 
 				break;
 
 			case MSG_MSGCNT_EMPTY:

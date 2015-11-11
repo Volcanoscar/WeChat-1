@@ -33,6 +33,7 @@ import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.OnLineStatus;
 import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.utils.ToastUtil;
 import com.tcl.wechat.view.GroupScrollView;
 import com.tcl.wechat.view.MsgBoardViewGroup;
@@ -100,9 +101,11 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 	}
 	
 	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void onStart() {
 		// TODO Auto-generated method stub
-		super.onNewIntent(intent);
+		super.onStart();
+		
+		Log.i(TAG, "onStart-->>");
 	}
 	
 	@Override
@@ -112,6 +115,10 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		Log.i(TAG, "onResume-->>");
 		
 		bConnected = true;
+		
+		if (!NetWorkUtil.isNetworkAvailable()) {
+			ToastUtil.showToast(R.string.network_not_available);
+		}
 		
 		new Thread(new Runnable() {
 			
@@ -145,6 +152,8 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		
 		//注册广播事件
 		registerBroadcast();
+		
+		//启动更新机制
 	}
 	
 	/**
@@ -228,6 +237,7 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 	private void registerBroadcast() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(CommandAction.ACTION_UPDATE_SYSTEMUSER);
+		filter.addAction(CommandAction.ACTION_UPDATE_BINDUSER);
 		registerReceiver(receiver, filter);
 	}
 	
@@ -239,10 +249,13 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
+			Log.i(TAG, "receive event, action:" + action);
 			//用户解绑或者绑定
 			if (CommandAction.ACTION_UPDATE_SYSTEMUSER.equals(action)){
 				updateSystemUser();
-			}  
+			} else if (CommandAction.ACTION_UPDATE_BINDUSER.equals(action)){
+				updateBindUser();
+			}
 		}
 	};
 	
@@ -381,6 +394,26 @@ public class FamilyBoardMainActivity extends Activity implements IConstant, OnGe
 			} 
 		}
 	}
+	
+	/**
+	 * 更新绑定用户列表
+	 */
+	private void updateBindUser(){
+		
+		if (mFriendViewGroup != null) {
+			mFriendViewGroup.updateBindUser();
+		}
+		
+		if (mMsgBoardGroupView != null) {
+			mMsgBoardGroupView.updateBindUser();
+		}
+		
+		//通知更新AppWidget
+		Intent intent = new Intent();
+		intent.setAction(CommandAction.ACTION_MSG_UPDATE);
+		WeApplication.getContext().sendBroadcast(intent);
+	}
+	
 	
 	@Override  
 	public boolean onTouchEvent(MotionEvent event) {  

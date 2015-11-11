@@ -215,6 +215,9 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		mIndicatorBtn = (Button) findViewById(R.id.btn_indicator);
 		
 		mBottomLy = (RelativeLayout) findViewById(R.id.layout_bottom_view);
+		
+		//初始化
+		mImageCount.setText(String.format(getString(R.string.pic_count), mTotalCount));
 	}
 
 	private void initEvent(){
@@ -346,11 +349,19 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 	 * @param v
 	 */
 	public void onSendClick(View v){
+		
+		//在没有图片的情况下，Adapter并不会初始化
+		if (mAdapter == null) {
+			return ;
+		}
+		
 		String[] selectPics = mAdapter.getSelectedImage();
-		Intent intent = new Intent();
-		intent.putExtra("selectPic", selectPics);
-		setResult(0, intent);
-		finish();
+		if (selectPics != null && selectPics.length > 0) {
+			Intent intent = new Intent();
+			intent.putExtra("selectPic", selectPics);
+			setResult(0, intent);
+			finish();
+		}
 	}
 	
 	

@@ -41,6 +41,8 @@ public class WeApplication extends Application {
 	
 	private static ExecutorService mExecutorPool;
 	
+	public static boolean bLoginSuccess = false;
+			
 	public static Context getContext(){
 		return mContext;
 	}

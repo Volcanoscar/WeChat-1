@@ -16,10 +16,10 @@
     
     <RelativeLayout
         android:id="@+id/chat_msg_layout"
-        android:layout_width="240dp"
+        android:layout_width="250dp"
         android:layout_height="190dp"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="46dp"
+        android:layout_marginLeft="40dp"
         android:layout_above="@id/msg_play">
         
         <!-- 文本显示控件 -->

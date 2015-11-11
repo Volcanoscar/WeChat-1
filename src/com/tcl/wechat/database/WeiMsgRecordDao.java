@@ -99,7 +99,7 @@ public class WeiMsgRecordDao {
 	 */
 	public int getRecorderCount(){
 		int recorderCnt = 0;
-		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		String[] columns = new String[]{Property.COLUMN_ID};
 		Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, columns, null, null, null, null, null);
 		if (cursor != null){

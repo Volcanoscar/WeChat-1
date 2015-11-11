@@ -121,6 +121,34 @@ public class MsgBoardViewGroup extends LinearLayout{
 		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
+	public void updateBindUser(){
+		
+		new AsyncTask<Void, Void, LinkedList<BindUser>>() {
+
+			@Override
+			protected LinkedList<BindUser> doInBackground(Void... params) {
+				return WeiUserDao.getInstance().getBindUsers();
+			}
+			
+			protected void onPostExecute(LinkedList<BindUser> result) {
+				if (result == null || result.isEmpty()) {
+					return ;
+				}
+				Log.i(TAG, "Result:" + result.toString());
+				int size = result.size();
+				for (int i = 0; i < size; i++) {
+					BindUser bindUser = result.get(i);
+					Log.i(TAG, "bindUser:" + bindUser);
+					MsgBoardView childView = mMsgBoardViewMap.get(bindUser.getOpenId());
+					Log.i(TAG, "childView:" + childView);
+					if (childView != null) {
+						childView.updateBindUser(bindUser);
+					}
+				}
+			};
+		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+	
 	/**
 	 * 增加消息记录
 	 * @param bindUser
@@ -134,7 +162,6 @@ public class MsgBoardViewGroup extends LinearLayout{
 		if (mAllRecorderInfos == null){
 			mAllRecorderInfos = new LinkedList<RecorderInfo>();
 		}
-		
 		/**
 		 * 1、判断该视图是否已经创建
 		 * 	是：更新消息

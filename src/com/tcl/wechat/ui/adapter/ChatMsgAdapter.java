@@ -1,6 +1,7 @@
 package com.tcl.wechat.ui.adapter;
 
 import java.io.File;
+import java.net.URLDecoder;
 import java.util.LinkedList;
 
 import android.animation.Animator;
@@ -27,6 +28,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -62,7 +65,7 @@ import com.tcl.wechat.view.ChatMsgImageView.UploadCompleteListener;
  *
  */
 @SuppressLint("InflateParams") 
-public class ChatMsgAdapter extends BaseAdapter{
+public class ChatMsgAdapter extends BaseAdapter implements OnScrollListener{
 	
 	private static final String TAG = ChatMsgAdapter.class.getSimpleName();
 	
@@ -254,17 +257,22 @@ public class ChatMsgAdapter extends BaseAdapter{
 		}
 		TextView textInfoTv = (TextView) mMsgView.findViewById(R.id.tv_text_view);
 		
-		String content = recorder.getContent();
-		Log.i(TAG, "content11:" + content);
-		if (!TextUtils.isEmpty(content)) {
-			content = content.replace("<![CDATA[", "").replace("]]>", "");
-			Log.i(TAG, "content22:" + content);
+		try {
+			String content = URLDecoder.decode(recorder.getContent(), "utf-8");
+			Log.i(TAG, "content11:" + content);
+			if (!TextUtils.isEmpty(content)) {
+				content = content.replace("<![CDATA[", "").replace("]]>", "");
+				Log.i(TAG, "content22:" + content);
+			}
+			CharSequence contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+						new StringBuffer(content));
+			textInfoTv.setText(contentCharSeq);
+			textInfoTv.setTypeface(new FontUtil(mContext).getFont("fonts/regular.TTF"));
+			mMsgView.setTag(contentCharSeq);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		CharSequence contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
-					new StringBuffer(content));
-		textInfoTv.setText(contentCharSeq);
-		textInfoTv.setTypeface(new FontUtil(mContext).getFont("fonts/regular.TTF"));
-		mMsgView.setTag(contentCharSeq);
 		return mMsgView;
 	}
 	
@@ -704,6 +712,20 @@ public class ChatMsgAdapter extends BaseAdapter{
 				dismissView.setLayoutParams(lp);
 			}
 		});
+	}
+
+	/**
+	 * 以下实现在滑动的过程中，不进行图片加载
+	 */
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		
 	}
 	
 }

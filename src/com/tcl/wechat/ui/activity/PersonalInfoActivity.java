@@ -46,8 +46,6 @@ public class PersonalInfoActivity extends Activity{
 	
 	private static final String PHOTO_FILE_NAME = "system.jpg";
 	
-	private Uri imageUri;
-	
 	private static Bitmap mBitmap;
 
 	private File tempFile;
@@ -158,7 +156,7 @@ public class PersonalInfoActivity extends Activity{
 			if (data != null) {
 				// 得到图片的全路径
 				Uri uri = data.getData();
-				imageUri = uri;
+				//imageUri = uri;
 				crop(uri);
 			}
 		} else if (requestCode == PHOTO_REQUEST_CAMERA) {
@@ -169,7 +167,7 @@ public class PersonalInfoActivity extends Activity{
 			} 
 		} else if (requestCode == PHOTO_REQUEST_CUT) {
 			try {
-				mBitmap = decodeUriAsBitmap(imageUri);//decode bitmap/*data.getParcelableExtra("data")*/;
+				mBitmap = data.getParcelableExtra("data");/*decodeUriAsBitmap(imageUri);*///decode bitmap/**/;
 				if (mBitmap != null){
 					mBitmap = ImageUtil.getInstance().zoomBitmap(mBitmap, 240, 240);
 					Bitmap newUserIcon = ImageUtil.getInstance().createCircleImage(mBitmap);
@@ -186,6 +184,7 @@ public class PersonalInfoActivity extends Activity{
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 	
+	@SuppressWarnings("unused")
 	private Bitmap decodeUriAsBitmap(Uri uri){
 		Bitmap bitmap = null;
 		try {
@@ -209,13 +208,13 @@ public class PersonalInfoActivity extends Activity{
 		intent.putExtra("aspectX", 1);
 		intent.putExtra("aspectY", 1);
 		// 裁剪后输出图片的尺寸大小
-		intent.putExtra("outputX", 240);
-		intent.putExtra("outputY", 240);
+		intent.putExtra("outputX", 400);
+		intent.putExtra("outputY", 400);
 		// 图片格式
 		intent.putExtra("scale", true);
 		intent.putExtra("outputFormat", "PNG");
 		intent.putExtra("noFaceDetection", true);// 取消人脸识别
-		intent.putExtra("return-data", false);
+		intent.putExtra("return-data", true);
 		startActivityForResult(intent, PHOTO_REQUEST_CUT);
 	}
 	

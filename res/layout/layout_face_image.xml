@@ -5,8 +5,8 @@
     android:orientation="vertical" >
     <ImageView
         android:id="@+id/img_face"
-        android:layout_width="@dimen/dp_50"
-        android:layout_height="@dimen/dp_50"
+        android:layout_width="@dimen/dp_65"
+        android:layout_height="@dimen/dp_65"
         android:layout_gravity="center"
         android:scaleType="fitXY"
         android:contentDescription="@string/contentDesc"/>
