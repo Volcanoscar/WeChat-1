@@ -18,6 +18,7 @@ import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPrepareCompletedListener;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
 import com.tcl.wechat.utils.DataFileTools;
+import com.tcl.wechat.utils.WeixinToast;
 
 /**
  * 录音按钮
@@ -82,6 +83,15 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 					mListener.startToRecorder();
 				}
 				return false;
+			}
+		});
+		
+		setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				WeixinToast.makeText(R.string.long_press_to_record).show();
 			}
 		});
 	}

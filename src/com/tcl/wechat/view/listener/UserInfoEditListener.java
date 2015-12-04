@@ -19,7 +19,7 @@ public interface UserInfoEditListener {
 	/**
 	 * 修改用户名称事件(设置备注)
 	 */
-	public void onEditUserNameEvent();
+	public void onEditUserNameEvent(String eventTag);
 	
 	/**
 	 * 取消编辑用户操作
@@ -28,7 +28,9 @@ public interface UserInfoEditListener {
 	
 	/**
 	 * 确定编辑用户操作
-	 * @param bindUser
+	 * @param openid
+	 * @param eventType 0:删除用户事件
+	 * 					1：编辑用户名称事件
 	 */
-	public void onConfirmEditUser(BindUser bindUser);
+	public void onConfirmEditUser(int eventType, String eventData);
 }

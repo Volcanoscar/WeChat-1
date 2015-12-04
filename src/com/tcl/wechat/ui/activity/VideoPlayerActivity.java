@@ -82,8 +82,10 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 	 * 获取Intent数据，再此需要获取视频文件路径
 	 */
 	private void handleIntent() {
-		mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() +
-				File.separator + "video.mp4";
+//		mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() +
+//				File.separator + "video.mp4";
+//		Log.i(TAG, "FilePath:" + mFilePath);
+		mFilePath = getIntent().getExtras().getString("FilePath");
 		Log.i(TAG, "FilePath:" + mFilePath);
 	}
 
@@ -138,7 +140,6 @@ public class VideoPlayerActivity extends Activity implements SurfaceHolder.Callb
 //		mLoadManager = DownloadManager.getInstace(); 
 		
 		// for test
-		mFilePath = "http://dlsw.baidu.com/sw-search-sp/soft/05/12876/epp_V4.0.0.395_setup.1441769341.exe";
 		String fileName = mFilePath.substring(mFilePath.lastIndexOf("/") + 1);
 		File savaFile = new File(DataFileTools.getInstance().getRecordVideoPath(), fileName);
 		Log.i(TAG, "fileName:" + fileName);

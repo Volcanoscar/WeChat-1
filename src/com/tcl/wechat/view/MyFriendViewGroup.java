@@ -9,30 +9,34 @@ import java.util.Map;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.common.IConstant.CommandAction;
 import com.tcl.wechat.common.IConstant.EventType;
 import com.tcl.wechat.controller.ActivityManager;
-import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.WeiXinMsgControl;
 import com.tcl.wechat.database.DeviceDao;
 import com.tcl.wechat.database.Property;
-import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
+import com.tcl.wechat.logcat.DLog;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.OnLineStatus;
 import com.tcl.wechat.model.WeiNotice;
 import com.tcl.wechat.ui.dialog.DelUserDialog;
+import com.tcl.wechat.ui.dialog.EditUserDialog;
 import com.tcl.wechat.utils.DensityUtil;
+import com.tcl.wechat.utils.WeixinToast;
 import com.tcl.wechat.view.GroupScrollView.ScrollViewListener;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
@@ -50,8 +54,6 @@ public class MyFriendViewGroup extends LinearLayout{
 	private static final String TAG = MyFriendViewGroup.class.getSimpleName();
 	
 	private Context mContext;
-	
-	private LayoutInflater mInflater;
 	
 	private LinkedList<BindUser> mAllBindUsers;
 	
@@ -91,20 +93,15 @@ public class MyFriendViewGroup extends LinearLayout{
 
 	private void init(Context context){
 		mContext = context;
-        mInflater = LayoutInflater.from(context);
         mAllUserViews = new ArrayList<UserView>();
         mAllBindUsers = new LinkedList<BindUser>();
         mAllUserViewMap = new HashMap<String, UserView>();
         mActivityManager = ActivityManager.getInstance();
         
         mActivityManager.setUserInfoEditListener(mEditListener);
-        
-        //加载数据
-        loadBindUserData();
 	}
 	
 	public void loadBindUserData() {
-		// TODO Auto-generated method stub
 		new AsyncTask<Void, Void, Void>() {
 
 			@Override
@@ -143,10 +140,15 @@ public class MyFriendViewGroup extends LinearLayout{
 				if (mAllBindUsers == null) {
 					return ;
 				}
-				
-				int childCount = getChildCount();
+				Log.i(TAG, "result:" + mAllBindUsers.toString());
+				int childCount = mAllBindUsers.size();
 				for (int i = 0; i < childCount; i++) {
-					attachUserToView(mAllBindUsers.get(i));
+					BindUser bindUser = mAllBindUsers.get(i);
+					if (mAllUserViewMap.containsKey(bindUser.getOpenId())){
+						attachUserToView(mAllBindUsers.get(i));
+					} else {
+						addUserColumn(bindUser, i);
+					}
 				}
 			};
 		}.executeOnExecutor(WeApplication.getExecutorPool());
@@ -242,22 +244,6 @@ public class MyFriendViewGroup extends LinearLayout{
 			return null;
 		}
 		
-//		View childView = mInflater.inflate(R.layout.layout_friend_view, null);
-//		UserInfoView userInfoView = (UserInfoView) childView.findViewById(R.id.user_info);
-//		
-//		UserView userView = new UserView(mContext);
-//		
-//		userInfoView.setUserIconEditable(true);
-//		userInfoView.setTag(bindUser.getOpenId());
-//		
-//		//添加好友编辑监听
-//		userInfoView.setUserInfoEditListener(mEditListener);
-//		
-//		//添加视图列表
-//		mAllUserViews.add(userInfoView);
-//		mAllUserViewMap.put(bindUser.getOpenId(), userInfoView);
-//		attachUserToView(bindUser);
-		
 		UserView userView = new UserView(mContext);
 		
 		userView.getUserInfoView().setUserIconEditable(true);
@@ -270,8 +256,6 @@ public class MyFriendViewGroup extends LinearLayout{
 		mAllUserViews.add(userView);
 		mAllUserViewMap.put(bindUser.getOpenId(), userView);
 		attachUserToView(bindUser);
-		
-		
 		return userView;
 	}
 	
@@ -281,7 +265,6 @@ public class MyFriendViewGroup extends LinearLayout{
 	 * @param bindUser
 	 */
 	private void attachUserToView(BindUser bindUser){
-		Log.i(TAG, "attachUserToView-->>");
 		if (bindUser == null){
 			return ;
 		}
@@ -300,7 +283,6 @@ public class MyFriendViewGroup extends LinearLayout{
 			WeiUserDao.getInstance().updateRemarkName(bindUser.getOpenId(), 
 					bindUser.getNickName());
 		}
-		Log.d(TAG, "user online status:" + bindUser.getStatus());
 		if ("true".equals(bindUser.getStatus())){ //在线
 			userInfoView.setOnLineStatue(true);
 			//用户在线状态监听器
@@ -322,25 +304,6 @@ public class MyFriendViewGroup extends LinearLayout{
 		addView(view, position, params);
 	}
 	
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		// TODO Auto-generated method stub
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		
-	}
-	
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		// TODO Auto-generated method stub
-		super.onLayout(changed, l, t, r, b);
-	}
-	
-	@Override
-	protected void onDraw(Canvas canvas) {
-		// TODO Auto-generated method stub
-		super.onDraw(canvas);
-	}
-
 	/**
 	 * 获取轨迹
 	 * @param leftMargin
@@ -376,11 +339,6 @@ public class MyFriendViewGroup extends LinearLayout{
 	public void updateAllUser(){
 		Log.i(TAG, "updateAllUser");
 		//更新界面
-		//int size = mAllUserViews.size();
-		//for (int i = 0; i < size; i++) {
-		//	UserView uv = mAllUserViews.get(i);
-		//	uv.invalidate();
-		//}
 		int childCount = getChildCount();
 		for (int i = 0; i < childCount; i++) {
 			UserView uv = (UserView) getChildAt(i);
@@ -395,6 +353,12 @@ public class MyFriendViewGroup extends LinearLayout{
 	 */
 	public void onUserOlineStatusChanged(BindUser bindUser, boolean bOnLine) {
 		Log.d(TAG, "onUserOlineStatusChanged OnLineStatus:" + bOnLine);
+		if (bindUser == null){
+			return ;
+		}
+		if (!mAllUserViewMap.containsKey(bindUser.getOpenId())){
+			return;
+		}
 		UserInfoView userView = mAllUserViewMap.get(bindUser.getOpenId()).getUserInfoView();
 		if (userView == null){
 			return ;
@@ -414,8 +378,9 @@ public class MyFriendViewGroup extends LinearLayout{
 	private UserInfoEditListener mEditListener = new UserInfoEditListener() {
 		
 		@Override
-		public void onEditUserNameEvent() {
-			
+		public void onEditUserNameEvent(String eventTag) {
+			EditUserDialog dialog = new EditUserDialog(mContext);
+			dialog.showDialog(eventTag);
 		}
 
 		@Override
@@ -425,9 +390,7 @@ public class MyFriendViewGroup extends LinearLayout{
 			BindUser bindUser = getBindUser(openid);
 			UserInfoView userInfoView = mAllUserViewMap.get(openid).getUserInfoView();
 			userInfoView.setDeleteStatue(true);
-//			Intent intent = new Intent(mContext, DelUserActivity.class);
-//			intent.putExtra("bindUser", bindUser);
-//			mContext.startActivity(intent);
+
 			DelUserDialog dialog = new DelUserDialog(mContext);
 			dialog.showDailog(bindUser);
 		}
@@ -439,18 +402,51 @@ public class MyFriendViewGroup extends LinearLayout{
 		}
 
 		@Override
-		public void onConfirmEditUser(BindUser user) {
+		public void onConfirmEditUser(int eventType, String eventData) {
 			// TODO Auto-generated method stub
-			String deviceId = DeviceDao.getInstance().getMemberId();
-			String openid = user.getOpenId();
 			
-			Map<String, String> values = new HashMap<String, String>();
-			values.put(Property.COLUMN_OPENID, openid);
-			values.put(Property.COLUMN_DEVICEID, deviceId);
-			new WeiXmppCommand(EventType.TYPE_UNBIND_EVENT, values, mListener).execute();
+			if (0 == eventType){ //删除用户事件
+				String memberId = DeviceDao.getInstance().getMemberId();
+				Map<String, String> values = new HashMap<String, String>();
+				values.put(Property.COLUMN_OPENID, eventData);
+				values.put(Property.COLUMN_DEVICEID, memberId);
+				new WeiXmppCommand(EventType.TYPE_UNBIND_EVENT, values, mListener).execute();
+			} else if (1 == eventType){ //编辑用户信息事件
+				
+				//刷新界面
+				updateAllUser();
+				
+				//获取数据
+				DLog.d(TAG, "eventData:" + eventData);
+				String openid = eventData.substring(0, eventData.indexOf("#"));
+				String remarkName = eventData.substring(eventData.indexOf("#") + 1, eventData.length());
+				DLog.d(TAG, "OpendId:" + openid + ",remarkName:" + remarkName);
+				
+				//更新用户名称
+				if (!TextUtils.isEmpty(remarkName)){
+					if (WeiUserDao.getInstance().updateRemarkName(openid, remarkName)){
+						DLog.i(TAG, "edit user name successfully!!");
+						
+						UserView userView = mAllUserViewMap.get(openid);
+						if (userView != null){
+							userView.getUserInfoView().setUserName(remarkName);
+						}else {
+							DLog.w(TAG, "userInfoView is not exist!");
+						}
+						
+						//通知更新用户名称
+						Intent intent = new Intent();
+						intent.setAction(CommandAction.ACTION_UPDATE_BINDUSER);
+						mContext.sendBroadcast(intent);
+					}
+				} else {
+					WeixinToast.makeText(R.string.remarkname_is_null).show();
+				}
+			}
 		}
 
 	};
+	
 	
 	/**
 	 * 解绑用户
@@ -471,7 +467,7 @@ public class MyFriendViewGroup extends LinearLayout{
 		weiNotice.setHeadImageUrl(bindUser.getHeadImageUrl());
 		weiNotice.setNickName(bindUser.getNickName());
 		weiNotice.setSex(bindUser.getSex());
-		WeiXinMsgManager.getInstance().receiveNoticeMsg(weiNotice );
+		WeiXinMsgControl.getInstance().receiveNoticeMsg(weiNotice );
 	}
 	
 	private XmppEventListener mListener = new XmppEventListener() {
@@ -505,11 +501,10 @@ public class MyFriendViewGroup extends LinearLayout{
 	private void startMonitorUserStatus(String openId){
 		OnLineStatus status = new OnLineStatus();
 		status.setOpenid(openId);
-		status.setTriggerTime(WeiMsgRecordDao.getInstance().getLatestRecorderTime(openId));
-		WeiXinMsgManager.getInstance().notifyUserStatusChaned(status);
+		status.setTriggerTime(WeiRecordDao.getInstance().getLatestRecorderTime(openId));
+		WeiXinMsgControl.getInstance().notifyUserStatusChaned(status);
 				
 	}
-	
 	
 	/**
 	 * 以下为滑动过程中，改变view的位置

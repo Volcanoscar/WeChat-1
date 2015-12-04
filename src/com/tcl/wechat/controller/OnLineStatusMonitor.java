@@ -65,8 +65,7 @@ public class OnLineStatusMonitor {
 		mAlarmsHashMap.put(status.getOpenid(), pendingIntent);
 		
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
-			long triggerAtMillis = sdf.parse(status.getTriggerTime()).getTime() + INTERVAL;
+			long triggerAtMillis = Long.parseLong(status.getTriggerTime());
 			mAlarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

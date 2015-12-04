@@ -19,12 +19,16 @@ public class ProgressView extends View {
 	
 	private Paint mPaint;//画笔
 	
+	private int mWidth;
+	
+	private int mHeight;
+	
 	public ProgressView(Context context) {
-		super(context);
+		this(context, null);
 	}
 	
 	public ProgressView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+		this(context, attrs, 0);
 	}
 	
 	public ProgressView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -39,18 +43,42 @@ public class ProgressView extends View {
         mPaint.setAntiAlias(true); 
         mPaint.setStyle(Paint.Style.FILL); 
         
+//        mPaint.setColor(Color.parseColor("#70000000"));
+//        canvas.drawRect(0, 0, getWidth(), getHeight()-getHeight()*mProgress/100, mPaint);
+//        
+//        mPaint.setColor(Color.parseColor("#00000000"));
+//        canvas.drawRect(0, getHeight()-getHeight()*mProgress/100, getWidth(),  getHeight(), mPaint);
+//        
+//        mPaint.setTextSize(30);
+//        mPaint.setColor(Color.parseColor("#FFFFFF"));
+//		mPaint.setStrokeWidth(2);
+//		Rect rect = new Rect();
+//		mPaint.getTextBounds("100%", 0, "100%".length(), rect);
+//		canvas.drawText(mProgress+"%", getWidth()/2-rect.width()/2,getHeight()/2, mPaint);
         mPaint.setColor(Color.parseColor("#70000000"));
-        canvas.drawRect(0, 0, getWidth(), getHeight()-getHeight()*mProgress/100, mPaint);
+        canvas.drawRect(0, 0, mWidth, mHeight - mHeight * mProgress / 100, mPaint);
         
         mPaint.setColor(Color.parseColor("#00000000"));
-        canvas.drawRect(0, getHeight()-getHeight()*mProgress/100, getWidth(),  getHeight(), mPaint);
+        canvas.drawRect(0, 
+        		mHeight - mHeight * mProgress / 100, 
+        		mWidth,  
+        		mHeight, 
+        		mPaint);
         
         mPaint.setTextSize(30);
         mPaint.setColor(Color.parseColor("#FFFFFF"));
 		mPaint.setStrokeWidth(2);
-		Rect rect=new Rect();
+		Rect rect = new Rect();
 		mPaint.getTextBounds("100%", 0, "100%".length(), rect);
-		canvas.drawText(mProgress+"%", getWidth()/2-rect.width()/2,getHeight()/2, mPaint);
+		canvas.drawText(mProgress+"%", 
+				mWidth / 2 - rect.width() / 2,
+				mHeight / 2, 
+				mPaint);
+	}
+	
+	public void setImageSize(int width, int height){
+		mWidth = width;
+		mHeight = height;
 	}
 	
 	public void setProgress(int progress){

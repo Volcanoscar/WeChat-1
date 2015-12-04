@@ -9,4 +9,12 @@
         android:layout_height="@dimen/dp_400"
         android:layout_gravity="center"
         style="@style/loadingProgressBarStyle"/>
+    
+<!--     <com.tcl.wechat.view.GifView -->
+<!--         android:layout_width="@dimen/dp_300"   -->
+<!--         android:layout_height="@dimen/dp_300"   -->
+<!--         android:layout_gravity="center"   -->
+<!--         android:enabled="false" -->
+<!--         custom:gif="@drawable/load" /> -->
+    
 </FrameLayout>

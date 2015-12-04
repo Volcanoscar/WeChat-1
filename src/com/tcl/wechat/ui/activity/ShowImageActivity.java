@@ -1,7 +1,6 @@
 package com.tcl.wechat.ui.activity;
 
 import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -21,22 +20,20 @@ import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.common.IConstant.ChatMsgRource;
-import com.tcl.wechat.database.WeiMsgRecordDao;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.common.IConstant.ChatMsgSource;
+import com.tcl.wechat.database.WeiRecordDao;
+import com.tcl.wechat.logcat.DLog;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.MD5Util;
-import com.tcl.wechat.utils.ToastUtil;
+import com.tcl.wechat.utils.WeixinToast;
 
 /**
  * 图片预览控件
@@ -48,8 +45,6 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 
 	private static final String TAG = ShowImageActivity.class.getSimpleName();
 
-	private RelativeLayout mLayout;
-	private LinearLayout mLinearLayout;
 	private ImageView mImageView;
 	private ProgressDialog mDownloadProgressDialog;
 	private ProgressDialog mSaveProgressDialog;
@@ -83,16 +78,21 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 
 	private String mFileName;
 	private Bitmap mBitmap;
+	
+	// 计算点击的次数  
+	private int count = 0;  
+	// 第一次点击的时间 long型  
+	private long firstClick = 0;  
+	// 最后一次点击的时间  
+	private long lastClick = 0; 
 
 	/**
 	 * 消息内容
 	 */
-	private WeiXinMsgRecorder mRecorder;
+	private WeiXinMessage mRecorder;
 
 	private int mCurImageIndex = 0;
 	private ArrayList<String> mAllUserImageUrl;
-
-	private Semaphore mSemaphore;
 
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -107,7 +107,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
 		displayWidth = dm.widthPixels;
 		displayHeight = dm.heightPixels;
-
+		
 		init();
 	}
 
@@ -118,12 +118,11 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			return;
 		}
 		mRecorder = bundle.getParcelable("WeiXinMsgRecorder");
+		mFileName = mRecorder.getUrl();
 		if (mRecorder == null) {
 			return;
 		}
 
-		mLayout = (RelativeLayout) findViewById(R.id.layout_imagepreview);
-		mLinearLayout = (LinearLayout) findViewById(R.id.layout_imgfun);
 		mImageView = (ImageView) findViewById(R.id.img_preview);
 		mImageView.setOnTouchListener(this);
 
@@ -132,8 +131,6 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				getString(R.string.loading));
 		mDownloadProgressDialog.setCancelable(true);
 
-		mSemaphore = new Semaphore(1);
-		mFileName = mRecorder.getUrl();
 		// 预加载所有图片的url
 		loadImageUrl();
 
@@ -149,18 +146,27 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				if (ChatMsgRource.RECEIVEED.equals(mRecorder.getReceived())) {
-					mAllUserImageUrl = WeiMsgRecordDao.getInstance()
+				if (ChatMsgSource.RECEIVEED.equals(mRecorder.getReceived())) {
+					mAllUserImageUrl = WeiRecordDao.getInstance()
 							.getAllRecorderUrl(mRecorder.getOpenid());
 				} else {
-					mAllUserImageUrl = WeiMsgRecordDao.getInstance()
+					mAllUserImageUrl = WeiRecordDao.getInstance()
 							.getAllRecorderUrl(mRecorder.getToOpenid());
 				}
+				DLog.d(TAG, "mAllUserImageUrl:" + mAllUserImageUrl);
 				mCurImageIndex = mAllUserImageUrl.indexOf(mRecorder.getUrl());
-				mSemaphore.release();
+				DLog.d(TAG, "mCurImageIndex:" + mCurImageIndex);
+				
 				return null;
 			}
 		}.executeOnExecutor(WeApplication.getExecutorPool());
+	}
+	
+	private void dismissProgressDialog(){
+		if (mDownloadProgressDialog != null
+				&& mDownloadProgressDialog.isShowing()) {
+			mDownloadProgressDialog.dismiss();
+		}
 	}
 
 	/**
@@ -182,25 +188,25 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 		// ImageLoader.getInstance().getImageViewWidth(mImageView);
 		// mImgWidth = size.getWidth();
 		// mImgHeight = size.getHeight();
-
+		
+		//接收到的消息，需从网络下载
 		if (TextUtils.isEmpty(mFileName)) {
-			if (mDownloadProgressDialog != null
-					&& mDownloadProgressDialog.isShowing()) {
-				mDownloadProgressDialog.dismiss();
-			}
-			ToastUtil.showToastForced(R.string.load_img_failed);
+			dismissProgressDialog();
+			WeixinToast.makeText(R.string.load_img_failed).show();
 			return;
 		}
 
-		// 方法三：加载网络图片
+		// 方法三：加载网络图片（同时防止OOM）
 		WeApplication.getImageLoader().get(mFileName, new ImageListener() {
 
 			@Override
 			public void onErrorResponse(VolleyError arg0) {
 				// TODO Auto-generated method stub
+				dismissProgressDialog();
 				mBitmap = BitmapFactory.decodeResource(getResources(),
 						R.drawable.pictures_no);
 				mImageView.setImageBitmap(mBitmap);
+				WeixinToast.makeText(R.string.load_img_failed).show();
 			}
 
 			@Override
@@ -210,23 +216,27 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				if (mBitmap == null) {
 					return;
 				}
-				if (mDownloadProgressDialog != null
-						&& mDownloadProgressDialog.isShowing()) {
-					mDownloadProgressDialog.dismiss();
-				}
-				mImgWidth = mBitmap.getWidth();
-				mImgHeight = mBitmap.getHeight();
-				Log.i(TAG, "mImgWidth:" + mImgWidth + ", mImgHeight:"
-						+ mImgHeight);
-				mImageView.setImageBitmap(mBitmap);
-				mImageView.setFocusable(true);
-				mImageView.setFocusableInTouchMode(true);
-				minScale = getMinScale();
-				matrix.setScale(minScale, minScale);
-				center();
-				mImageView.setImageMatrix(matrix);
+				dismissProgressDialog();
+				drawBitmap();
 			}
-		}, 0, 0);
+		}, 1900, 1080);
+	}
+	
+	private void drawBitmap(){
+		if (mBitmap == null){
+			return ;
+		}
+		mImgWidth = mBitmap.getWidth();
+		mImgHeight = mBitmap.getHeight();
+		Log.i(TAG, "mImgWidth:" + mImgWidth + ", mImgHeight:"
+				+ mImgHeight);
+		mImageView.setImageBitmap(mBitmap);
+		mImageView.setFocusable(true);
+		mImageView.setFocusableInTouchMode(true);
+		minScale = getMinScale();
+		matrix.setScale(minScale, minScale);
+		center();
+		mImageView.setImageMatrix(matrix);
 	}
 
 	/**
@@ -235,44 +245,19 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 	 * @param view
 	 */
 	public void previousView(View view) {
-		if (mDownloadProgressDialog == null) {
-			mDownloadProgressDialog = ProgressDialog.show(this, null,
-					getString(R.string.loading));
-		} else {
-			mDownloadProgressDialog.show();
-		}
-
-		new AsyncTask<Void, Void, Boolean>() {
-
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				// TODO Auto-generated method stub
-				try {
-					// 防止在第一次进入，快速查看图片是，未加载完成问题
-					if (mAllUserImageUrl == null) {
-						mSemaphore.acquire();
-					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return true;
+		
+		dismissProgressDialog();
+		
+		if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
+			if (mCurImageIndex > 0) {
+				mCurImageIndex--;
+			} else {
+				WeixinToast.makeText(R.string.is_first_image, 1000).show();
+				return;
 			}
-
-			protected void onPostExecute(Boolean result) {
-				mDownloadProgressDialog.dismiss();
-				if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
-					if (mCurImageIndex > 0) {
-						mCurImageIndex--;
-					} else {
-						ToastUtil.showToastForced(R.string.is_first_image);
-						return;
-					}
-					mFileName = mAllUserImageUrl.get(mCurImageIndex);
-				}
-				loadImage();
-			};
-		}.executeOnExecutor(WeApplication.getExecutorPool());
+			mFileName = mAllUserImageUrl.get(mCurImageIndex);
+		}
+		loadImage();
 	}
 
 	/**
@@ -281,43 +266,19 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 	 * @param View
 	 */
 	public void nextView(View View) {
-		if (mDownloadProgressDialog == null) {
-			mDownloadProgressDialog = ProgressDialog.show(this, null,
-					getString(R.string.loading));
-		} else {
-			mDownloadProgressDialog.show();
-		}
-
-		new AsyncTask<Void, Void, Boolean>() {
-
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				// TODO Auto-generated method stub
-				try {
-					if (mAllUserImageUrl == null) {
-						mSemaphore.acquire();
-					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return true;
+		
+		dismissProgressDialog();
+		
+		if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
+			if (mCurImageIndex < mAllUserImageUrl.size() - 1) {
+				mCurImageIndex++;
+			} else {
+				WeixinToast.makeText(R.string.is_last_image, 1000).show();
+				return;
 			}
-
-			protected void onPostExecute(Boolean result) {
-				mDownloadProgressDialog.dismiss();
-				if (mAllUserImageUrl != null && mAllUserImageUrl.size() > 0) {
-					if (mCurImageIndex < mAllUserImageUrl.size() - 1) {
-						mCurImageIndex++;
-					} else {
-						ToastUtil.showToastForced(R.string.is_last_image);
-						return;
-					}
-					mFileName = mAllUserImageUrl.get(mCurImageIndex);
-				}
-				loadImage();
-			};
-		}.executeOnExecutor(WeApplication.getExecutorPool());
+			mFileName = mAllUserImageUrl.get(mCurImageIndex);
+		}
+		loadImage();
 	}
 
 	/**
@@ -337,10 +298,6 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				// TODO Auto-generated method stub
 				String fileName = MD5Util.hashKeyForDisk(mFileName);
 				String savePath = DataFileTools.getInstance().getTempPath();
-				// 如果已经保存，则不再保存
-				// if (DataFileTools.fileExist(savePath, fileName)){
-				// return true;
-				// }
 				return ImageUtil.getInstance().saveBitmap(mBitmap, fileName,
 						savePath);
 			}
@@ -348,13 +305,13 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			protected void onPostExecute(Boolean result) {
 				mSaveProgressDialog.dismiss();
 				if (result) {
-					ToastUtil.showToastForced(String.format(
+					WeixinToast.makeText(String.format(
 							getString(R.string.save_image_hint), DataFileTools
-									.getInstance().getTempPath()));
+									.getInstance().getTempPath())).show();
 				} else {
-					ToastUtil.showToastForced(String.format(
+					WeixinToast.makeText(String.format(
 							getString(R.string.save_image_failed),
-							DataFileTools.getInstance().getTempPath()));
+							DataFileTools.getInstance().getTempPath())).show();
 				}
 			};
 		}.executeOnExecutor(WeApplication.getExecutorPool());
@@ -375,28 +332,18 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 		Matrix matrix = new Matrix();
 		matrix.postRotate(mDegree);
 		mDegree += 90;
-		Bitmap resizeBmp = Bitmap.createBitmap(mBitmap, 0, 0, bmpWidth,
-				bmpHeight, matrix, true);
-
-		mLayout.removeAllViews();
-		mImageView = new ImageView(this);
-		mImageView.setFocusable(true);
-		mImageView.setFocusableInTouchMode(true);
-		mImageView.setOnTouchListener(this);
-		mImageView.setImageBitmap(resizeBmp);
-		RelativeLayout.LayoutParams params = new LayoutParams(
-				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-		mLayout.addView(mImageView, params);
-		mLayout.addView(mLinearLayout);
-		setContentView(mLayout);
+		
+		mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, bmpWidth,  
+				bmpHeight, matrix, true);  
+		drawBitmap();
 	}
 
 	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		ImageView mImageView = (ImageView) v;
+	public boolean onTouch(View view, MotionEvent event) {
+		ImageView mImageView = (ImageView) view;
 		switch (event.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:
+			matrix.set(mImageView.getImageMatrix());
 			savedMatrix.set(matrix);
 			point0.set(event.getX(), event.getY());
 			mode = DRAG;
@@ -426,13 +373,40 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 		checkView();
 		return true;
 	}
+	
+	/**
+	 * 检测是否双击，状态恢复
+	 */
+	private void checkReset(){
+		// 如果第二次点击 距离第一次点击时间过长 那么将第二次点击看为第一次点击  
+        if (firstClick != 0 && System.currentTimeMillis() - firstClick > 500){  
+            count = 0;  
+        }  
+        count++; 
+        if (count == 1){  
+            firstClick = System.currentTimeMillis();  
+        } else if (count == 2){  
+            lastClick = System.currentTimeMillis();  
+            // 两次点击小于500ms 也就是连续点击  
+            if (lastClick - firstClick < 500){
+            	drawBitmap();
+            }  
+            clear();
+        }  
+	}
+	
+	// 清空状态  
+    private void clear(){  
+        count = 0;  
+        firstClick = 0;  
+        lastClick = 0;  
+    } 
 
 	private void whenMove(MotionEvent event) {
 		switch (mode) {
 		case DRAG:
 			matrix.set(savedMatrix);
-			matrix.postTranslate(event.getX() - point0.x, event.getY()
-					- point0.y);
+			matrix.postTranslate(event.getX() - point0.x, event.getY() - point0.y);
 			break;
 		case ZOOM:
 			float newDist = spacing(event);
@@ -455,7 +429,8 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 	private void setMidPoint(MotionEvent event) {
 		float x = event.getX(0) + event.getY(1);
 		float y = event.getY(0) + event.getY(1);
-		pointM.set(x / 2, y / 2);
+		//pointM.set(x / 2, y / 2); 
+		pointM.set(displayWidth / 2, displayHeight / 2);
 	}
 
 	// 图片居中

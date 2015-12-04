@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/chat_voice_right_selector"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content"
+    android:orientation="vertical" 
+    android:layout_gravity="right"
+    android:gravity="left|center_vertical" 
+    android:background="@drawable/chatto_bg">
     <TextView 
         android:id="@+id/tv_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dp_10"
-        android:gravity="left" 
-        android:textSize="28sp"
+        android:paddingLeft="@dimen/dp_5"
+        android:paddingRight="@dimen/dp_5"
+        android:gravity="left|center_vertical" 
+        android:textSize="24sp"
         android:textColor="@color/black"
-        android:lineSpacingMultiplier="1.2"
-        android:maxWidth="@dimen/dp_800"
-	  	android:adjustViewBounds="true"/>
+	  	android:maxWidth="@dimen/dp_900"
+	  	android:adjustViewBounds="true"
+	  	android:lineSpacingExtra="@dimen/dp_5"
+	  	android:autoLink="web"/>
 </LinearLayout>

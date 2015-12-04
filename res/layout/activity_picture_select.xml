@@ -1,8 +1,9 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
     
     <com.tcl.wechat.view.TopBarView
         android:id="@+id/topbar"
@@ -10,41 +11,48 @@
         android:layout_height="@dimen/dp_70" 
         custom:title="@string/select_picture"/>
     
-    <Button 
-        android:id="@+id/btn_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/dp_60"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="@dimen/dp_5"
-        android:layout_marginRight="@dimen/dp_10"
-        android:paddingLeft="@dimen/dp_10"
-        android:paddingRight="@dimen/dp_10"
-        android:text="@string/send"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        android:onClick="onSendClick"
-        android:background="@drawable/send_btn_disable"/>
-    
-    <GridView
-        android:id="@+id/gv_image_select"
+    <LinearLayout 
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/topbar"
-        android:cacheColorHint="@android:color/transparent"
-        android:clipChildren="true"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center"
-        android:horizontalSpacing="@dimen/dp_3"
-        android:listSelector="@android:color/transparent"
-        android:numColumns="10"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="3dp" >
-    </GridView>
+        android:orientation="horizontal" >
+        <GridView
+	        android:id="@+id/gv_image_select"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent"
+	        android:layout_weight="8"
+	        android:padding="@dimen/dp_3"
+	        android:cacheColorHint="@android:color/transparent"
+	        android:clipChildren="true"
+	        android:gravity="center"
+	        android:horizontalSpacing="@dimen/dp_3"
+	        android:listSelector="@android:color/transparent"
+	        android:numColumns="8"
+	        android:stretchMode="columnWidth"
+	        android:verticalSpacing="3dp"
+	        android:background="@drawable/bg_border_stroke">
+    	</GridView>
+    	<Button 
+	        android:id="@+id/btn_indicator"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:layout_gravity="center"
+	        android:layout_margin="@dimen/dp_10"
+	        android:padding="@dimen/dp_10"
+	        android:text="@string/send"
+	        android:textSize="22sp"
+	        android:textColor="@color/white"
+	        android:onClick="onSendClick"
+	        android:background="@drawable/send_btn_disable"/>
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/layout_bottom_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:background="#e0000000"
         android:clickable="true" >
         <TextView
@@ -72,5 +80,4 @@
             android:text="@string/pic_count"
             android:textColor="@android:color/white" />
     </RelativeLayout>
-
-</RelativeLayout>
+</LinearLayout>

@@ -1,154 +1,122 @@
 package com.tcl.wechat.view;
 
-import java.io.File;
-
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.view.MotionEvent;
-import android.widget.ImageView;
+import android.view.View;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader.ImageContainer;
-import com.android.volley.toolbox.ImageLoader.ImageListener;
-import com.tcl.wechat.WeApplication;
+import com.tcl.wechat.R;
 
 /**
- * 图片消息显示控件
+ * 图片消息控件
  * @author rex.lei
  *
  */
-public class MsgImageView extends ImageView{
-	
-	private Context mContext;
-	
-	private static final int MAX_WIDTH = 200;
-	private static final int MAX_HEIGHT = 200;
+public class MsgImageView extends View{
+
+	private Paint mPaint ;
 	
 	private Bitmap mBitmap;
-	private int mScreenWidth;
-	private int mScreenHeight;
-	private float mScaleWidth;  
-    private float mScaleHeight; 
-    
-    private boolean bScale = false;
+	
+	/** 边框颜色  */
+	private int mBoundColor;
+	/** 边框宽度  */
+	private int mBoundWidth = 3;//默认值
+	/** 是否带边框 */
+	private boolean hasBound = true;
 	
 	public MsgImageView(Context context) {
 		this(context, null);
-		// TODO Auto-generated constructor stub
 	}
 
 	public MsgImageView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		// TODO Auto-generated constructor stub
-		init(context);
+		this(context, attrs, 0);
 	}
 
-	private void init(Context context) {
-		// TODO Auto-generated method stub
-		mContext = context;
-		DisplayMetrics dm = new DisplayMetrics();
-		((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(dm);
-		mScreenWidth = dm.widthPixels;
-		mScaleHeight = dm.heightPixels;
-	}
-
-	/**
-	 * 设置显示图片
-	 * @param requestUrl
-	 */
-	public void setImageBitmap(String requestUrl){
-		WeApplication.getImageLoader().get(requestUrl, new ImageListener() {
-			
-			public void onErrorResponse(VolleyError arg0) {
-				
-			}
-			
-			public void onResponse(ImageContainer arg0, boolean arg1) {
-				mBitmap = arg0.getBitmap();
-				showImage(mBitmap);
-			}
-		}, 0, 0);
-	}
-	
-	private int calculateInSampleSize(Bitmap bitmap, int reqWidth, int reqHeight){
-		// 源图片的宽度
-		int width = bitmap.getWidth();
-		int height = bitmap.getHeight();
-		int inSampleSize = 1;
-
-		if (width > reqWidth && height > reqHeight){
-			// 计算出实际宽度和目标宽度的比率
-			int widthRatio = Math.round((float) width / (float) reqWidth);
-			int heightRatio = Math.round((float) width / (float) reqWidth);
-			inSampleSize = Math.max(widthRatio, heightRatio);
-		}
-		return inSampleSize;
-	}
-	
-	private Bitmap decodeSampledBitmap(Bitmap bitmap){
-//		// 第一次解析将inJustDecodeBounds设置为true，来获取图片大小
-//		final BitmapFactory.Options options = new BitmapFactory.Options();
-//		options.inJustDecodeBounds = true;
-//		BitmapFactory.decodeFile(pathName, options);
-//		// 调用上面定义的方法计算inSampleSize值
-//		options.inSampleSize = calculateInSampleSize(options, reqWidth,
-//				reqHeight);
-//		// 使用获取到的inSampleSize值再次解析图片
-//		options.inJustDecodeBounds = false;
-//		Bitmap bitmap = BitmapFactory.decodeFile(pathName, options);
-		Bitmap outBitmap = null;
-		// 源图片的宽度
+	public MsgImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 		
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;
-		options.inSampleSize = calculateInSampleSize(bitmap, MAX_WIDTH, MAX_HEIGHT);
-		options.inJustDecodeBounds = false;
-//		Bitmap bitmap1 = BitmapFactory.decodeFile(, options);
-				
+		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.borderImageView);
+		mBitmap = BitmapFactory.decodeResource(getResources(), 
+				ta.getResourceId(R.styleable.borderImageView_imageSrc, 0));
+		mBoundColor = ta.getColor(R.styleable.borderImageView_border_color, Color.WHITE);
+		mBoundWidth = (int) ta.getDimensionPixelSize(R.styleable.borderImageView_border_width, 3);
+		ta.recycle();
 		
-		return outBitmap;
+		//默认图片
+		if (mBitmap == null){
+			mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pictures_no);
+		}
+		
+		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG
+				| Paint.FILTER_BITMAP_FLAG);
+	}
+	
+	public void setImageBitmap(Bitmap bitmap){
+		mBitmap = bitmap;
+		postInvalidate();
+	}
+	
+	public void setImageResource(int srcId){
+		mBitmap = BitmapFactory.decodeResource(getResources(), srcId);
+		postInvalidate();
 	}
 
-	
-	private void showImage(Bitmap bitmap){
-		if (mBitmap != null){
-			mScaleWidth = ((float)mScreenWidth) / mBitmap.getWidth();  
-			mScaleHeight = ((float)mScreenHeight) / mBitmap.getHeight();
-			setImageBitmap(decodeSampledBitmap(bitmap));
-		}
-	}
-	
-	
-	
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		switch(event.getAction()){  
-			case MotionEvent.ACTION_DOWN:{
-				bScale = !bScale;
-				if (bScale){
-					 Matrix matrix=new Matrix();  
-                     matrix.postScale(mScaleWidth, mScaleHeight);  
-                       
-                     Bitmap newBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), 
-                    		 mBitmap.getHeight(), matrix, true);  
-                     setImageBitmap(newBitmap);  
-				} else {
-					 Matrix matrix=new Matrix();  
-                     matrix.postScale(1.0f,1.0f);  
-                     Bitmap newBitmap=Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), 
-                    		 mBitmap.getHeight(), matrix, true);  
-                     setImageBitmap(newBitmap);  
-				}
-			}
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
+		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+		int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+		int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+		int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+		int width, height;
+		if (widthMode == MeasureSpec.EXACTLY) {
+			width = widthSize;
+		} else {
+			width = mBitmap.getWidth();
 		}
-		return super.onTouchEvent(event);
+		
+		if (heightMode == MeasureSpec.EXACTLY) {
+			height = heightSize;
+		} else {
+			height = mBitmap.getHeight();
+		}
+		setMeasuredDimension(width, height);
 	}
 	
-
+	@SuppressLint("DrawAllocation") 
+	protected void onDraw(Canvas canvas) {
+		// TODO Auto-generated method stub
+		super.onDraw(canvas);
+		int width = getMeasuredWidth();
+		int height = getMeasuredHeight();
+		
+		//绘制边框
+		if (hasBound) {
+			mPaint.setColor(mBoundColor);
+			mPaint.setStyle(Style.STROKE);
+			mPaint.setStrokeWidth(mBoundWidth);
+			RectF bound = new RectF(new Rect(0, 0, width, height));
+			canvas.drawRoundRect(bound, 10, 10, mPaint);
+		}
+		
+		//设置图片的大小
+		
+		//绘制图片
+		Bitmap output = Bitmap.createScaledBitmap(mBitmap, 
+				width - getPaddingLeft() - getPaddingRight(), 
+				height - getPaddingTop() - getPaddingBottom(), 
+				true);
+        canvas.drawBitmap(output, getPaddingLeft(), getPaddingTop(), mPaint);
+	}
 }

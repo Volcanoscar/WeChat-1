@@ -31,7 +31,6 @@ public class FaceVPAdapter extends PagerAdapter {
 		if (views != null) {
 			return views.size();
 		}
-
 		return 0;
 	}
 

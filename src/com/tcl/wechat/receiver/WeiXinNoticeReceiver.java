@@ -16,7 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.tcl.wechat.common.IConstant.EventType;
-import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.WeiXinMsgControl;
 import com.tcl.wechat.model.WeiNotice;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
 
@@ -29,7 +29,7 @@ public class WeiXinNoticeReceiver extends BroadcastReceiver{
 
 	private static final String TAG = WeiXinNoticeReceiver.class.getSimpleName();
  	
-	private WeiXinMsgManager mWeiXinMsgManager = WeiXinMsgManager.getInstance();
+	private WeiXinMsgControl mWeiXinMsgManager = WeiXinMsgControl.getInstance();
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {

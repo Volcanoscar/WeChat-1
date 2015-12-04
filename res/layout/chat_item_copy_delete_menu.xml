@@ -1,36 +1,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="@dimen/dp_150"
-    android:layout_height="@dimen/dp_50"
+    android:layout_width="@dimen/dp_240"
+    android:layout_height="wrap_content"
     android:background="@drawable/popmenu_bg"
     android:gravity="center"
-    android:orientation="horizontal" >
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/chat_copy_menu"
-        android:layout_width="@dimen/dp_75"
-        android:layout_height="@dimen/dp_50"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp_15"
         android:gravity="center"
         android:text="@string/copy"
-        android:textSize="14sp"
-        android:textColor="#ffffff" />
+        android:textSize="22sp"
+        android:textColor="@color/black" />
 
     <View
-        android:layout_width="@dimen/dp_1"
-        android:layout_height="@dimen/dp_50"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_2"
         android:layout_marginLeft="@dimen/dp_5"
         android:layout_marginRight="@dimen/dp_5"
-        android:background="#888888" />
+        android:background="#EDEDED" />
 
     <TextView
         android:id="@+id/chat_delete_menu"
-        android:layout_width="@dimen/dp_75"
-        android:layout_height="@dimen/dp_50"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp_15"
         android:gravity="center"
         android:text="@string/delete"
-        android:textSize="14sp"
-        android:textColor="#ffffff" />
+        android:textSize="22sp"
+        android:textColor="@color/black" />
 
 </LinearLayout>

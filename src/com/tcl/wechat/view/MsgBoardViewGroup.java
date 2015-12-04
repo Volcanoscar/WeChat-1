@@ -1,6 +1,5 @@
 package com.tcl.wechat.view;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -16,11 +15,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
+import com.tcl.wechat.logcat.DLog;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.RecorderInfo;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.utils.DensityUtil;
 import com.tcl.wechat.view.GroupScrollView.ScrollViewListener;
 
@@ -51,7 +51,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 	/*
 	 * 轨迹，根据移动的leftMargn来确定
 	 */
-	private int[] track = new int[]{20, 70, 100, 90};
+	private int[] track = new int[]{20, 70, 110, 90};
 	
 	private GroupScrollView mHorizontalScrollView = null;
 	
@@ -92,7 +92,9 @@ public class MsgBoardViewGroup extends LinearLayout{
 			@Override
 			protected Void doInBackground(Void... params) {
 				
-				ArrayList<WeiXinMsgRecorder> lastRecorders = WeiMsgRecordDao.getInstance().getLastRecorder();
+				DLog.d(TAG, "timeA:" + System.currentTimeMillis());
+				LinkedList<WeiXinMessage> lastRecorders = WeiRecordDao.getInstance().getLastRecorder();
+				DLog.d(TAG, "timeB:" + System.currentTimeMillis());
 				
 				Log.i(TAG, "lastRecorders:" + lastRecorders);
 				if (lastRecorders == null){
@@ -102,12 +104,15 @@ public class MsgBoardViewGroup extends LinearLayout{
 				int size = lastRecorders.size();
 				Log.i(TAG, "lastRecorderSize:" + size);
 				for (int i = 0; i < size; i++) {
-					WeiXinMsgRecorder recorder = lastRecorders.get(i);
+					Log.i(TAG, "time1:" + System.currentTimeMillis());
+					WeiXinMessage recorder = lastRecorders.get(i);
 					BindUser bindUser = WeiUserDao.getInstance().getUser(recorder.getOpenid());
-					mAllRecorderInfos.addFirst(new RecorderInfo(bindUser, recorder));
+					RecorderInfo recorderInfo = new RecorderInfo(bindUser, recorder);
+					mAllRecorderInfos.add(recorderInfo);
 				}
 				return null;
 			};
+			
 			protected void onPostExecute(Void result) {
 				if (mAllRecorderInfos == null || mAllRecorderInfos.isEmpty()){
 					return ;
@@ -121,32 +126,23 @@ public class MsgBoardViewGroup extends LinearLayout{
 		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
 	
+	/**
+	 * 更新指定用户列表
+	 */
 	public void updateBindUser(){
-		
-		new AsyncTask<Void, Void, LinkedList<BindUser>>() {
-
-			@Override
-			protected LinkedList<BindUser> doInBackground(Void... params) {
-				return WeiUserDao.getInstance().getBindUsers();
-			}
-			
-			protected void onPostExecute(LinkedList<BindUser> result) {
-				if (result == null || result.isEmpty()) {
-					return ;
-				}
-				Log.i(TAG, "Result:" + result.toString());
-				int size = result.size();
-				for (int i = 0; i < size; i++) {
-					BindUser bindUser = result.get(i);
-					Log.i(TAG, "bindUser:" + bindUser);
-					MsgBoardView childView = mMsgBoardViewMap.get(bindUser.getOpenId());
-					Log.i(TAG, "childView:" + childView);
-					if (childView != null) {
-						childView.updateBindUser(bindUser);
-					}
-				}
-			};
-		}.executeOnExecutor(WeApplication.getExecutorPool());
+		LinkedList<BindUser> users = WeiUserDao.getInstance().getBindUsers();
+		if (users == null || users.isEmpty()) {
+			return ;
+		}
+		Log.i(TAG, "Result:" + users.toString());
+		int size = users.size();
+		for (int i = 0; i < size; i++) {
+			BindUser bindUser = users.get(i);
+			MsgBoardView childView = mMsgBoardViewMap.get(bindUser.getOpenId());
+			if (childView != null) {
+				childView.updateBindUser(bindUser);
+			} 
+		}
 	}
 	
 	/**
@@ -154,7 +150,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 	 * @param bindUser
 	 * @param recorder
 	 */
-	public void addRecorder(BindUser bindUser, WeiXinMsgRecorder recorder){
+	public void addRecorder(BindUser bindUser, WeiXinMessage recorder){
 		if (bindUser == null || recorder == null){
 			return ;
 		}
@@ -262,7 +258,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 	 * @param recorder
 	 * @param position
 	 */
-	private void addRecorderColumn(BindUser bindUser, WeiXinMsgRecorder recorder, int position){
+	private void addRecorderColumn(BindUser bindUser, WeiXinMessage recorder, int position){
 		if (bindUser == null || recorder == null){
 			return;
 		}
@@ -270,11 +266,17 @@ public class MsgBoardViewGroup extends LinearLayout{
 		int width = DensityUtil.dip2px(mContext, USER_TAB_WIDTH);
         int height = DensityUtil.dip2px(mContext, USER_TAB_HEIGHT);
         
+        
         if (position < mAllRecorderInfos.size()){
+        	//已包含视图
+        	if (mMsgBoardViewMap != null && mMsgBoardViewMap.containsKey(bindUser.getOpenId())){
+        		return ;
+        	}
         	View view = setUpView(bindUser, recorder, position);
         	attachChildViewToParent(view, width, height, 65 , getTopMargin(position), position);
         }
 	}
+	
 	
 	/**
 	 * 生成控件
@@ -283,7 +285,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 	 * @param position
 	 * @return
 	 */
-	private View setUpView(BindUser bindUser, WeiXinMsgRecorder recorder, int position) {
+	private View setUpView(BindUser bindUser, WeiXinMessage recorder, int position) {
 		if (bindUser == null){
 			return null;
 		}
@@ -310,7 +312,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 	 * 接收新消息
 	 * @param recorder
 	 */
-	public void receiveNewMessage(WeiXinMsgRecorder recorder){
+	public void receiveNewMessage(WeiXinMessage recorder){
 		Log.i(TAG, "receive new message!");
 		
 		if (recorder == null){
@@ -324,6 +326,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 			addRecorder(bindUser, recorder);
 		}
 	}
+	
 	
 	/**
 	 * 获取轨迹

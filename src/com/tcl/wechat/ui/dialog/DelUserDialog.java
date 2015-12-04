@@ -41,7 +41,6 @@ public class DelUserDialog extends Dialog {
 	
 	private UserInfoEditListener mEditListener;
 	
-
 	public DelUserDialog(Context context) {
 		this(context, R.style.dialogStyle);
 	}
@@ -127,7 +126,7 @@ public class DelUserDialog extends Dialog {
 	 */
 	private void confrimOnClick(){
 		if (mEditListener != null){
-			mEditListener.onConfirmEditUser(mBindUser);
+			mEditListener.onConfirmEditUser(0, mBindUser.getOpenId());
 		}
 		dismiss();
 	}

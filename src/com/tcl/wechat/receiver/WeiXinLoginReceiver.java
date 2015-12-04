@@ -170,14 +170,9 @@ public class WeiXinLoginReceiver extends BroadcastReceiver {
 	 */
 	private void commandCompleted(){
 		mRequestCnt = 0;
-		WeApplication.bLoginSuccess = true;
-		SharedEditer editer = new SharedEditer();
-		if (!editer.getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false)){
-			editer.putBoolean(SystemShared.KEY_REGISTENER_SUCCESS, true);
-		}
 		
 		//发送广播通知更新
-		Intent intent = new Intent(CommandAction.ACTION_UPDATE_BINDUSER);
+		Intent intent = new Intent(CommandAction.ACTION_MSG_USER);
 		WeApplication.getContext().sendBroadcast(intent);
 	}
 }

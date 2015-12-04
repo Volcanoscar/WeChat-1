@@ -6,21 +6,20 @@
     android:background="#45FFC0CB"
     android:orientation="vertical">
     
-     <RelativeLayout
-    	android:id="@+id/layout_chat_msginfo"
-     	android:layout_width="wrap_content"
-     	android:layout_height="wrap_content"
-     	android:layout_gravity="right"
-     	android:layout_margin="@dimen/dp_10">
-     	<!-- 在此需要手动添加View -->
-	</RelativeLayout>
-    
     <TextView 
         android:id="@+id/tv_chat_msgsendtime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="@dimen/dp_30"
-        android:gravity="right"
-        android:textSize="18sp"
-        android:textColor="@color/gray"/>
+        android:layout_marginLeft="@dimen/dp_30"
+        android:gravity="center"
+        style="@style/chat_text_date_style"/>
+    
+    <RelativeLayout
+    	android:id="@+id/layout_chat_msginfo"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:layout_gravity="right">
+     	<!-- 在此需要手动添加View -->
+	</RelativeLayout>
+    
 </LinearLayout>

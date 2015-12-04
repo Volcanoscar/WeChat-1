@@ -13,9 +13,9 @@
       	android:radius="@dimen/dp_5" /> 
           
   	<padding 
-      	android:left="@dimen/dp_10" 
-      	android:top="@dimen/dp_10"      
-    	android:right="@dimen/dp_10" 
-    	android:bottom="@dimen/dp_10" />
+      	android:left="@dimen/dp_3" 
+      	android:top="@dimen/dp_3"      
+    	android:right="@dimen/dp_3" 
+    	android:bottom="@dimen/dp_3" />
 
 </shape>

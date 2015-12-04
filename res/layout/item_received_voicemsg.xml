@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#4571C671"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/dp_10" >
+
+    <TextView
+        android:id="@+id/tv_mseeage_time"
+        style="@style/chat_text_date_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <RelativeLayout
+        android:id="@+id/layout_msg_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical" >
+
+        <FrameLayout
+            android:id="@+id/layout_voice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/chatfrom_bg" >
+
+            <View
+                android:id="@+id/view_chat_recorder_info"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:layout_gravity="left|center_vertical"
+                android:background="@drawable/v_left_anim3" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_chat_recorder_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/layout_voice"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:gravity="center"
+            android:textColor="@color/gray"
+            android:textSize="18sp" />
+    </RelativeLayout>
+</LinearLayout>

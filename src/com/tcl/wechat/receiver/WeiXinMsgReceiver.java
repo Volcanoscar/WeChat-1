@@ -15,8 +15,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.controller.WeiXinMsgManager;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.controller.WeiXinMsgControl;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
 
 /**
@@ -32,7 +32,7 @@ public class WeiXinMsgReceiver extends BroadcastReceiver implements IConstant{
 	
 	private static final String TAG = WeiXinMsgReceiver.class.getSimpleName();
 
-	private WeiXinMsgManager mWeiXinMsgManager = WeiXinMsgManager.getInstance();
+	private WeiXinMsgControl mWeiXinMsgManager = WeiXinMsgControl.getInstance();
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -44,7 +44,7 @@ public class WeiXinMsgReceiver extends BroadcastReceiver implements IConstant{
 			return;
 		}
 		
-		WeiXinMsgRecorder weiXinMsg = (WeiXinMsgRecorder)intent.getExtras().getParcelable("weiXinMsg");
+		WeiXinMessage weiXinMsg = (WeiXinMessage)intent.getExtras().getParcelable("weiXinMsg");
 		//消息为空，则返回
 		if (weiXinMsg == null){
 			Log.e(TAG, "weiXinMsg is NULL!!");

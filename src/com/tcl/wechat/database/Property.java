@@ -98,10 +98,11 @@ public class Property {
             Property.COLUMN_THUMBMEDIAID + " TEXT," +
             Property.COLUMN_CREATE_TIME + " VACHAR(32)," +
             Property.COLUMN_READED + " CHAR(1)," +
-            Property.COLUMN_RECEIVED+ " CHAR(1)," +
+            Property.COLUMN_RECEIVED + " CHAR(1)," +
             Property.COLUMN_FILENAME + " TEXT," + 
             Property.COLUMN_FILESIZE + " INTEGER," +
-            Property.COLUMN_FILETIME + " REAL" + ");" ;
+            Property.COLUMN_FILETIME + " REAL," + 
+            Property.COLUMN_STATUS + " VACHAR(32)" + ");" ;
 	
 	public static final String CREATE_TABLE_APPINFO_SQL = 
 			"CREATE TABLE IF NOT EXISTS " +

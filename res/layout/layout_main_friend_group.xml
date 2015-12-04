@@ -16,49 +16,23 @@
         android:id="@+id/myfriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_255"
+        android:layout_marginTop="@dimen/dp_260"
         android:layout_marginLeft="@dimen/dp_255"
         android:src="@drawable/my_friend"
         android:contentDescription="@string/contentDesc"  />
     
-    <TextView 
-        android:id="@+id/myfriend_word"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_290"
-        android:layout_marginLeft="@dimen/dp_300"
-        android:gravity="center"
-        android:text="@string/myfriend"
-        android:textSize="28sp"
-        android:textColor="#ffffffff"
-        android:rotation="-6" />
-    
-    
-    <LinearLayout
+
+    <com.tcl.wechat.view.GroupScrollView
+        android:id="@+id/horizontalSV"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:layout_toRightOf="@id/myfriend"
-        android:orientation="horizontal" >
+        android:scrollbars="none" >
 
-        <com.tcl.wechat.view.GroupScrollView
-            android:id="@+id/horizontalSV"
+        <com.tcl.wechat.view.MyFriendViewGroup
+            android:id="@+id/friendgroup"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none" >
-
-            <com.tcl.wechat.view.MyFriendViewGroup
-                android:id="@+id/friendgroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.tcl.wechat.view.GroupScrollView>
-    </LinearLayout>
-    
-<!--    	<include  -->
-<!--         android:layout_width="match_parent" -->
-<!--         android:layout_height="wrap_content" -->
-<!--         android:layout_toRightOf="@+id/myfriend_word" -->
-<!--         android:layout_marginLeft="20dp" -->
-<!--         layout="@layout/main_friend_view"/> -->
+            android:layout_height="wrap_content" />
+    </com.tcl.wechat.view.GroupScrollView>
     
 </RelativeLayout>

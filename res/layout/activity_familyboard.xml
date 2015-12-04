@@ -12,6 +12,7 @@
         layout="@layout/main_top_layout"/>
     
     <LinearLayout 
+        android:id="@+id/layout_main_centerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
@@ -32,4 +33,25 @@
 	        android:layout_marginTop="@dimen/dp_20"
 	        layout="@layout/layout_main_msgboard_group"/>
     </LinearLayout>
+    
+    <!-- Wifi信号强度提示 -->
+    <ImageView
+        android:id="@+id/img_wifi_signal"
+        android:layout_width="@dimen/dp_50"
+        android:layout_height="@dimen/dp_50"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="@dimen/dp_20"
+        android:layout_marginTop="@dimen/dp_20"
+        android:src="@drawable/signal_level_0"
+        android:scaleType="centerInside"
+        android:contentDescription="@string/contentDesc"/>
+    
+    <ProgressBar 
+  	    android:id="@+id/progress_loading"
+        android:layout_width="@dimen/dp_400"
+        android:layout_height="@dimen/dp_400"
+        android:layout_centerInParent="true"
+        style="@style/loadingProgressBarStyle"/>
+    
 </RelativeLayout>

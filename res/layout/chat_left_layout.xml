@@ -1,46 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="left" >
     
     <RelativeLayout
+        android:id="@+id/layout_left_msginfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="-50dp"
-        android:layout_marginTop="@dimen/dp_100"
+        android:layout_marginTop="@dimen/dp_110"
         android:layout_marginRight="@dimen/dp_150"
         android:background="@drawable/chat_left_bg"
-        android:rotation="5">
-        <TextView 
-            android:id="@+id/tv_left_msg"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_300"
-            android:paddingRight="@dimen/dp_50"
-            android:layout_marginTop="@dimen/dp_150"
-            android:gravity="center"
-            android:background="#45F0F0F0"
-            android:text="@string/no_message"
-            android:textColor="@color/black"
-            android:textSize="22sp"/>
+        android:gravity="left|center_vertical">
+<!--         <FrameLayout -->
+<!--            	android:layout_width="wrap_content" -->
+<!--             android:layout_height="wrap_content" -->
+<!--            	android:paddingLeft="@dimen/dp_10" -->
+<!--            	android:paddingRight="@dimen/dp_10"> -->
+<!--             <com.tcl.wechat.view.pageview.TextPageView -->
+<!--                 android:id="@+id/tv_familboard_msg" -->
+<!-- 	            android:layout_width="match_parent" -->
+<!-- 	            android:layout_height="match_parent" -->
+<!-- 	            android:gravity="center" -->
+<!-- 	            android:padding="@dimen/dp_3" -->
+<!-- 	            android:maxLines="6" -->
+<!-- 	            android:text="" -->
+<!-- 	            android:textColor="@color/black" -->
+<!-- 	            android:textSize="22sp" -->
+<!-- 	            android:visibility="gone"/> -->
+<!--        	</FrameLayout> -->
+<!--         <TextView  -->
+<!--             android:id="@+id/tv_left_msg" -->
+<!--             android:layout_width="match_parent" -->
+<!--             android:layout_height="@dimen/dp_300" -->
+<!--             android:paddingRight="@dimen/dp_50" -->
+<!--             android:layout_marginTop="@dimen/dp_150" -->
+<!--             android:gravity="center" -->
+<!--             android:background="#45F0F0F0" -->
+<!--             android:text="@string/no_message" -->
+<!--             android:textColor="@color/black" -->
+<!--             android:textSize="22sp"/> -->
     </RelativeLayout>
     
+	<com.tcl.wechat.view.UserInfoView
+        android:id="@+id/chat_left_userview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_70"
+        android:layout_marginLeft="-50dp"
+	    custom:imageSrc="@drawable/default_user_icon"
+	    custom:imageScaleType="centerInside"/>
+	
     <ImageView 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dp_225"
+        android:layout_marginTop="@dimen/dp_20"
         android:src="@drawable/chat_clip_left"
+        android:scaleType="matrix"
         android:contentDescription="@string/contentDesc"/>
     
-    <Button 
-        android:id="@+id/btn_msg_left_reply"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="@dimen/dp_125"
-        android:layout_marginTop="@dimen/dp_600"
-        android:background="@drawable/msg_reply_left_selector"
-        android:onClick="msgReplyLeftClick"
-        android:rotation="4"/>
+<!--     <Button  -->
+<!--         android:id="@+id/btn_msg_left_reply" -->
+<!--         android:layout_width="wrap_content" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentRight="true" -->
+<!--         android:layout_marginRight="@dimen/dp_100" -->
+<!--         android:layout_marginTop="@dimen/dp_600" -->
+<!--         android:background="@drawable/msg_reply_left_selector" -->
+<!--         android:onClick="msgReplyLeftClick" -->
+<!--         android:rotation="2"/> -->
 
 </RelativeLayout>

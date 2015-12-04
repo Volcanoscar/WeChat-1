@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <resources>
     
-    <!-- 自定义用户头像显示属性 -->
     <attr name="textTitle" format="string"/>
     <attr name="textSize" format="dimension"/>
     <attr name="textColor" format="color"/>
     <attr name="textBackground" format="reference"/>
+    <attr name="imageBackground" format="reference|color"/>
     <attr name="imageSrc" format="reference|color"/>
     <attr name="imageScaleType">
         <enum name="matrix" value="0"/>
@@ -18,6 +18,8 @@
         <enum name="centerInside" value="7"/>
     </attr>
     
+    
+    <!-- 自定义用户头像显示属性 -->
     <declare-styleable name="userImageView"> 
     	<attr name="textTitle"/>
     	<attr name="textSize"/>
@@ -28,15 +30,42 @@
     </declare-styleable>
     
     
-    <!-- 设置圆形图像边框 -->
-    <declare-styleable name="CircleImageView">
+	<!-- 图片带边框属性-->
+    <declare-styleable name="borderImageView">
+        <attr name="imageSrc" />
+        <attr name="imageBackground"/>
+        <attr name="imageScaleType"/>
         <attr name="border_width" format="dimension" />
         <attr name="border_color" format="color" />
     </declare-styleable>
+    
+    <!-- 圆形，圆角图片  -->
+    <attr name="borderRadius" format="dimension" />
+    <attr name="type">
+        <enum name="circle" value="0" />
+        <enum name="round" value="1" />
+    </attr>
+    <attr name="src" format="reference"></attr>
+
+    <declare-styleable name="CustomImageView">
+        <attr name="borderRadius" />
+        <attr name="type" />
+        <attr name="src" />
+    </declare-styleable>
+    
     
     <!-- TopBar属性 -->
     <declare-styleable name="TopBatView">
         <attr name="title" format="string"/>
     </declare-styleable>
+    
+    <declare-styleable name="GifView">  
+        <attr name="gif" format="reference" />  
+        <attr name="paused" format="boolean" />  
+    </declare-styleable>  
+    
+    <declare-styleable name="CustomTheme">  
+        <attr name="gifViewStyle" format="reference" />  
+    </declare-styleable> 
     
 </resources>

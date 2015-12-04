@@ -10,12 +10,13 @@
    		android:layout_width="match_parent"  
    		android:layout_height="match_parent" 
    		android:layout_centerInParent="true"
+   		android:scaleType="matrix"
    		android:clickable="true"
    		android:contentDescription="@string/contentDesc"/>
     
     <LinearLayout 
         android:id="@+id/layout_imgfun"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/dp_480"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
@@ -29,44 +30,36 @@
         
         <ImageView
             android:id="@+id/btn_scan_super"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/dp_20"
-            android:paddingRight="@dimen/dp_20"
-            android:layout_gravity="center"
+            android:layout_weight="1"
             android:src="@drawable/scan_super"
             android:clickable="true"
             android:onClick="previousView"
             android:contentDescription="@string/contentDesc"/>
         <ImageView
             android:id="@+id/btn_scan_next"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/dp_20"
-            android:paddingRight="@dimen/dp_20"
-            android:layout_gravity="center"
+            android:layout_weight="1"
             android:src="@drawable/scan_next"
             android:clickable="true"
             android:onClick="nextView"
             android:contentDescription="@string/contentDesc"/>
         <ImageView
             android:id="@+id/btn_scan_down"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/dp_20"
-            android:paddingRight="@dimen/dp_20"
-            android:layout_gravity="center"
+            android:layout_weight="1"
             android:src="@drawable/scan_download"
             android:clickable="true"
             android:onClick="downloadView"
             android:contentDescription="@string/contentDesc"/>
         <ImageView
             android:id="@+id/btn_scan_rotate"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/dp_20"
-            android:paddingRight="@dimen/dp_20"
-            android:layout_gravity="center"
+            android:layout_weight="1"
             android:src="@drawable/scan_rotate"
             android:clickable="true"
             android:onClick="rotationView"

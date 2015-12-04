@@ -56,7 +56,6 @@ public class ShowTextActivity extends Activity implements OnTouchListener{
 	private void initView() {
 		mContentInfoTv = (TextView) findViewById(R.id.tv_text_info_view);
 		
-		mContentInfoTv.setTypeface(new FontUtil(this).getFont("fonts/regular.TTF"));
 		mContentInfoTv.setMovementMethod(ScrollingMovementMethod.getInstance()); 
 		
 		if (!TextUtils.isEmpty(mContentSequence)){

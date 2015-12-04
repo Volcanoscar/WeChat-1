@@ -63,10 +63,10 @@
 	
     <style name="chatmsgLoadingProgressBarStyle" >
 	　　<item name="android:indeterminateDrawable">@drawable/loading_message</item>
-	　　<item name="android:minWidth">@dimen/dp_75</item>
-	　　<item name="android:maxWidth">@dimen/dp_75</item>
-	　　<item name="android:minHeight">@dimen/dp_75</item>
-	　　<item name="android:maxHeight">@dimen/dp_75</item>
+	　　<item name="android:minWidth">@dimen/dp_35</item>
+	　　<item name="android:maxWidth">@dimen/dp_35</item>
+	　　<item name="android:minHeight">@dimen/dp_35</item>
+	　　<item name="android:maxHeight">@dimen/dp_35</item>
 	</style> 
 
     <style name="AnimTop2" parent="@android:style/Animation">  
@@ -74,17 +74,25 @@
         <item name="android:windowExitAnimation">@anim/push_top_out2</item>
 	</style>
     
-    <style name="PlayerViewStyle" parent="android:Theme.Dialog">  
-        <item name="android:windowAnimationStyle">@style/AnimTop2</item><!-- 动画样式 -->
+    <style name="customDialog" parent="android:Theme.Dialog">  
         <item name="android:windowFrame">@null</item><!--边框-->
         <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
         <item name="android:windowIsTranslucent">true</item><!--半透明-->
         <item name="android:windowNoTitle">true</item><!--无标题-->
         <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
         <item name="android:backgroundDimEnabled">false</item><!--模糊--> 
-	</style>  
 	
-    <!-- Progress样式 -->
+	</style><style name="toastStyle" parent="@android:style/Theme.Dialog">
+        <item name="android:colorBackgroundCacheHint">@null</item>  
+ 	 	<item name="android:windowFrame">@null</item><!--边框-->  
+  		<item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->  
+  		<item name="android:windowIsTranslucent">true</item><!--半透明-->  
+  		<item name="android:windowNoTitle">true</item><!--无标题-->  
+  		<item name="android:background">@drawable/toast_bg</item><!--dialog背景样式-->  
+  		<item name="android:windowBackground">@color/transparent</item><!-- 背景透明 -->  
+  		<item name="android:backgroundDimEnabled">false</item><!--模糊-->  
+    </style>
+    
     <style name="myProgressBarStyleLarge" >
 	　　<item name="android:indeterminateDrawable">@drawable/loading_progress</item>
 	　　<item name="android:minWidth">@dimen/dp_76</item>
@@ -116,4 +124,39 @@
         <item name="android:windowExitAnimation">@anim/slide_out</item>
    	</style>
 
+   	<style
+		name="Theme.Light.NoTitleBar.NoBackground"
+		parent="android:Theme.Light.NoTitleBar">
+		<item name="android:windowBackground">@null</item>
+	</style>
+	
+	<style name="CustomDialog" parent="@android:style/Theme.Dialog">  
+    	<item name="android:windowFrame">@null</item>  
+        <item name="android:windowIsFloating">true</item>  
+        <item name="android:windowContentOverlay">@null</item>  
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>  
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>  
+    </style>  
+      
+    <style name="CustomProgressDialog" parent="@style/CustomDialog">  
+        <item name="android:windowBackground">@android:color/transparent</item>  
+        <item name="android:windowNoTitle">true</item>  
+    </style> 
+    
+    <style name="chat_text_date_style">
+        <item name="android:padding">@dimen/dp_5</item>
+        <item name="android:textColor">#88363636</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    
+    <style name="chat_content_date_style">
+        <item name="android:minHeight">@dimen/dp_50</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineSpacingExtra">@dimen/dp_2</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">#bfbfbf</item>
+    </style>
 </resources>

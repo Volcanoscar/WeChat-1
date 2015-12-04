@@ -6,16 +6,12 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.common.Config;
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.common.IConstant.SystemShared;
 import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiNotice;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.utils.NanoHTTPD;
-import com.tcl.wechat.utils.SystemShare.SharedEditer;
 
 /**
  * Xmpp服务类
@@ -65,15 +61,15 @@ public class WeiXmppService extends Service implements IConstant{
 		WeiXmppManager.getInstance().addListener(eventListener);
 		
 		//启动httpserver
-		try {
-			Log.i(TAG, "httpService Port:" + Config.httpServicePort);
-//			nanoHTTPD = new NanoHTTPD(Config.httpServicePort);
-//			if (nanoHTTPD != null){
-//				nanoHTTPD.start();
-//			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		//try {
+		//	Log.i(TAG, "httpService Port:" + Config.httpServicePort);
+		//	nanoHTTPD = new NanoHTTPD(Config.httpServicePort);
+		//	if (nanoHTTPD != null){
+		//		nanoHTTPD.start();
+		//	}
+		//} catch (Exception e) {
+		//	e.printStackTrace();
+		//}
 	}
 	
 	@Override
@@ -108,7 +104,7 @@ public class WeiXmppService extends Service implements IConstant{
 			case EventType.TYPE_LOGIN_SUCCESS:
 				//if (new SharedEditer().getBoolean(SystemShared.KEY_REGISTENER_SUCCESS, false)){
 					//1、登录成功
-					WeApplication.bLoginSuccess = true;
+				//	WeApplication.bLoginSuccess = true;
 				//} else {
 					//2、后台去更新用户列表
 					Intent intent = new Intent();
@@ -167,7 +163,7 @@ public class WeiXmppService extends Service implements IConstant{
 				break;
 				
 			case EventType.TYPE_RECEIVE_WEIXINMSG:
-				WeiXinMsgRecorder recorder = (WeiXinMsgRecorder) event.getEventData();
+				WeiXinMessage recorder = (WeiXinMessage) event.getEventData();
 				Intent recorderIntent = new Intent(CommandAction.ACTION_RECEIVE_WEIXIN_MSG);
 				recorderIntent.putExtra("weiXinMsg", recorder);
 				sendBroadcast(recorderIntent);

@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import com.tcl.wechat.R;
+
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -158,6 +160,7 @@ public class ImageLoader{
 	@SuppressLint("HandlerLeak") 
 	public void loadImage(final String path, final ImageView imageView){
 		if (TextUtils.isEmpty(path) || imageView == null){
+			imageView.setImageResource(R.drawable.pictures_no);
 			return ;
 		}
 		// set tag

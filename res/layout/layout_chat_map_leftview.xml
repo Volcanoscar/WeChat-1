@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/dp_500"
+    android:layout_height="@dimen/dp_400">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:src="@drawable/msg_location"
+		android:scaleType="fitXY"
+		android:background="@drawable/chatfrom_bg"
+		android:contentDescription="@string/contentDesc"/>
+    
+    <TextView 
+        android:id="@+id/tv_location_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="@dimen/dp_5"
+        android:background="#67CCCCCC"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textSize="18sp"
+        android:textColor="@color/black"/>
+
+</RelativeLayout>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/videoback"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+   <LinearLayout
+        android:id="@+id/layout_prograss"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+		android:layout_marginLeft="@dimen/dp_30"
+		android:layout_marginRight="@dimen/dp_30"        
+        android:layout_gravity="bottom"
+        android:orientation="vertical" >
+        <SeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progress="0" />
+        
+        <RelativeLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+	        <TextView
+	            android:id="@+id/tv_playtime"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentLeft="true"
+	            android:textSize="22sp"/>
+	        <TextView
+	            android:id="@+id/tv_totaltime"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentRight="true"
+	            android:textSize="22sp"/>
+		</RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:orientation="horizontal" >
+        <ImageButton
+            android:id="@+id/imgbtn_fastback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/dp_20"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/rewind" 
+            android:contentDescription="@string/contentDesc"/>
+        <ImageButton
+            android:id="@+id/imgbtn_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/dp_20"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/play"
+            android:contentDescription="@string/contentDesc"/>
+        <ImageButton
+            android:id="@+id/imgbtn_fastplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/dp_20"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/forward"
+            android:contentDescription="@string/contentDesc"/>
+    </LinearLayout>
+</LinearLayout>

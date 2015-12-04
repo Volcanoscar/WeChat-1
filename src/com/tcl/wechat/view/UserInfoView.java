@@ -24,6 +24,7 @@ import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.utils.ImageUtil;
+import com.tcl.wechat.utils.NameLengthFilter;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
 
@@ -131,8 +132,12 @@ public class UserInfoView extends LinearLayout{
 			@Override
 			public boolean onLongClick(View v) {
 				if (bEditable) {
-					mUserNameEdt.setFocusable(true);
-					mUserNameEdt.setFocusableInTouchMode(true);
+//					mUserNameEdt.setFocusable(true);
+//					mUserNameEdt.setFocusableInTouchMode(true);
+					if (mEditListener != null){
+						mEditListener.onEditUserNameEvent(getTag());
+						return true;
+					}
 				}
 				return false;
 			}
@@ -237,10 +242,10 @@ public class UserInfoView extends LinearLayout{
 	 */
 	public void setUserName(String userName){
 		
-		if (userName != null && userName.length() >= 8){
-			userName = userName.substring(0, 7) + "...";
+		if (userName != null && userName.length() > 6){
+			userName = userName.substring(0, 6) + "...";
 		}
-		setFont("fonts/oop.TTF");
+		setFont();
 		mUserNameEdt.setText(userName);
 	}
 	
@@ -251,11 +256,11 @@ public class UserInfoView extends LinearLayout{
 	 */
 	public void setUserName(String userName, boolean hasBg){
 		
-		if (userName != null && userName.length() >= 8){
-			userName = userName.substring(0, 7) + "...";
+		if (userName != null && userName.length() > 6){
+			userName = userName.substring(0, 6) + "...";
 		}
+		setFont();
 		mUserNameEdt.setText(userName);
-		setFont("fonts/oop.TTF");
 		if (!hasBg){
 			mUserNameEdt.setBackgroundColor(Color.TRANSPARENT);
 		}
@@ -299,10 +304,9 @@ public class UserInfoView extends LinearLayout{
 	 * @param tv
 	 * @param fontpath
 	 */
-	public void setFont(String fontpath) {
+	public void setFont() {
 		try {
-			Typeface typeFace = Typeface.createFromAsset(getContext().getAssets(), fontpath);
-			mUserNameEdt.setTypeface(typeFace);
+			mUserNameEdt.setTypeface(WeApplication.getInstance().getTypeface1());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -314,6 +318,8 @@ public class UserInfoView extends LinearLayout{
 		mUserNameEdt.setFocusable(false);
 		mUserNameEdt.setFocusableInTouchMode(false);
 		mDeleteFlagImg.setVisibility(GONE);
+		mUserNameEdt.invalidate();
+		mDeleteFlagImg.invalidate();
 	}
 	
 	/**

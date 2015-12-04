@@ -1,19 +1,23 @@
 package com.tcl.wechat.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.tcl.wechat.R;
+import com.tcl.wechat.view.MsgWebView;
 
 public class WebViewActivity extends Activity{
 	
 	private static final String TAG = WebViewActivity.class.getSimpleName();
 	
-	private WebView mWebView;
+	private MsgWebView mWebView;
 	
 	private String mUrl;
 	
@@ -37,9 +41,25 @@ public class WebViewActivity extends Activity{
 		Log.i(TAG, "mUrl:" + mUrl);
 	}
 
+	@SuppressLint("SetJavaScriptEnabled") 
 	private void initView() {
 		// TODO Auto-generated method stub
-		mWebView = (WebView) findViewById(R.id.webview);
+		mWebView = (MsgWebView) findViewById(R.id.webview);
+		mWebView.setBarHeight(8);
+		mWebView.setClickable(true);
+		mWebView.setUseWideViewPort(true);
+		mWebView.setSupportZoom(true);
+		mWebView.setBuiltInZoomControls(true);
+		mWebView.setJavaScriptEnabled(true);
+		mWebView.setCacheMode(WebSettings.LOAD_NO_CACHE);		
+		mWebView.setWebViewClient(new WebViewClient() {
+
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				
+				view.loadUrl(url);
+				return true;
+			}
+		});
 		mWebView.loadUrl(mUrl);
 	}
 	

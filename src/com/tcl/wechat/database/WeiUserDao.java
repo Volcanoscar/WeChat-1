@@ -56,7 +56,6 @@ public class WeiUserDao {
 		}
 		BindUser user = getUser(openid);
 		if (user == null){
-			BinderUserNotFoundException();
 			return false ;
 		}
 		return true;
@@ -170,6 +169,14 @@ public class WeiUserDao {
 		try {
 			for (int i = 0; i < userList.size(); i++) {
 				BindUser bindUser = userList.get(i);
+				
+				//异常则不进行更新
+				if (TextUtils.isEmpty(bindUser.getOpenId()) || 
+						TextUtils.isEmpty(bindUser.getNickName()) ||
+						TextUtils.isEmpty(bindUser.getHeadImageUrl())){
+					continue;
+				}
+				
 				//如果当前已经存在则直接更新即可
 				if (bindUserIsExist(bindUser.getOpenId())){
 					Log.e(TAG, "User already exist! openId = " + bindUser.getOpenId());
@@ -286,7 +293,6 @@ public class WeiUserDao {
 		return user;
 	}
 	
-	
 	/**
 	 * 获取所用用户信息
 	 * @return 所用用户列表
@@ -327,6 +333,9 @@ public class WeiUserDao {
 		LinkedList<BindUser> userList = new LinkedList<BindUser>();
 		SQLiteDatabase db = mDbHelper.getReadableDatabase();
 		BindUser systemUser = getSystemUser();
+		if (systemUser == null){
+			return userList;
+		}
 		db.beginTransaction();
 		try {
 			String selection = Property.COLUMN_OPENID+ "!=?";
@@ -353,6 +362,25 @@ public class WeiUserDao {
 			}
 		}
 		return userList;
+	}
+	
+	/**
+	 * 获取备注名称
+	 * @param openid
+	 * @return
+	 */
+	public String getRemarkName(String openid){
+		String remarkName = null;
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+ 		String selection = Property.COLUMN_OPENID + "=?";
+		String[] selectionArgs = new String[]{openid};
+		String[] columns = new String[]{Property.COLUMN_REMARKNAME};
+		Cursor cursor = db.query(Property.TABLE_USER, columns, selection, selectionArgs, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			remarkName = cursor.getString(cursor.getColumnIndex(Property.COLUMN_REMARKNAME));
+			cursor.close();
+		}
+		return remarkName;
 	}
 	
 	/**
@@ -401,12 +429,9 @@ public class WeiUserDao {
 		ContentValues values = new ContentValues();
 		values.put(Property.COLUMN_OPENID, bindUser.getOpenId());
 		values.put(Property.COLUMN_NICKNAME, bindUser.getNickName());
-		values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName());
+		//values.put(Property.COLUMN_REMARKNAME, bindUser.getRemarkName()); 不更新备注名称
 		values.put(Property.COLUMN_USERSEX, bindUser.getSex());
 		values.put(Property.COLUMN_HEADIMAGE_URL, bindUser.getHeadImageUrl());
-//		values.put(Property.COLUMN_NEWS_NUM, bindUser.getNewsNum());
-//		values.put(Property.COLUMN_STATUS, bindUser.getStatus());
-//		values.put(Property.COLUMN_REPLY, bindUser.getReply());
 		String whereClause = Property.COLUMN_OPENID + "=?";
 		String[] whereArgs = new String[]{bindUser.getOpenId()};
 		if (db.update(Property.TABLE_USER, values, whereClause, whereArgs) > 0){

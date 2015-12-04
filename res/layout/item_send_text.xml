@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#45FFC0CB" >
+    
+    <TextView
+        android:id="@+id/tv_mseeage_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" 
+        style="@style/chat_text_date_style"/>
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_10" 
+        android:layout_gravity="right">
+
+        <TextView
+            android:id="@+id/tv_chat_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp_10"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="left|center_vertical"
+            android:background="@drawable/chatto_bg"
+            android:lineSpacingMultiplier="1.2"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:autoLink="web" />
+       
+        <ImageView
+            android:id="@+id/img_msg_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/tv_chat_text"
+            android:layout_centerVertical="true"
+            android:clickable="true"
+            android:src="@drawable/msg_state_failed_resend"
+            android:contentDescription="@string/contentDesc"
+            android:visibility="gone" />
+
+        <LinearLayout 
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_toLeftOf="@id/tv_chat_text"
+            android:layout_centerVertical="true"
+		    android:orientation="vertical">
+		    <ProgressBar
+	            android:id="@+id/pbar_sending"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="center"
+	            style="@style/chatmsgLoadingProgressBarStyle"
+	            android:visibility="gone" />
+		    <TextView 
+		        android:id="@+id/tv_progress"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center"
+		        android:gravity="center"
+		        android:text="@string/progress"
+		        android:textSize="16sp"
+		        android:textColor="@color/gray"
+		        android:visibility="gone"/>
+		</LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

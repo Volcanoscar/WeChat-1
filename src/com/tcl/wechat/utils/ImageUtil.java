@@ -28,6 +28,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
@@ -598,6 +599,51 @@ public class ImageUtil {
 	    Bitmap newbmp = Bitmap.createBitmap(bitmap,0, 0, w, h, matrix, true); 
 	    return newbmp; 
 	} 
+	
+	/**
+	 * Bitmap 旋转
+	 * @param angle
+	 * @param bitmap
+	 * @return
+	 */
+	public Bitmap rotaingBitmap(int angle, Bitmap bitmap) {
+        // 旋转图片 动作
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        // 创建新的图片
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return resizedBitmap;
+    }
+	
+	/**
+	 * Bitmap 旋转角度
+	 * @param path
+	 * @return
+	 */
+	public int readBitmapDegree(String path) {
+		int degree = 0;
+		try {
+			ExifInterface exifInterface = new ExifInterface(path);
+			int orientation = exifInterface.getAttributeInt(
+                   		ExifInterface.TAG_ORIENTATION,
+                   		ExifInterface.ORIENTATION_NORMAL);
+			switch (orientation) {
+			 case ExifInterface.ORIENTATION_ROTATE_90:
+				 degree = 90;
+				 break;
+			 case ExifInterface.ORIENTATION_ROTATE_180:
+				 degree = 180;
+				 break;
+			 case ExifInterface.ORIENTATION_ROTATE_270:
+				 degree = 270;
+				 break;
+		 	}
+		} catch (IOException e) {
+            e.printStackTrace();
+	 	}
+		return degree;
+	}
 	
 	public Bitmap createCircleImage(Bitmap bitmap){  
 		if (bitmap == null){

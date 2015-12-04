@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
+    android:id="@+id/layout_main_topview"
     android:layout_width="match_parent"
     android:layout_height="@dimen/dp_350"
     android:gravity="left|center_vertical"
@@ -13,7 +14,7 @@
         android:layout_gravity="center"
         android:paddingLeft="@dimen/dp_20"
         custom:textTitle=""
-        custom:textSize="22sp"
+        custom:textSize="18sp"
         custom:textColor="#ff000000"
         custom:textBackground="@drawable/big_head_word"
         custom:imageSrc="@drawable/default_sys_user_icon"
@@ -28,5 +29,4 @@
         custom:textBackground="@drawable/add_friend"
         custom:imageSrc="@drawable/add_friend_pressed"
         custom:imageScaleType="centerInside"/>
-   
 </LinearLayout>

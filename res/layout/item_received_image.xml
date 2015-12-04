@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/dp_10"
+    android:background="#4571C671" >
+    
+    <TextView
+        android:id="@+id/tv_mseeage_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical" 
+        style="@style/chat_text_date_style"/>
+    
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical">
+        <com.tcl.wechat.view.ChatMsgImageView2
+	        android:id="@+id/img_chat_image"
+	     	android:layout_width="wrap_content"
+	     	android:layout_height="wrap_content"
+	     	android:layout_centerVertical="true"
+	     	android:layout_alignParentLeft="true"
+	     	android:src="@drawable/pictures_no"
+	     	android:scaleType="centerInside"
+	     	android:minWidth="@dimen/dp_200"
+		  	android:minHeight="@dimen/dp_200"
+		   	android:maxWidth="@dimen/dp_400"
+		 	android:maxHeight="@dimen/dp_400"
+		 	android:adjustViewBounds="true"
+		 	android:background="@drawable/chatfrom_bg"
+	     	android:contentDescription="@string/contentDesc"/>
+        
+        <ProgressBar
+            android:id="@+id/pbar_sending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            style="@style/chatmsgLoadingProgressBarStyle"
+            android:visibility="gone" />
+    </RelativeLayout>
+</LinearLayout>

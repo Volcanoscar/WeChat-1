@@ -7,12 +7,13 @@
         android:id="@+id/myfriend_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_30"
+        android:layout_marginTop="@dimen/dp_60"
         android:scaleType="fitXY"
         android:src="@drawable/blue_line_03"
         android:contentDescription="@string/contentDesc" />
     
     <ImageView
+        android:id="@+id/my_messageborad_word"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_30"
@@ -20,45 +21,17 @@
         android:layout_marginLeft="@dimen/dp_40"
         android:contentDescription="@string/contentDesc"  />
     
-    <TextView 
-        android:id="@+id/my_messageborad_word"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_180"
-        android:layout_marginLeft="@dimen/dp_95"
-        android:text="@string/familyboard"
-        android:textColor="@color/white" 
-        android:textSize="36sp"
-        android:ems="1"
-        android:rotation="4"/>
-    
-    <LinearLayout
+
+    <com.tcl.wechat.view.GroupScrollView
+        android:id="@+id/msgBoardhorizontalSV"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="@dimen/dp_50"
         android:layout_toRightOf="@id/my_messageborad_word"
-        android:orientation="horizontal" >
+        android:scrollbars="none" >
 
-        <com.tcl.wechat.view.GroupScrollView
-            android:id="@+id/msgBoardhorizontalSV"
+        <com.tcl.wechat.view.MsgBoardViewGroup
+            android:id="@+id/msgboard_group"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="none" >
-
-            <com.tcl.wechat.view.MsgBoardViewGroup
-                android:id="@+id/msgboard_group"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </com.tcl.wechat.view.GroupScrollView>
-    </LinearLayout>
-    
-    
-<!--     <include  -->
-<!--         android:layout_width="match_parent" -->
-<!--         android:layout_height="match_parent" -->
-<!--         android:layout_marginLeft="40dp" -->
-<!--         android:layout_centerInParent="true" -->
-<!--         android:layout_toRightOf="@id/my_messageborad_word" -->
-<!--         layout="@layout/main_msgboard_layout"/>    -->
-
+            android:layout_height="match_parent" />
+    </com.tcl.wechat.view.GroupScrollView>
 </RelativeLayout>

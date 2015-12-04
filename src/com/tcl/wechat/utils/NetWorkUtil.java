@@ -3,7 +3,6 @@ package com.tcl.wechat.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import com.tcl.wechat.WeApplication;
 
@@ -53,12 +52,17 @@ public class NetWorkUtil {
 	}
 	
 	public static boolean isWifiConnected(){
-		ConnectivityManager manager = (ConnectivityManager)  WeApplication.getContext().
-				getSystemService(Context.CONNECTIVITY_SERVICE);  
-        NetworkInfo wifiInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiInfo != null && wifiInfo.isConnected()){
-        	return true;
-        }
+		try {
+			ConnectivityManager manager = (ConnectivityManager)  WeApplication.getContext().
+					getSystemService(Context.CONNECTIVITY_SERVICE);  
+			NetworkInfo wifiInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			if (wifiInfo != null && wifiInfo.isConnected()){
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false; 
+		}
 		return false; 
 	}
 	

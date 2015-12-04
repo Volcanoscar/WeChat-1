@@ -3,6 +3,7 @@ package com.tcl.wechat.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -50,6 +51,22 @@ public class SystemInfoUtil {
 		Log.i(TAG, "clienttype=" + clienttype);
 		return clienttype;
 	}
+	
+	/**
+	 * 获取序列号
+	 * @return
+	 */
+	public static String getSerialNumber() {
+		String serial = null;
+		try {
+			Class<?> c = Class.forName("android.os.SystemProperties");
+			Method get = c.getMethod("get", String.class);
+			serial = (String) get.invoke(c, "ro.serialno");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return serial;
+	}
 
 	/**
 	 * 获取deviceid
@@ -60,6 +77,7 @@ public class SystemInfoUtil {
 		Log.i(TAG, "deviceID=" + deviceid);
 		return deviceid;
 	}
+	
 
 	/**
 	 * 获取Wifi mac地址
@@ -119,7 +137,10 @@ public class SystemInfoUtil {
 				e.printStackTrace();
 			}
 		}
-		return macAddr.trim();
+		if (macAddr != null){
+			return macAddr.trim();
+		}
+		return null;
 	}
 
 	/**

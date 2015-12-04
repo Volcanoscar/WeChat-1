@@ -1,17 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="right"
-    android:gravity="right">
-    <com.tcl.wechat.view.ChatMsgImageView
-        android:id="@+id/img_msg_imageview"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_gravity="right"
-	    android:gravity="right"
-	    android:padding="@dimen/dp_5"
-	    android:maxWidth="@dimen/dp_400"
-	  	android:maxHeight="@dimen/dp_400"
-	  	android:adjustViewBounds="true"/>
-</LinearLayout>
+    android:layout_gravity="right">
+
+    <ImageView
+        android:id="@+id/img_chat_imageview"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:layout_alignParentRight="true"
+     	android:src="@drawable/pictures_no"
+     	android:scaleType="centerInside"
+     	android:minWidth="@dimen/dp_200"
+  		android:minHeight="@dimen/dp_200"
+   		android:maxWidth="@dimen/dp_500"
+ 		android:maxHeight="@dimen/dp_500"
+ 		android:adjustViewBounds="true"
+ 		android:background="@drawable/chatto_bg"
+     	android:contentDescription="@string/contentDesc"/>
+    
+     <LinearLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/img_chat_imageview"
+        android:orientation="vertical">
+        <ProgressBar 
+	  	    android:id="@+id/progress_loading"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        style="@style/loadingProgressBarStyle"
+	        android:visibility="gone"/>
+        <TextView 
+            android:id="@+id/tv_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/progress"
+            android:textSize="16sp"
+            android:textColor="@color/gray"
+            android:visibility="gone"/>
+     </LinearLayout>
+</RelativeLayout>

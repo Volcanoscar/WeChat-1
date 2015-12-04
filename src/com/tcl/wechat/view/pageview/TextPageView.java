@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 
 /**
  * 聊天消息显示内容：消息内容  + 页码
@@ -40,7 +40,7 @@ public class TextPageView extends LinearLayout{
 	
 	private int mPageCount = 0;
 	private int position = -1;
-	private WeiXinMsgRecorder mMsgRecorder;
+	private WeiXinMessage mMsgRecorder;
 	private String mFontPath = "fonts/oop.TTF";
 	
 	public TextPageView(Context context) {
@@ -158,7 +158,7 @@ public class TextPageView extends LinearLayout{
 	 * 添加数据,提供外部接口
 	 * @param message
 	 */
-	public void setMessageInfo(Context context, WeiXinMsgRecorder recorder){
+	public void setMessageInfo(Context context, WeiXinMessage recorder){
 		mMsgRecorder = recorder;
 		init(context);
 	}
@@ -168,7 +168,7 @@ public class TextPageView extends LinearLayout{
 	 * @param message
 	 * @param fontPath 字体路径
 	 */
-	public void setMessageInfo(Context context, WeiXinMsgRecorder recorder, String fontPath){
+	public void setMessageInfo(Context context, WeiXinMessage recorder, String fontPath){
 		mMsgRecorder = recorder;
 		mFontPath = fontPath;
 		init(context);

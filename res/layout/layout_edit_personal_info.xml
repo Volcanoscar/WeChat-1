@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center">
@@ -21,15 +22,14 @@
         android:textSize="32sp"
         android:textColor="@color/white"/>
     
-    <ImageView
+    <com.tcl.wechat.view.CustomImageView
         android:id="@+id/img_edit_user_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/default_edit_user_icon"
-        android:scaleType="center"
         android:layout_centerInParent="true"
         android:onClick="selectIconClick"
-        android:contentDescription="@string/contentDesc"/>
+        custom:src="@drawable/default_edit_user_icon"
+        custom:type="circle"/>
     
      <EditText
 	    android:id="@+id/edt_user_name"
@@ -38,6 +38,7 @@
 	    android:layout_marginTop="50dp"
 	    android:layout_centerHorizontal="true"
 	    android:layout_below="@id/img_edit_user_icon"
+	    android:gravity="center"
 	    android:paddingTop="5dp"
 	    android:paddingBottom="5dp"
 	    android:paddingLeft="10dp"
@@ -45,7 +46,7 @@
 	    android:singleLine="true"
 	    android:maxLength="20"
 	    android:inputType="text"
-	    android:textColor="@color/white"
+	    android:textColor="@color/black"
 	    android:background="@drawable/edittext_bg"
 	    android:hint="@string/input_nick_name"/>
 </RelativeLayout>

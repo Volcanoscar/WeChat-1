@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Random;
+import com.tcl.wechat.controller.listener.NewMessageListener;
 
 import android.text.TextUtils;
 
@@ -21,7 +22,6 @@ import android.text.TextUtils;
 public class DateTimeUtil {
 	
 	private static String format = "yyyy-MM-dd";
-	
 	
 	public DateTimeUtil() {
 		super();
@@ -132,15 +132,13 @@ public class DateTimeUtil {
    }
     
    /**
-     * 获取时间 小时:分;秒 HH:mm:ss
+     * 获取时间 小时:分;秒 HH:mm
      * 
      * @return
      */
-   public static String getTimeShort() {
-	     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-	     Date currentTime = new Date();
-	     String dateString = formatter.format(currentTime);
-	     return dateString;
+   public static String getTimeShort(String time) {
+	     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+	     return formatter.format(formatter.format(new Date(Long.parseLong(time))));
    	}
    	
    	public static String getShortTime(String time){

@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -15,7 +16,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.baidu.mapapi.SDKInitializer;
 import com.tcl.wechat.action.imageloader.ImageLruCache;
-import com.tcl.wechat.common.IConstant.StartServiceMode;
 import com.tcl.wechat.controller.DatabaseController;
 import com.tcl.wechat.database.AppInfoDao;
 import com.tcl.wechat.database.DeviceDao;
@@ -33,6 +33,8 @@ public class WeApplication extends Application {
 	
 	private static Context mContext;
 	
+	private static WeApplication mInstance;
+	
 	private static ImageLoader mImageLoader;
 	
 	private static RequestQueue mRequestQueue;
@@ -41,10 +43,15 @@ public class WeApplication extends Application {
 	
 	private static ExecutorService mExecutorPool;
 	
-	public static boolean bLoginSuccess = false;
+	private Typeface mTypeface1; //字体1
+	private Typeface mTypeface2; //字体2
 			
 	public static Context getContext(){
 		return mContext;
+	}
+	
+	public static WeApplication getInstance(){
+		return mInstance;
 	}
 	
 	public static ImageLoader getImageLoader() {
@@ -68,10 +75,11 @@ public class WeApplication extends Application {
 		super.onCreate();
 		
 		mContext = this;
+		mInstance = this;
 		mExecutorPool = Executors.newCachedThreadPool();
 		
 		//百度地图初始化
-		SDKInitializer.initialize(mContext);
+        SDKInitializer.initialize(mContext);
 		
 		//初始化数据库
 		initDateBase();
@@ -84,6 +92,13 @@ public class WeApplication extends Application {
 		
 		//初始化图片加载器
 		initImageLoader();
+		
+		try {
+			mTypeface1 = Typeface.createFromAsset(getAssets(), "fonts/oop.TTF");
+			mTypeface2 = Typeface.createFromAsset(getAssets(), "fonts/regular.TTF");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -120,7 +135,7 @@ public class WeApplication extends Application {
 			if (TextUtils.isEmpty(macAddr) || macAddr.equalsIgnoreCase("") ||
 					TextUtils.isEmpty(deviceId) || deviceId.equalsIgnoreCase("")){
 				macAddr = SystemInfoUtil.getLocalMacAddress();
-				deviceId = SystemInfoUtil.getDeviceId();
+				deviceId = SystemInfoUtil.getSerialNumber();//使用序列号
 				DeviceInfo deviceInfo = new DeviceInfo(deviceId, macAddr, null);
 				if (!DeviceDao.getInstance().addDeviceInfo(deviceInfo)){
 					Log.e(TAG, "addDeviceInfo ERROR!!");
@@ -147,8 +162,8 @@ public class WeApplication extends Application {
 	 */
 	private void initAuth() {
 		Intent serviceIntent = new Intent(this, WeiXmppService.class);
-		serviceIntent.putExtra("startmode", StartServiceMode.OWN);
-		serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		//serviceIntent.putExtra("startmode", StartServiceMode.OWN);
+		//serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		startService(serviceIntent);
 	}
 
@@ -160,5 +175,19 @@ public class WeApplication extends Application {
 		mRequestQueue = RequestManager.getInstance().getRequestQueue();
 		mImageCache = new ImageLruCache();
 		mImageLoader = new ImageLoader(mRequestQueue, mImageCache);
+	}
+
+	/**
+	 * 字体：娃娃体
+	 */
+	public Typeface getTypeface1() {
+		return mTypeface1;
+	}
+	
+	/**
+	 * 字体：楷体
+	 */
+	public Typeface getTypeface2() {
+		return mTypeface2;
 	}
 }

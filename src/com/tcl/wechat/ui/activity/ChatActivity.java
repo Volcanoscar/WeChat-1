@@ -1,8 +1,8 @@
 package com.tcl.wechat.ui.activity;
 
-import java.text.SimpleDateFormat;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -11,13 +11,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.Editable;
@@ -25,15 +26,14 @@ import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -46,26 +46,32 @@ import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.action.recorder.Recorder;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
+import com.tcl.wechat.common.IConstant.ChatMsgSource;
+import com.tcl.wechat.common.IConstant.ChatMsgStatus;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.common.IConstant.EventReason;
 import com.tcl.wechat.common.IConstant.EventType;
+import com.tcl.wechat.controller.WeiXinMsgControl;
 import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.WeiXinNotifier;
 import com.tcl.wechat.controller.listener.NewMessageListener;
-import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.model.WeixinMsgInfo;
 import com.tcl.wechat.ui.adapter.ChatMsgAdapter;
 import com.tcl.wechat.ui.adapter.FaceGVAdapter;
 import com.tcl.wechat.ui.adapter.FaceVPAdapter;
-import com.tcl.wechat.utils.DateTimeUtil;
 import com.tcl.wechat.utils.ExpressionUtil;
 import com.tcl.wechat.utils.FontUtil;
+import com.tcl.wechat.utils.NetWorkUtil;
+import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.view.AudioRecorderButton;
 import com.tcl.wechat.view.ChatListView;
 import com.tcl.wechat.view.ChatListView.OnRefreshListener;
 import com.tcl.wechat.view.ChatMsgEditText;
+import com.tcl.wechat.view.ChatMsgView;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.xmpp.ReplyResult;
 import com.tcl.wechat.xmpp.WeiXmppCommand;
@@ -79,7 +85,7 @@ import com.tcl.wechat.xmpp.XmppEventListener;
  * 
  */
 @SuppressLint("InflateParams")
-public class ChatActivity extends Activity {
+public class ChatActivity extends BaseActivity {
 
 	private static final String TAG = ChatActivity.class.getSimpleName();
 
@@ -89,11 +95,15 @@ public class ChatActivity extends Activity {
 	 * 界面信息
 	 */
 	private UserInfoView mUserIconImg;
+	private UserInfoView mPrevUserInfoView;
+	private UserInfoView mNextUserInfoView;
 	private TextView mUserNameTv;
 	private ChatMsgEditText mChatMsgEditText;
 	private ChatListView mChatListView;
 	private ChatMsgAdapter mAdapter;
 	private AudioRecorderButton mRecorderButton;
+	private RelativeLayout mLeftLayout;
+	private RelativeLayout mRightLayout;
 
 	private RelativeLayout mFaceLayout;
 	private ViewPager mFaceViewPager;
@@ -106,6 +116,11 @@ public class ChatActivity extends Activity {
 	// 7列3行
 	private int COUNT_COLUMN = 7;
 	private int COUNT_ROWS = 3;
+	
+	/**
+	 * 当前绑定用户索引值
+	 */
+	private int mCurBindUserIndex = -1;
 
 	/**
 	 * 系统用户
@@ -116,12 +131,22 @@ public class ChatActivity extends Activity {
 	 * 当天聊天用户
 	 */
 	private BindUser mBindUser;
-
+	
+	private BindUser mPrivBindUser;
+	
+	private BindUser mNextBindUser;
+	
+	private WeiXinMessage mPrivRecorder;
+	
+	private WeiXinMessage mNextRecorder;
+	
+	private LinkedList<String> mAllUserIds;
+	
 	/**
 	 * 聊天记录
 	 */
-	private LinkedList<WeiXinMsgRecorder> mAllUserRecorders;
-
+	//private LinkedList<WeiXinMessage> mAllUserRecorders;
+	
 	/**
 	 * 静态表情列表
 	 */
@@ -130,15 +155,14 @@ public class ChatActivity extends Activity {
 	/**
 	 * 消息记录工具类
 	 */
-	private WeiMsgRecordDao mRecordDao;
-
-	/**
-	 * 日期格式
-	 */
-	@SuppressLint("SimpleDateFormat")
-	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+	private WeiRecordDao mRecordDao;
+	
+	private WeiUserDao mUserDao;
+	
+	private WeiXinMsgControl mWeiXinMsgControl;
+	
 	private WeiXinMsgManager mWeiXinMsgManager;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -151,13 +175,17 @@ public class ChatActivity extends Activity {
 		setContentView(R.layout.activity_chat);
 
 		mContext = ChatActivity.this;
-		mRecordDao = WeiMsgRecordDao.getInstance();
+		mUserDao = WeiUserDao.getInstance();
+		mRecordDao = WeiRecordDao.getInstance();
+		mWeiXinMsgControl = WeiXinMsgControl.getInstance();
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
-		mAllUserRecorders = new LinkedList<WeiXinMsgRecorder>();
+		//mAllUserRecorders = new LinkedList<WeiXinMessage>();
 
-		initData();
 		initView();
 		initEvent();
+		
+		//加载数据
+		initData();
 	}
 
 	@Override
@@ -168,14 +196,41 @@ public class ChatActivity extends Activity {
 		}
 	}
 
+	private static final int MSG_UPDATE_MAINVIEW = 0x01;
+	private static final int MSG_UPDATE_LEFTVIEW = 0x02;
+	private static final int MSG_UPDATE_RIGHTVIEW = 0x03;
+	
+	private Handler mHandler = new Handler(){
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_MAINVIEW:
+				initConterView();
+				break;
+				
+			case MSG_UPDATE_LEFTVIEW:
+				initLeftView();
+				break;
+			
+			case MSG_UPDATE_RIGHTVIEW:
+				initRightView();
+				break;
+				
+			default:
+				break;
+			}
+		};
+	};
+	
 	/**
-	 * 数据初始化
+	 * 加载数据
 	 */
 	private void initData() {
 
-		/**
-		 * 获取数据信息方案： 1、新消息处理： 使用内存数据库 2、查询消息处理：查看历史记录 3、删除消息处理：
-		 */
+		//通知清除通知栏
+		WeiXinNotifier.getInstance().clearNotification();
+		mWeiXinMsgManager.deleteAllMessage();
+		
+		//获取数据
 		Bundle bundle = getIntent().getExtras();
 		if (bundle == null) {
 			return;
@@ -192,18 +247,83 @@ public class ChatActivity extends Activity {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				// TODO Auto-generated method stub
-				loadData();
+				//1、加载主界面
+				loadCenterData();
+				
+				/**
+				 * 加载所有两侧用户数据
+				 */
+				mAllUserIds = mRecordDao.getAllRecorderUserId();
+				
+				if (mAllUserIds != null) {
+					mCurBindUserIndex = mAllUserIds.indexOf(mBindUser.getOpenId());
+				}
+				
+				//2、加载左侧用户信息
+				//loadPrivData();
+				
+				//3、加载右侧用户信息
+				//loadNextData();
+				
+				//4、设置所有消息为已读
+				mRecordDao.setMessageReaded();
+				
 				return null;
 			}
-
-			protected void onPostExecute(Void result) {
-				initListView();
-			};
-
 		}.executeOnExecutor(WeApplication.getExecutorPool());
 	}
+	
+	/**
+	 * 加载主聊天页面数据
+	 */
+	private void loadCenterData() {
 
+		mPageCount = (int) Math.ceil(mRecordDao.getRecorderCount() / 15.0);
+		Log.d(TAG, "PageCount:" + mPageCount);
+		
+		// 1、先读取最新的15条历史记录，之后下拉刷新数据
+		// mAllUserRecorders =
+		// WeiMsgRecordDao.getInstance().getSystmAndUserRecorder(
+		// mBindUser.getOpenId(), mSysBindUser.getOpenId());
+		
+		//fix by rex.lei 2015-11-28
+		// LinkedList<WeiXinMessage> recorders = mRecordDao.getUserRecorder(
+		// mCurPageIndex, mBindUser.getOpenId());
+		// mAllUserRecorders.addAll(0, recorders);
+		mWeiXinMsgManager.loadMessage(mCurPageIndex,  mBindUser.getOpenId());
+		mHandler.sendEmptyMessage(MSG_UPDATE_MAINVIEW);
+	}
+	
+	/**
+	 * 加载左侧聊天页面数据
+	 */
+	private void loadPrivData(){
+		if (mCurBindUserIndex > 0) {
+			String openId = mAllUserIds.get(mCurBindUserIndex - 1);
+			mPrivBindUser = mUserDao.getUser(openId);
+			Log.i(TAG, "PrivBindUser:" + mPrivBindUser.toString());
+			mPrivRecorder = mRecordDao.getLatestRecorder(openId);
+		} else {
+			mPrivRecorder = null;
+		}
+		mHandler.sendEmptyMessage(MSG_UPDATE_LEFTVIEW);
+	}
+	
+	/**
+	 * 加载右侧聊天页面数据
+	 */
+	private void loadNextData(){
+		if (mCurBindUserIndex < mAllUserIds.size() - 1) {
+			String openId = mAllUserIds.get(mCurBindUserIndex + 1);
+			mNextBindUser = mUserDao.getUser(openId);
+			Log.i(TAG, "NextBindUser:" + mNextBindUser.toString());
+			mNextRecorder = mRecordDao.getLatestRecorder(openId);
+		} else {
+			mNextRecorder = null;
+		}
+		mHandler.sendEmptyMessage(MSG_UPDATE_RIGHTVIEW);
+	}
+	
 	/**
 	 * 控件初始化
 	 */
@@ -215,15 +335,17 @@ public class ChatActivity extends Activity {
 		mChatMsgEditText = (ChatMsgEditText) findViewById(R.id.edt_msg_input);
 		mChatListView = (ChatListView) findViewById(R.id.lv_chat_info);
 		mRecorderButton = (AudioRecorderButton) findViewById(R.id.btn_sound_reply);
-
-		// mMessageLayout = (ScrollView) findViewById(R.id.layout_msg_edit);
+		mLeftLayout = (RelativeLayout) findViewById(R.id.layout_left_msginfo);
+		mRightLayout = (RelativeLayout) findViewById(R.id.layout_right_msginfo);
+		mPrevUserInfoView = (UserInfoView) findViewById(R.id.chat_left_userview);
+		mNextUserInfoView = (UserInfoView) findViewById(R.id.chat_right_userview);
+		
 		mFaceLayout = (RelativeLayout) findViewById(R.id.layout_faceview);
 		mFaceViewPager = (ViewPager) findViewById(R.id.face_viewpager);
 		mDotsLayout = (LinearLayout) findViewById(R.id.face_dots_container);
-		// mMessageLayout.setVisibility(View.GONE);
 		mFaceLayout.setVisibility(View.GONE);
 	}
-
+	
 	/**
 	 * 初始化监听器事件
 	 */
@@ -233,38 +355,22 @@ public class ChatActivity extends Activity {
 		mChatListView.setOnRefreshListener(onRefreshListener);
 
 		// 录音状态监听器
-		mRecorderButton
-				.setRecorderCompletedListener(audioRecorderStateListener);
+		mRecorderButton.setRecorderCompletedListener(audioRecorderStateListener);
 
 		// 新消息监听器
-		mWeiXinMsgManager.addNewMessageListener(mNewMessageListener);
+		mWeiXinMsgControl.addNewMessageListener(mNewMessageListener);
 
 		// 表情栏目滑动监听器
 		mFaceViewPager.setOnPageChangeListener(onPageChangeListener);
-	}
-
-	/**
-	 * 加载数据
-	 */
-	private void loadData() {
-
-		mPageCount = (int) Math.ceil(mRecordDao.getRecorderCount() / 15.0);
-		Log.d(TAG, "PageCount:" + mPageCount);
-
-		// 1、先读取最新的15条历史记录，之后下拉刷新数据
-		// mAllUserRecorders =
-		// WeiMsgRecordDao.getInstance().getSystmAndUserRecorder(
-		// mBindUser.getOpenId(), mSysBindUser.getOpenId());
-		LinkedList<WeiXinMsgRecorder> recorders = mRecordDao.getUserRecorder(
-				mCurPageIndex, mBindUser.getOpenId());
-
-		mAllUserRecorders.addAll(0, recorders);
+		
+		//TextView输入文本监听
+		mChatMsgEditText.addTextChangedListener(watcher);
 	}
 
 	/**
 	 * 初始化列表栏目
 	 */
-	private void initListView() {
+	private void initConterView() {
 		mUserIconImg.setUserIcon(mBindUser.getHeadImageUrl(), true);
 		if (TextUtils.isEmpty(mBindUser.getRemarkName())) {
 			WeiUserDao.getInstance().updateRemarkName(mBindUser.getOpenId(),
@@ -272,16 +378,52 @@ public class ChatActivity extends Activity {
 			mBindUser.setRemarkName(mBindUser.getNickName());
 		}
 		mUserNameTv.setText(mBindUser.getRemarkName());
-		mUserNameTv
-				.setTypeface(new FontUtil(mContext).getFont("fonts/oop.TTF"));
+		mUserNameTv.setTypeface(WeApplication.getInstance().getTypeface1());
 
-		// 数据为空，则不再显示
-		if (mAllUserRecorders != null && !mAllUserRecorders.isEmpty()) {
-			mAdapter = new ChatMsgAdapter(mContext, mBindUser,
-					mAllUserRecorders);
+		if (mWeiXinMsgManager.getMessageCount() > 0){
+			mAdapter  = new ChatMsgAdapter(mContext);
 			mChatListView.setAdapter(mAdapter);
-			mChatListView.setSelection(mAllUserRecorders.size() - 1);
+			mChatListView.setSelection(mWeiXinMsgManager.getMessageCount() - 1);
 		}
+		
+		// 数据为空，则不再显示
+		// if (mAllUserRecorders != null && !mAllUserRecorders.isEmpty()) {
+		// mAdapter = new ChatMsgAdapter(mContext, mBindUser,
+		// mAllUserRecorders);
+		// mChatListView.setAdapter(mAdapter);
+		// mChatListView.setSelection(mAllUserRecorders.size() - 1);
+		// }
+	}
+	
+	/**
+	 * 左侧View初始化
+	 */
+	private void initLeftView(){
+		
+		ChatMsgView childView = new ChatMsgView(mContext);
+		childView.addData(mPrivRecorder);
+		
+		mLeftLayout.removeAllViews();
+		mLeftLayout.removeAllViewsInLayout();
+		if (mPrivBindUser != null) {
+			mPrevUserInfoView.setUserIcon(mPrivBindUser.getHeadImageUrl(), true);
+		}
+		mLeftLayout.addView(childView);
+	}
+	
+	/**
+	 * 右侧View初始化
+	 */
+	private void initRightView(){
+		
+		ChatMsgView childView = new ChatMsgView(mContext);
+		childView.addData(mNextRecorder);
+		
+		mRightLayout.removeAllViews();
+		if (mNextBindUser != null) {
+			mNextUserInfoView.setUserIcon(mNextBindUser.getHeadImageUrl(), true);
+		}
+		mRightLayout.addView(childView);
 	}
 
 	/**
@@ -291,6 +433,7 @@ public class ChatActivity extends Activity {
 		if (mStaticFacesList != null) {
 			return;
 		}
+		
 		// 静态表情初始化
 		mStaticFacesList = new ArrayList<String>();
 		try {
@@ -472,41 +615,33 @@ public class ChatActivity extends Activity {
 		@Override
 		public void onRefresh() {
 			// TODO Auto-generated method stub
-			new AsyncTask<Void, Void, LinkedList<WeiXinMsgRecorder>>() {
+			new AsyncTask<Void, Void, LinkedList<WeiXinMessage>>() {
 
 				@Override
-				protected LinkedList<WeiXinMsgRecorder> doInBackground(
+				protected LinkedList<WeiXinMessage> doInBackground(
 						Void... params) {
 					mCurPageIndex++;
 					if (mCurPageIndex < mPageCount) {
-						return mRecordDao.getUserRecorder(mCurPageIndex,
-								mBindUser.getOpenId());
+						return mRecordDao.getUserRecorder(mCurPageIndex,mBindUser.getOpenId());
 					}
 					return null;
 				}
 
-				protected void onPostExecute(
-						final LinkedList<WeiXinMsgRecorder> result) {
+				protected void onPostExecute(final LinkedList<WeiXinMessage> result) {
 					mChatListView.onRefreshComplete();
-					mChatListView
-							.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_DISABLED);
+					mChatListView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_DISABLED);
 
 					Log.d(TAG, "load More Data:" + result);
 					if (result != null && result.size() > 0) {
-						mAllUserRecorders.addAll(0, result);
-						mAdapter.setData(mAllUserRecorders);
+						mWeiXinMsgManager.addMessage(result);
+						//mAllUserRecorders.addAll(0, result);
+						//mAdapter.setData(mAllUserRecorders);
 						mAdapter.notifyDataSetChanged();
 						mChatListView.post(new Runnable() {
 
 							@Override
 							public void run() {
-								mChatListView.setSelection(result.size()/*
-																		 * mAllUserRecorders
-																		 * .
-																		 * size(
-																		 * ) -
-																		 * 15
-																		 */);
+								mChatListView.setSelection(result.size());
 							}
 						});
 					}
@@ -535,7 +670,7 @@ public class ChatActivity extends Activity {
 			 * 录音完成
 			 */
 			// 1、更新数据库
-			WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
+			WeiXinMessage msgRecorder = new WeiXinMessage();
 			String messageId = UUID.randomUUID().toString();
 			msgRecorder.setOpenid(mSysBindUser.getOpenId());
 			msgRecorder.setToOpenid(mBindUser.getOpenId());
@@ -543,10 +678,16 @@ public class ChatActivity extends Activity {
 			msgRecorder.setMsgtype(ChatMsgType.VOICE);
 			msgRecorder.setContent(recorder.getFileName());
 			msgRecorder.setFileName(recorder.getFileName());
-			msgRecorder.setCreatetime(df.format(new Date()));
+			msgRecorder.setCreatetime(String.valueOf(System.currentTimeMillis()));
 			msgRecorder.setReaded("1");
-			msgRecorder.setReceived("1");
-			mAllUserRecorders.addLast(msgRecorder);
+			msgRecorder.setReceived(ChatMsgSource.SENDED);
+			if (NetWorkUtil.isNetworkAvailable()){
+				msgRecorder.setStatus(ChatMsgStatus.SEND);
+			} else {
+				msgRecorder.setStatus(ChatMsgStatus.FAILED);
+			}
+			mWeiXinMsgManager.addMessage(msgRecorder);
+			//mAllUserRecorders.addLast(msgRecorder);
 			mRecordDao.addRecorder(msgRecorder);
 
 			// 2、发送消息
@@ -556,7 +697,7 @@ public class ChatActivity extends Activity {
 			weixinMsgInfo.setMsgtype(ChatMsgType.VOICE);
 			weixinMsgInfo.setRecorder(recorder);
 			weixinMsgInfo.setMessageid(messageId);
-			mWeiXinMsgManager.sendWeiXinMsg(weixinMsgInfo, mListener);
+			mWeiXinMsgControl.sendWeiXinMsg(weixinMsgInfo, mListener);
 
 			// 3、更新列表
 			update();
@@ -569,15 +710,25 @@ public class ChatActivity extends Activity {
 	private NewMessageListener mNewMessageListener = new NewMessageListener() {
 
 		@Override
-		public void onNewMessage(WeiXinMsgRecorder recorder) {
+		public void onNewMessage(WeiXinMessage recorder) {
 			// TODO Auto-generated method stub
 			if (recorder == null) {
 				return;
 			}
+			
+			Log.i(TAG, "receive new message :" + recorder.toString());
 
 			if (recorder.getOpenid().equals(mBindUser.getOpenId())) {
-				mAllUserRecorders.addLast(recorder);
+				mWeiXinMsgManager.addMessage(recorder);
 				update();
+			} else if (mPrivBindUser != null && 
+					recorder.getOpenid().equals(mPrivBindUser.getOpenId())) {
+				mPrivRecorder = recorder;
+				mHandler.sendEmptyMessage(MSG_UPDATE_LEFTVIEW);
+			} else if (mNextBindUser != null && 
+					recorder.getOpenid().equals(mNextBindUser.getOpenId())) {
+				mNextRecorder = recorder;
+				mHandler.sendEmptyMessage(MSG_UPDATE_RIGHTVIEW);
 			}
 		}
 	};
@@ -608,13 +759,31 @@ public class ChatActivity extends Activity {
 
 		}
 	};
+	
+	private TextWatcher watcher = new TextWatcher() {
+		
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+			
+		}
+		
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+		}
+		
+		@Override
+		public void afterTextChanged(Editable s) {
+			ExpressionUtil.getInstance().EditableToSpann(mContext, s);
+		}
+	};
 
 	/**
 	 * 更新聊天列表
 	 */
 	private void update() {
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mAllUserRecorders.size() - 1);
+		mChatListView.setSelection(mWeiXinMsgManager.getMessageCount() - 1);
 	}
 
 	/**
@@ -631,22 +800,27 @@ public class ChatActivity extends Activity {
 		String content = ExpressionUtil.getInstance().smileyParser(
 				mChatMsgEditText.getText().toString());
 		String msgid = UUID.randomUUID().toString();
-		WeiXinMsgRecorder recorder = new WeiXinMsgRecorder();
+		WeiXinMessage recorder = new WeiXinMessage();
 		recorder.setOpenid(mSysBindUser.getOpenId());
 		recorder.setToOpenid(mBindUser.getOpenId());
-		recorder.setMsgtype("text");
+		recorder.setMsgtype(ChatMsgType.TEXT);
 		recorder.setMsgid(msgid);
 		recorder.setContent(content);
-		recorder.setCreatetime(df.format(new Date()));
-		recorder.setReaded("1");
-		recorder.setReceived("1");
+		recorder.setCreatetime(String.valueOf(System.currentTimeMillis()));
+		recorder.setReceived(ChatMsgSource.SENDED);
+		if (NetWorkUtil.isNetworkAvailable()){
+			recorder.setStatus(ChatMsgStatus.SEND);
+		} else {
+			recorder.setStatus(ChatMsgStatus.FAILED);
+		}
 
 		Log.i(TAG, "msgReply：" + recorder.toString());
 
 		// 1、更新
-		mAllUserRecorders.addLast(recorder);
+		mWeiXinMsgManager.addMessage(recorder);
+		//mAllUserRecorders.addLast(recorder);
 		mAdapter.notifyDataSetChanged();
-		mChatListView.setSelection(mAllUserRecorders.size() - 1);
+		mChatListView.setSelection(mWeiXinMsgManager.getMessageCount() - 1);
 		mChatMsgEditText.setText("");
 		mChatMsgEditText.setHint("");
 
@@ -654,7 +828,6 @@ public class ChatActivity extends Activity {
 		mRecordDao.addRecorder(recorder);
 
 		// 3、回复
-		recorder.setContent(content);
 		reply(recorder);
 	}
 
@@ -664,21 +837,6 @@ public class ChatActivity extends Activity {
 	 * @param v
 	 */
 	public void replyTextClick(View v) {
-
-		// if (mFaceLayout.getVisibility() == View.VISIBLE){
-		// mFaceLayout.setVisibility(View.GONE);
-		// } else {
-		// if (mMessageLayout.getVisibility() == View.GONE){
-		// mMessageLayout.setVisibility(View.VISIBLE);
-		// mChatMsgEditText.requestFocus();
-		// mChatMsgEditText.setFocusable(true);
-		// mChatMsgEditText.setFocusableInTouchMode(true);
-		//
-		// } else {
-		// mMessageLayout.setVisibility(View.GONE);
-		// mChatMsgEditText.setText("");
-		// }
-		// }
 	}
 
 	/**
@@ -691,17 +849,8 @@ public class ChatActivity extends Activity {
 		if (mFaceLayout.getVisibility() == View.GONE) {
 			initFaceView();
 			mFaceLayout.setVisibility(View.VISIBLE);
-
-			// if (mMessageLayout.getVisibility() == View.GONE){
-			// mMessageLayout.setVisibility(View.VISIBLE);
-			// mChatMsgEditText.requestFocus();
-			// mChatMsgEditText.setFocusable(true);
-			// mChatMsgEditText.setFocusableInTouchMode(true);
-			// }
 		} else {
 			mFaceLayout.setVisibility(View.GONE);
-			// mMessageLayout.setVisibility(View.GONE);
-			// mChatMsgEditText.setText("");
 		}
 	}
 
@@ -726,18 +875,35 @@ public class ChatActivity extends Activity {
 		}
 		Log.i(TAG, "fileName:" + fileName);
 
-		WeiXinMsgRecorder msgRecorder = new WeiXinMsgRecorder();
+		WeiXinMessage recorder = new WeiXinMessage();
 		String messageId = UUID.randomUUID().toString();// 生成msgid
-		msgRecorder.setOpenid(mSysBindUser.getOpenId());
-		msgRecorder.setToOpenid(mBindUser.getOpenId());
-		msgRecorder.setMsgid(messageId);
-		msgRecorder.setMsgtype(ChatMsgType.IMAGE);
-		msgRecorder.setFileName(fileName);
-		msgRecorder.setCreatetime(DateTimeUtil.getNowDateTime().toString());
-		msgRecorder.setReaded("1");
-		msgRecorder.setReceived("1");
-		mAllUserRecorders.addLast(msgRecorder);
-		mRecordDao.addRecorder(msgRecorder);
+		recorder.setOpenid(mSysBindUser.getOpenId());
+		recorder.setToOpenid(mBindUser.getOpenId());
+		recorder.setMsgid(messageId);
+		recorder.setMsgtype(ChatMsgType.IMAGE);
+		recorder.setFileName(fileName);
+		recorder.setCreatetime(String.valueOf(System.currentTimeMillis()));
+		recorder.setReaded("1");//状态标识为失败
+		recorder.setReceived(ChatMsgSource.SENDED);
+		//recorder.setStatus(ChatMsgStatus.SEND);
+		if (NetWorkUtil.isNetworkAvailable()){
+			recorder.setStatus(ChatMsgStatus.SEND);
+		} else {
+			recorder.setStatus(ChatMsgStatus.FAILED);
+		}
+		mRecordDao.addRecorder(recorder);
+		mWeiXinMsgManager.addMessage(recorder);
+		//mAllUserRecorders.addLast(recorder);
+		
+		WeixinMsgInfo weixinMsgInfo = new WeixinMsgInfo();
+		weixinMsgInfo.setFromusername(mSysBindUser.getOpenId());
+		weixinMsgInfo.setTousername(mBindUser.getOpenId());
+		weixinMsgInfo.setMsgtype(ChatMsgType.VOICE);
+		weixinMsgInfo.setRecorder(new Recorder(fileName, 0, 0));
+		weixinMsgInfo.setMessageid(messageId);
+		mWeiXinMsgControl.sendWeiXinMsg(weixinMsgInfo, mListener);
+		
+		//更新
 		update();
 	}
 
@@ -784,24 +950,30 @@ public class ChatActivity extends Activity {
 	/**
 	 * 消息回复
 	 */
-	private void reply(final WeiXinMsgRecorder recorder) {
+	private void reply(final WeiXinMessage recorder) {
 		Log.i(TAG, "reply-->>");
 
 		new AsyncTask<Void, Void, Void>() {
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				Map<String, String> valus = new HashMap<String, String>();
-				valus.put("tousername", mBindUser.getOpenId());
-				valus.put("fromusername", mSysBindUser.getOpenId());
-				valus.put("createtime",
-						String.valueOf(System.currentTimeMillis()));
-				valus.put("msgtype", recorder.getMsgtype());
-				valus.put("msgid", recorder.getMsgid());
-				valus.put("content", recorder.getContent());
-				valus.put("mediaid", recorder.getMediaid());
-				new WeiXmppCommand(EventType.TYPE_SEND_WEIXINMSG, valus,
-						mListener).execute();
+				
+				try {
+					String content = "<![CDATA[" + URLEncoder.encode(recorder.getContent(), "UTF-8") + "]]>";
+					Map<String, String> valus = new HashMap<String, String>();
+					valus.put("tousername", mBindUser.getOpenId());
+					valus.put("fromusername", mSysBindUser.getOpenId());
+					valus.put("createtime", String.valueOf(System.currentTimeMillis()));
+					valus.put("msgtype", recorder.getMsgtype());
+					valus.put("msgid", recorder.getMsgid());
+					valus.put("content", content/*recorder.getContent()*/);
+					valus.put("mediaid", recorder.getMediaid());
+					new WeiXmppCommand(EventType.TYPE_SEND_WEIXINMSG, valus,
+							mListener).execute();
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return null;
 			}
 		}.executeOnExecutor(WeApplication.getExecutorPool());
@@ -811,27 +983,14 @@ public class ChatActivity extends Activity {
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 		super.onBackPressed();
+		mWeiXinMsgManager.deleteAllMessage();
 	}
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			if (getCurrentFocus() != null
-					&& getCurrentFocus().getWindowToken() != null) {
-				InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				manager.hideSoftInputFromWindow(getCurrentFocus()
-						.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-			}
-		}
-		return super.onTouchEvent(event);
-	}
 
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-
 	}
 
 	@Override
@@ -844,8 +1003,8 @@ public class ChatActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		if (mWeiXinMsgManager != null) {
-			mWeiXinMsgManager.removeNewMessageListener(mNewMessageListener);
+		if (mWeiXinMsgControl != null) {
+			mWeiXinMsgControl.removeNewMessageListener(mNewMessageListener);
 		}
 	}
 
@@ -853,37 +1012,19 @@ public class ChatActivity extends Activity {
 
 		@Override
 		public void onEvent(final XmppEvent event) {
-			Log.i(TAG, "Event type:" + event.getType());
+			Log.i(TAG, "Event type:" + event.getType() + ",reason:" + event.getReason());
 			switch (event.getType()) {
 			case EventType.TYPE_SEND_WEIXINMSG:
 				int reason = event.getReason();
-				Log.i(TAG, "reason:" + reason);
 				if (reason == EventReason.REASON_COMMON_SUCCESS) {
 					ReplyResult result = (ReplyResult) event.getEventData();
 					String msgid = result.getMsgid();
-					// WeiXinMsgRecorder recorder =
-					// mRecordDao.getRecorder(msgid);
-					String url = result.getResult();
-					if (!TextUtils.isEmpty(url)) {
-						Log.i(TAG, "Result url:" + url);
-						// 在此要判断是否添加成功
-						mRecordDao.updateRecorderUrl(msgid, result.getResult());
-						// recorder.setUrl(url);
-						//
-						// int size = mAllUserRecorders.size();
-						// mAllUserRecorders.set(size - 1, recorder);
-						// runOnUiThread(new Runnable() {
-						//
-						// @Override
-						// public void run() {
-						// // TODO Auto-generated method stub
-						// mAdapter.setUpload(false);
-						// mAdapter.setData(mAllUserRecorders);
-						// mAdapter.notifyDataSetChanged();
-						// mChatListView.setSelection(mAllUserRecorders.size()
-						// -1);
-						// }
-						// });
+					Log.i(TAG, "msgid:" + msgid);
+					if (!TextUtils.isEmpty(msgid)) {
+						//更新消息状态会成功
+						mRecordDao.updateMessageReadState(msgid, "0");
+						mRecordDao.updateMessageState(msgid, ChatMsgStatus.SUCCESS);
+						mWeiXinMsgManager.setMessageStatus(msgid, ChatMsgStatus.SUCCESS);
 					}
 				}
 				break;

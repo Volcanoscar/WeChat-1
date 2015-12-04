@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import android.util.Log;
 
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 
 /**
  * WeiMsgProvider
@@ -31,7 +31,7 @@ public class WeiMsgProvider implements IQProvider {
 
 		WeiMsgResultIQ iq = new WeiMsgResultIQ("");
 		
-		WeiXinMsgRecorder weiXinMsg = new WeiXinMsgRecorder();
+		WeiXinMessage weiXinMsg = new WeiXinMessage();
 		
 		iq.setType(Type.RESULT);
 		
@@ -107,8 +107,8 @@ public class WeiMsgProvider implements IQProvider {
 					weiXinMsg.setContent(recognition); 
 				} else if (parser.getName().equals("offlinemsg")){
 					parser.next();		
-					String offlinemsg = parser.getText();
-					weiXinMsg.setOfflinemsg(offlinemsg);
+					//String offlinemsg = parser.getText();
+					//weiXinMsg.setOfflinemsg(offlinemsg);
 				} else if (parser.getName().equals("msgid")){
 					parser.next();		
 					String msgid = parser.getText();

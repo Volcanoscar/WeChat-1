@@ -1,7 +1,5 @@
 package com.tcl.wechat.utils;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +7,7 @@ import java.util.regex.Pattern;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
@@ -67,29 +66,30 @@ public class ExpressionUtil {
      * @param index
      * @return
      */
-    public String smileyParser(String content){
-    	while (content.contains("#[") && content.contains("]#")) {
+	public String smileyParser(String content) {
+		while (content.contains("#[") && content.contains("]#")) {
 			String tempString = content;
 			int start = tempString.indexOf("#[");
 			int end = tempString.indexOf("]#");
 			String smiley = tempString.substring(start + 2, end);
-			String key = smiley.substring(smiley.indexOf("_") + 1, smiley.indexOf("."));
+			String key = smiley.substring(smiley.indexOf("_") + 1,
+					smiley.indexOf("."));
 			int indexOfKey = Integer.parseInt(key);
-			
-			//add by rex.lei 2015-11-10
+
+			// add by rex.lei 2015-11-10
 			//
-			//if (indexOfKey > -1 && indexOfKey < QQ_STRINGS.length){
-			//	smiley = "<![CDATA[" + QQ_STRINGS[indexOfKey] + "]]>";
-			//} 
+			// if (indexOfKey > -1 && indexOfKey < QQ_STRINGS.length){
+			// smiley = "<![CDATA[" + QQ_STRINGS[indexOfKey] + "]]>";
+			// }
 			String repalce = tempString.substring(start, end + 2);
 			content = tempString.replace(repalce, QQ_STRINGS[indexOfKey]);
 		}
-    	try {
-			return "<![CDATA[" + URLEncoder.encode(content, "UTF-8") + "]]>";
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// try {
+		// return content/*"<![CDATA[" + URLEncoder.encode(content, "UTF-8") +
+		// "]]>"*/;
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
     	return content;
     }
     
@@ -99,7 +99,7 @@ public class ExpressionUtil {
      * @param content
      * @return
      */
-    public CharSequence StringToCharacters(Context context, StringBuffer content){
+    public CharSequence StringToCharacters(Context context, StringBuffer content, boolean needStyale){
     	String tmpContent = content.toString();
     	Pattern p = Pattern.compile("/:");
 		Matcher m = p.matcher(content.toString());
@@ -120,13 +120,63 @@ public class ExpressionUtil {
 	            }else{
 	            	int end = matcher.start() + key.length();	
 	            	String oldChar = content.substring(matcher.start(), end);
-	            	String newChar = "&nbsp;<font color=\"#00bbaa\">" + QQ_CHATACTERS[indexOfKey] + "</font>&nbsp;";
+	            	String newChar = QQ_CHATACTERS[indexOfKey];
+	            	if (needStyale){
+	            		newChar = "&nbsp;<font color=\"#00bbaa\">" + QQ_CHATACTERS[indexOfKey] + "</font>&nbsp;";
+	            	} 
 	            	tmpContent = tmpContent.replace(oldChar, newChar);
 	            }
 	        }
 		}
 		return tmpContent;
     }
+    
+    /**
+     * @MethodName: EditableToSpann 
+     * @Description: Editable转化为响应的Span，主要使用在表情复制功能
+     * @param @param context
+     * @param @param editable
+     * @return void
+     * @throws
+     */
+	public void EditableToSpann(Context context, Editable editable){
+    	int start = 0;
+        int end = 0;
+        int indexOfKey = -1;
+    	//通过传入的正则表达式来生成一个pattern,默认区分大小写，可以添加flag
+		String zhengze = "/::\\)|/::~|/::B|/::\\||/:8-\\)|/::<|/::\\$|/::X|/::Z|/::'\\(|/::-\\||/::@|/::P|/::D|/::O|/::\\(|/::\\+|/:--b|/::Q|/::T|/:,@P|/:,@-D|/::d|/:,@o|/::g|/:\\|-\\)|/::!|/::L|/::>|/::,@|/:,@f|/::-S|/:\\?|/:,@x|/:,@@|/::8|/:,@!|/:!!!|/:xx|/:bye|/:wipe|/:dig|/:handclap|/:&-\\(|/:B-\\)|/:<@|/:@>|/::-O|/:>-\\||/:P-\\(|/::'\\||/:X-\\)|/::\\*|/:@x|/:8\\*|/:pd|/:<W>|/:beer|/:basketb|/:oo|/:coffee|/:eat|/:pig|/:rose|/:fade|/:showlove|/:heart|/:break|/:cake|/:li|/:bome|/:kn|/:footb|/:ladybug|/:shit|/:moon|/:sun|/:gift|/:hug|/:strong|/:weak|/:share|/:v|/:@\\)|/:jj|/:@@|/:bad|/:lvu|/:no|/:ok|/:love|/:<L>|/:jump|/:shake|/:<O>|/:circle|/:kotow|/:turn|/:skip|/:oY|/:#-0|/:hiphot|/:kiss|/:<&|/:&>";
+		
+		SpannableString spannableString = new SpannableString(editable.toString());
+		Pattern patten = Pattern.compile(zhengze);
+        Matcher matcher = patten.matcher(spannableString);
+        
+        String tempStr = editable.toString();
+        
+        while (matcher.find()) {
+            String key = matcher.group();
+            if (matcher.start() < 0) {
+                continue;
+            }
+            indexOfKey = indexOf(key);
+            if(indexOfKey == -1) {
+            	continue;
+            }else{
+				try {
+					start = tempStr.indexOf(key) + end;
+					end =  start + key.length();
+					Bitmap mBitmap = BitmapFactory.decodeStream(context.getAssets()
+							.open("face/png/smiley_" + decimalFormat.format(indexOfKey) + ".png"));
+					if (mBitmap != null) {
+						ImageSpan imageSpan = new ImageSpan(mBitmap,ImageSpan.ALIGN_BASELINE);
+						editable.setSpan(imageSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+						tempStr = editable.toString().substring(end);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+            }
+        }
+	}
     
     /**
      * 表情字符串转化为表情
@@ -203,7 +253,7 @@ public class ExpressionUtil {
     	//通过传入的正则表达式来生成一个pattern,默认区分大小写，可以添加flag
         Pattern sinaPatten = Pattern.compile(zhengze);
         try {
-            dealExpression(context,spannableString, sinaPatten, 0);
+            dealExpression(context, spannableString, sinaPatten, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }

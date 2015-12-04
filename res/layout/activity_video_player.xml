@@ -14,8 +14,7 @@
    	    android:id="@+id/layout_progressbar"
    	    android:layout_width="match_parent"
    	    android:layout_height="match_parent"
-   	    android:layout_centerInParent="true"
-   	    android:background="@drawable/default_player_bg">
+   	    android:layout_centerInParent="true">
    	    <ProgressBar 
    	        android:id="@+id/progress"
 	        android:layout_width="wrap_content"

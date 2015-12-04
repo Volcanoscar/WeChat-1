@@ -40,7 +40,6 @@ public class ReplyMessage {
 		this.mConnection = WeiXmppManager.getInstance().getConnection();
 	}
 	
-
 	/**
 	 * 发送消息
 	 */

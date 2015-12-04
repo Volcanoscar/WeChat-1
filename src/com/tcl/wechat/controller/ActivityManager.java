@@ -9,21 +9,28 @@ import com.tcl.wechat.view.listener.UserInfoEditListener;
  */
 public class ActivityManager {
 	
+	private static ActivityManager mInstance;
+	
 	/**
 	 * 用户信息 编辑监听器
 	 */
 	private UserInfoEditListener mUserInfoEditListener;
 	
-	private static class ActivityManagerInstance{
-		private static final ActivityManager mInstance = new ActivityManager();
-	}
 
 	private ActivityManager() {
 		super();
 	}
 
 	public static ActivityManager getInstance(){
-		return ActivityManagerInstance.mInstance;
+		if (mInstance == null){
+			mInstance = new ActivityManager();
+		}
+		return mInstance;
+	}
+	
+	public static void releaseInstance(){
+		mInstance.setUserInfoEditListener(null);
+		mInstance = null;
 	}
 
 	public UserInfoEditListener getUserInfoEditListener() {

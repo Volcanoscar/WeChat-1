@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/dp_10"
+    android:background="#4571C671" >
+    
+    <TextView
+        android:id="@+id/tv_mseeage_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" 
+        style="@style/chat_text_date_style"/>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="left|center_vertical">
+        <!-- 消息显示控件 -->
+        <TextView
+      		android:id="@+id/tv_chat_text"
+      		android:layout_width="wrap_content"
+      		android:layout_height="wrap_content"
+      		android:gravity="left|center_vertical"
+      		android:textColor="#ff000000"
+      		android:textSize="22sp"
+      		android:lineSpacingMultiplier="1.2"
+      		android:clickable="true"
+      		android:focusable="true"
+      		android:maxWidth="@dimen/dp_1000"
+      		android:background="@drawable/chatfrom_bg"
+      		android:autoLink="web" />
+    </LinearLayout>
+</LinearLayout>

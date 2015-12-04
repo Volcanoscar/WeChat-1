@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.controller.OnLineStatusMonitor;
-import com.tcl.wechat.controller.WeiXinMsgManager;
+import com.tcl.wechat.controller.WeiXinMsgControl;
 import com.tcl.wechat.model.OnLineStatus;
 
 /**
@@ -35,7 +35,7 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 				}
 				String openid = status.getOpenid();
 				OnLineStatusMonitor.getInstance().stopMonitor(openid);
-				WeiXinMsgManager.getInstance().notifyUserStatusChaned(status);
+				WeiXinMsgControl.getInstance().notifyUserStatusChaned(status);
 			}
 		}
 	}

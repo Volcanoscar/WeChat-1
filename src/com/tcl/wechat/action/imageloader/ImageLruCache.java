@@ -7,7 +7,6 @@ import java.io.OutputStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.util.LruCache;
 
 import com.android.volley.toolbox.ImageLoader.ImageCache;
@@ -69,9 +68,7 @@ public class ImageLruCache implements ImageCache{
 
 	@Override
 	public Bitmap getBitmap(String url) {
-		Log.i(TAG, "getBitmap url:" + url);
 		String key = generateKey(url);
-		Log.i(TAG, "getBitmap key:" + key);
         Bitmap bmp = mMemLruCache.get(key);
         if (bmp == null) {
             bmp = getBitmapFromDiskLruCache(key);
@@ -86,9 +83,7 @@ public class ImageLruCache implements ImageCache{
 	@Override
 	public void putBitmap(String url, Bitmap bitmap) {
 		// TODO Auto-generated method stub
-		Log.i(TAG, "putBitmap url:" + url);
 		String key = generateKey(url);
-		Log.i(TAG, "putBitmap key:" + key);
 		mMemLruCache.put(key, bitmap);
         putBitmapToDiskLruCache(key, bitmap);
 	}
@@ -127,7 +122,7 @@ public class ImageLruCache implements ImageCache{
                 bRet = bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
                 editor.commit();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 		return bRet;

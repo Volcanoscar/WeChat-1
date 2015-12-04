@@ -56,7 +56,7 @@ public class DataFileTools {
 	 * 获取存储器绝对地址
 	 * @return
 	 */
-	public String getExternalStorageDirectory(){
+	public static String getExternalStorageDirectory(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory().getAbsolutePath();
 		}
@@ -67,7 +67,7 @@ public class DataFileTools {
 	 * 判断SDCard是否存在
 	 * @return
 	 */
-	public boolean isSdCardExist() {
+	public static boolean isSdCardExist() {
 		  
 		if (Environment.getExternalStorageState().equals(
 				Environment.MEDIA_MOUNTED)) {//判断是否已经挂载
@@ -80,7 +80,7 @@ public class DataFileTools {
 	 * 获取录音文件存储路径 /wechat/cache/audio
 	 * @return
 	 */
-	public String getRecordAudioPath(){
+	public static String getRecordAudioPath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
@@ -94,7 +94,7 @@ public class DataFileTools {
 	 * 获取录制视频存储路径 /wechat/cache/video
 	 * @return
 	 */
-	public String getRecordVideoPath(){
+	public static String getRecordVideoPath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
@@ -108,7 +108,7 @@ public class DataFileTools {
 	 * 获取图像文件存储路径 /wechat/cache/image
 	 * @return
 	 */
-	public String getRecordImagePath(){
+	public static String getRecordImagePath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
@@ -123,7 +123,7 @@ public class DataFileTools {
 	 * 缓存存储路径 /wechat/cache
 	 * @return
 	 */
-	public String getCachePath(){
+	public static String getCachePath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
@@ -136,7 +136,7 @@ public class DataFileTools {
 	 * 获取临时文件路径/wechat/temp
 	 * @return
 	 */
-	public String getTempPath(){
+	public static String getTempPath(){
 		if (isSdCardExist()){
 			return Environment.getExternalStorageDirectory() + 
 					File.separator + FOLDER_APP_LOCAL +
@@ -150,7 +150,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public String getCacheFilePath(String fileName){
+	public static String getCacheFilePath(String fileName){
 		if (TextUtils.isEmpty(fileName)){
 			return null;
 		}
@@ -168,7 +168,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public String getImageFilePath(String url){
+	public static String getImageFilePath(String url){
 		if (TextUtils.isEmpty(url)){
 			return null;
 		}
@@ -186,7 +186,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public String getAudioFilePath(String fileName){
+	public static String getAudioFilePath(String fileName){
 		if (TextUtils.isEmpty(fileName)){
 			return null;
 		}
@@ -203,7 +203,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public String getVideoFilePath(String url){
+	public static String getVideoFilePath(String url){
 		if (TextUtils.isEmpty(url)){
 			return null;
 		}
@@ -221,7 +221,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public String getBindUserIconPath(String fileName){
+	public static String getBindUserIconPath(String fileName){
 		if (TextUtils.isEmpty(fileName)){
 			return null;
 		}
@@ -235,7 +235,7 @@ public class DataFileTools {
 	 * @param fileName
 	 * @return
 	 */
-	public File getSaveFilePath(String type, String fileName){
+	public static File getSaveFilePath(String type, String fileName){
 		String dirPath = null, filePath = null;
 		if (ChatMsgType.VOICE.equals(type)){
 			dirPath = getRecordAudioPath();
@@ -259,7 +259,7 @@ public class DataFileTools {
      * @param filePath
      * @return
      */
-    public Bitmap getBindUserIcon(String fileName){
+    public static Bitmap getBindUserIcon(String fileName){
     	
     	String cachePath = getRecordImagePath();
     	if (cachePath != null){
@@ -279,7 +279,7 @@ public class DataFileTools {
      * @param fileName
      * @return
      */
-    public Bitmap getQrBitmap(String fileName){
+    public static Bitmap getQrBitmap(String fileName){
     	String imageCachePath = getRecordImagePath();
     	if (imageCachePath != null){
     		String filePath = imageCachePath + File.separator + 

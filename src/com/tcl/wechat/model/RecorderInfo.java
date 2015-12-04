@@ -8,13 +8,13 @@ package com.tcl.wechat.model;
 public class RecorderInfo {
 
 	private BindUser bindUser;
-	private WeiXinMsgRecorder recorder;
+	private WeiXinMessage recorder;
 	
 	public RecorderInfo() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public RecorderInfo(BindUser bindUser, WeiXinMsgRecorder recorder) {
+	public RecorderInfo(BindUser bindUser, WeiXinMessage recorder) {
 		super();
 		this.bindUser = bindUser;
 		this.recorder = recorder;
@@ -28,11 +28,11 @@ public class RecorderInfo {
 		this.bindUser = bindUser;
 	}
 
-	public WeiXinMsgRecorder getRecorder() {
+	public WeiXinMessage getRecorder() {
 		return recorder;
 	}
 
-	public void setRecorder(WeiXinMsgRecorder recorder) {
+	public void setRecorder(WeiXinMessage recorder) {
 		this.recorder = recorder;
 	}
 

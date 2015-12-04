@@ -20,12 +20,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:background="@drawable/chat_voice_right_selector">
+        android:background="@drawable/chatto_bg">
 	    <View 
 	   	    android:id="@+id/view_chat_recorder_info"
 	   	    android:layout_width="@dimen/dp_40"
 	   	    android:layout_height="@dimen/dp_40"
 	   	    android:layout_gravity="center_vertical|right"
-	   	    android:background="@drawable/voice_right"/>
+	   	    android:background="@drawable/v_right_anim3"/>
 	</FrameLayout>
 </LinearLayout>

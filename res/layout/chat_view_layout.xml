@@ -2,184 +2,202 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res/com.tcl.wechat"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" 
-    android:gravity="center_horizontal">
-    
-    <!-- 聊天窗口 #7599ccff-->
-    <LinearLayout
+    android:layout_height="match_parent"
+    android:layout_marginLeft="@dimen/dp_20"
+    android:layout_marginRight="@dimen/dp_20"
+    android:gravity="center_horizontal" >
+
+    <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/dp_160"
-        android:layout_marginBottom="@dimen/dp_60"
+        android:layout_marginBottom="@dimen/dp_70"
+        android:layout_marginLeft="@dimen/dp_100"
+        android:layout_marginRight="@dimen/dp_100"
+        android:layout_marginTop="@dimen/dp_190"
         android:background="@drawable/chat_bg"
-        android:orientation="vertical">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_1000"
-            android:layout_marginTop="@dimen/dp_175"
-            android:layout_marginLeft="@dimen/dp_75"
-            android:layout_marginRight="@dimen/dp_75"
-            android:rotation="-4"
-            android:orientation="vertical">
-            <!-- 消息列表 -->
-	        <com.tcl.wechat.view.ChatListView 
-	            android:id="@+id/lv_chat_info"
-	            android:layout_width="match_parent"
-	            android:layout_height="0dp"
-	            android:layout_weight="1"
-	            android:layout_gravity="center_horizontal"
-	            android:focusable="false"
-	            android:cacheColorHint="#0000"
-		        android:divider="@null"
-		        android:dividerHeight="@dimen/dp_8"
-		        android:listSelector="@android:color/transparent"/>
-	        
-	        <!-- 消息输入框 -->
-	        <ScrollView 
-	            android:id="@+id/layout_msg_edit"
-	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content">
-	            <LinearLayout 
-	                android:layout_width="match_parent"
-	                android:layout_height="wrap_content"
-	                android:gravity="center"
-	                android:orientation="horizontal">
-	                <com.tcl.wechat.view.ChatMsgEditText
-			         	android:id="@+id/edt_msg_input"
-			         	android:layout_width="0dp"
-			         	android:layout_height="wrap_content"
-			         	android:layout_weight="1"
-			         	android:layout_gravity="center"
-			         	android:layout_marginTop="@dimen/dp_10"
-			         	android:layout_marginBottom="@dimen/dp_10"
-			         	android:background="@drawable/chat_msg_edit_bg"
-			         	android:textSize="24sp"
-			         	android:inputType="text"/> 
-			        <Button 
-			            android:id="@+id/btn_msg_send"
-			            android:layout_width="wrap_content"
-			            android:layout_height="wrap_content"
-			            android:layout_gravity="center"
-			            android:layout_marginTop="@dimen/dp_10"
-			            android:layout_marginBottom="@dimen/dp_10"
-			            android:padding="@dimen/dp_13"
-			            android:text="@string/send"
-			            android:textSize="24sp"
-			            android:textColor="@color/white"
-			            android:background="@drawable/send_btn_selector"
-			            android:onClick="sendMessage"/>
-	            </LinearLayout>
-	        </ScrollView>
-	         	
-	        <!-- 表情列表栏 -->
-		    <RelativeLayout 
-		        android:id="@+id/layout_faceview"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content"
-		        android:orientation="vertical"
-		        android:background="@drawable/face_view_bg"
-			    android:visibility="gone">
-		        <include
-				    android:layout_width="match_parent"
-				    android:layout_height="wrap_content"
-			     	layout="@layout/layout_chat_face" />
-		    </RelativeLayout>
-        </LinearLayout>
-    </LinearLayout>
-    
-    <ImageView 
+        android:contentDescription="@string/contentDesc"
+        android:scaleType="fitXY" />
+
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/dp_30"
         android:layout_marginLeft="@dimen/dp_325"
-        android:src="@drawable/chat_clip_1"
-        android:contentDescription="@string/contentDesc"/>
-    
+        android:layout_marginTop="@dimen/dp_10"
+        android:contentDescription="@string/contentDesc"
+        android:src="@drawable/chat_clip_1" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="@dimen/dp_40"
         android:layout_marginRight="@dimen/dp_300"
-        android:src="@drawable/chat_clip_2"
-        android:contentDescription="@string/contentDesc"/>
-    
+        android:layout_marginTop="@dimen/dp_30"
+        android:contentDescription="@string/contentDesc"
+        android:src="@drawable/chat_clip_2" />
+
     <!-- 用户头像 -->
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/dp_150"
-        android:orientation="horizontal"
-        android:rotation="-4" >
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/dp_100"
+        android:layout_marginTop="@dimen/dp_55"
+        android:orientation="horizontal" >
+
         <com.tcl.wechat.view.UserInfoView
             android:id="@+id/img_chat_usericon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="left"
-	        custom:imageSrc="@drawable/default_user_largeicon"
-	        custom:imageScaleType="centerInside"/>
-        
-        <TextView 
+            custom:imageScaleType="centerInside"
+            custom:imageSrc="@drawable/default_user_largeicon" />
+
+        <TextView
             android:id="@+id/tv_chat_username"
             android:layout_width="@dimen/dp_800"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp_130"
-            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginTop="@dimen/dp_160"
+            android:ellipsize="end"
+            android:maxEms="32"
             android:padding="@dimen/dp_8"
             android:singleLine="true"
-            android:ellipsize="end"
-            android:maxEms="32" 
-            android:text="" 
-            android:textSize="28sp"
-            android:textColor="@color/black"/>
+            android:text=""
+            android:textColor="@color/black"
+            android:textSize="28sp" />
     </LinearLayout>
-    
-    <!-- 底部功能按键 -->
-    <RelativeLayout 
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="@dimen/dp_110"
-        android:layout_marginRight="@dimen/dp_25"
-        android:layout_marginBottom="@dimen/dp_30"
-        android:rotation="-4">
-        <!-- 录音按钮 -->
-        <com.tcl.wechat.view.AudioRecorderButton
-            android:id="@+id/btn_sound_reply"
-            android:layout_width="wrap_content"
+        android:layout_height="@dimen/dp_1380"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="@dimen/dp_120"
+        android:layout_marginRight="@dimen/dp_120"
+        android:layout_marginTop="@dimen/dp_280"
+        android:orientation="vertical" >
+
+        <!-- 消息列表 -->
+        <com.tcl.wechat.view.ChatListView
+            android:id="@+id/lv_chat_info"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:cacheColorHint="#0000"
+            android:divider="@null"
+            android:dividerHeight="@dimen/dp_5"
+            android:focusable="false"
+            android:listSelector="@android:color/transparent" />
+
+        <!-- 消息输入框 -->
+        <ScrollView
+            android:id="@+id/layout_msg_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal" >
+
+                <com.tcl.wechat.view.ChatMsgEditText
+                    android:id="@+id/edt_msg_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="@dimen/dp_10"
+                    android:layout_marginTop="@dimen/dp_10"
+                    android:layout_weight="1"
+                    android:background="@drawable/chat_msg_edit_bg"
+                    android:inputType="text"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/btn_msg_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="@dimen/dp_10"
+                    android:layout_marginTop="@dimen/dp_10"
+                    android:background="@drawable/send_btn_selector"
+                    android:onClick="sendMessage"
+                    android:padding="@dimen/dp_13"
+                    android:text="@string/send"
+                    android:textColor="@color/white"
+                    android:textSize="24sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 表情列表栏 -->
+
+        <RelativeLayout
+            android:id="@+id/layout_faceview"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:background="@drawable/sound_reply_selector"/>
-        <!-- 文字消息回复按钮 -->
-        <Button 
-            android:id="@+id/btn_msg_reply"
-            android:layout_width="wrap_content"
+            android:background="@drawable/face_view_bg"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                layout="@layout/layout_chat_face" />
+        </RelativeLayout>
+
+        <!-- 底部功能按键 -->
+
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/msg_reply_selector"
-            android:onClick="replyTextClick"/>
-        <!-- 表情回复控件 -->
-        <Button 
-            android:id="@+id/btn_face_reply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_msg_reply"
-            android:layout_marginRight="@dimen/dp_75"
-            android:background="@drawable/face_reply_selector"
-            android:onClick="replyFaceClick"/>
-        
-        <!-- 图片回复控件 -->
-        <Button 
-            android:id="@+id/btn_img_reply"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_face_reply"
-            android:layout_marginRight="@dimen/dp_50"
-            android:background="@drawable/img_reply_selector"
-            android:onClick="imgReplyClick"/>
-    </RelativeLayout>
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginLeft="@dimen/dp_120"
+            android:layout_marginRight="@dimen/dp_120" >
+
+            <!-- 录音按钮 -->
+
+            <com.tcl.wechat.view.AudioRecorderButton
+                android:id="@+id/btn_sound_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="@dimen/dp_20"
+                android:background="@drawable/sound_reply_selector" />
+
+            <!-- 文字消息回复按钮 -->
+
+            <Button
+                android:id="@+id/btn_msg_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/msg_reply_selector"
+                android:onClick="replyTextClick" 
+                android:visibility="gone"/>
+
+            <!-- 表情回复控件 -->
+            <Button
+                android:id="@+id/btn_face_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/dp_80"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/face_reply_selector"
+                android:onClick="replyFaceClick" />
+
+            <!-- 图片回复控件 -->
+            <Button
+                android:id="@+id/btn_img_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_10"
+                android:layout_marginRight="@dimen/dp_80"
+                android:layout_toLeftOf="@id/btn_face_reply"
+                android:background="@drawable/img_reply_selector"
+                android:onClick="imgReplyClick" />
+        </RelativeLayout>
+    </LinearLayout>
+
 </RelativeLayout>

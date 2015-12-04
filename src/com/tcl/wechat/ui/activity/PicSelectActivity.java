@@ -38,7 +38,7 @@ import android.widget.Toast;
 import com.tcl.wechat.R;
 import com.tcl.wechat.action.imageloader.ImageFloder;
 import com.tcl.wechat.ui.adapter.PicSelectAdapter;
-import com.tcl.wechat.utils.ToastUtil;
+import com.tcl.wechat.utils.WeixinToast;
 import com.tcl.wechat.view.ListImageDirPopupWindow;
 import com.tcl.wechat.view.ListImageDirPopupWindow.OnImageDirSelected;
 
@@ -268,7 +268,9 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 	 */
 	private void data2View(){
 		if (mImgDir == null){
-			ToastUtil.showToastForced(R.string.no_picture);
+			mBottomLy.setVisibility(View.GONE);
+			WeixinToast.makeText(R.string.no_picture).show();
+			//ToastUtil.showToastForced(R.string.no_picture);
 			return;
 		}
 
@@ -305,6 +307,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		});
 		// 设置选择文件夹的回调
 		mListImageDirPopupWindow.setOnImageDirSelected(this);
+		
 	}
 
 	@Override
@@ -313,8 +316,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		mImgDir = new File(floder.getDir());
 		mImgs = Arrays.asList(mImgDir.list(new FilenameFilter(){
 			@Override
-			public boolean accept(File dir, String filename)
-			{
+			public boolean accept(File dir, String filename){
 				if (filename.endsWith(".jpg") || filename.endsWith(".png")
 						|| filename.endsWith(".jpeg"))
 					return true;

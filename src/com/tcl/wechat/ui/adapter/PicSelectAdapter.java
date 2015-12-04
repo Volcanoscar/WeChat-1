@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.utils.ToastUtil;
+import com.tcl.wechat.utils.WeixinToast;
 
 /**
  * 图片选择适配器
@@ -87,8 +87,8 @@ public class PicSelectAdapter extends CommonAdapter<String>{
 					mSelectCount --;
 				} else { // 未选择该图片
 					if (mSelectCount >= MAX_SELECT_COUNT){
-						ToastUtil.showToastForced(String.format(mContext.getResources()
-								.getString(R.string.select_pic_hint), MAX_SELECT_COUNT));
+						WeixinToast.makeText(String.format(mContext.getResources()
+								.getString(R.string.select_pic_hint), MAX_SELECT_COUNT)).show();
 						return ;
 					}
 					mSelectedImage.add(mDirPath + "/" + item);

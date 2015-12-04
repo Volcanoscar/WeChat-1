@@ -12,6 +12,7 @@
         android:lineSpacingMultiplier="1.2"
         android:maxLines="5"
         android:ellipsize="end"
-        android:textSize="28sp"
-        android:textColor="@color/black"/>
+        android:textSize="24sp"
+        android:textColor="@color/black"
+        android:autoLink="web|email"/>
 </LinearLayout>

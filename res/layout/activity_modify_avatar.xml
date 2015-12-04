@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+	<RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:background="#737373">
+	    <view class="com.tcl.wechat.view.CropImageView"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:id="@+id/gl_modify_avatar_image"
+	        android:layout_gravity="center"/>
+    </RelativeLayout>
+    
+    <LinearLayout
+        android:id="@+id/gl_modify_avatar_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:padding="2dp"
+        android:orientation="horizontal">
+    	<Button
+    	    android:id="@+id/gl_modify_avatar_rotate_left"
+            android:layout_width="@dimen/dp_80"
+            android:layout_height="@dimen/dp_80"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:background="@drawable/gl_rotate_left"/>
+        <Button
+            android:id="@+id/gl_modify_avatar_cancel"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp_60"
+            android:layout_weight="1"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:text="@string/cancel"
+            android:background="@drawable/gl_btn_gray"/>
+        <Button
+            android:id="@+id/gl_modify_avatar_save"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp_60"
+            android:layout_weight="1"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:text="@string/confirm"
+            android:background="@drawable/gl_btn_green"/>
+       <Button
+           	android:id="@+id/gl_modify_avatar_rotate_right"
+            android:layout_width="@dimen/dp_80"
+            android:layout_height="@dimen/dp_80"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:background="@drawable/gl_rotate_right"/>
+    </LinearLayout>
+</LinearLayout>

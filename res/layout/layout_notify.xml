@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+    
+    <!-- 用户头像 -->
+    <ImageView
+        android:id="@+id/img_user_icon"
+        android:layout_width="@dimen/dp_80"
+        android:layout_height="@dimen/dp_80"
+        android:layout_gravity="left|center_vertical"
+        android:paddingLeft="@dimen/dp_10"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/contentDesc"/>
+    
+    <!-- 消息信息 -->
+	<LinearLayout
+	    android:layout_width="wrap_content"
+	    android:layout_height="match_parent"
+	    android:layout_weight="1"
+	    android:layout_margin="@dimen/dp_5"
+	    android:orientation="vertical">
+	    <TextView 
+	        android:id="@+id/tv_user_name"
+	        android:layout_width="wrap_content"
+	        android:layout_height="0dp"
+	        android:layout_weight="1"
+	        android:gravity="left|center_vertical"
+	        android:textSize="18sp"
+	        android:textColor="@color/black"/>
+	    <TextView 
+	        android:id="@+id/tv_msg_info"
+	        android:layout_width="wrap_content"
+	        android:layout_height="0dp"
+	        android:layout_weight="1"
+	        android:gravity="left|center_vertical"
+	        android:singleLine="true"
+	        android:ellipsize="end"
+	        android:textSize="16sp"
+	        android:textColor="@color/gray"/>
+	</LinearLayout>
+	
+	<TextView 
+	    android:id="@+id/tv_time"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:gravity="right"
+	    android:textSize="16sp"
+	    android:textColor="@color/gray"/>
+</LinearLayout>

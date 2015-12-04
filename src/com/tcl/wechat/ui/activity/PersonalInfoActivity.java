@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -19,7 +18,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
@@ -28,6 +26,7 @@ import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
+import com.tcl.wechat.view.CustomImageView;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 
@@ -36,7 +35,7 @@ import com.tcl.wechat.xmpp.WeiXmppManager;
  * @author rex.lei
  *
  */
-public class PersonalInfoActivity extends Activity{
+public class PersonalInfoActivity extends BaseActivity{
 	
 	private static final String TAG = "PersonalInfoActivity";
  	
@@ -55,7 +54,7 @@ public class PersonalInfoActivity extends Activity{
 	 */
 	private UserInfoView mUserInfoView ;
 	private EditText mEditUserNameEdt;
-	private ImageView mEditUserIcon;
+	private CustomImageView mEditUserIcon;
 	
 	/**
 	 * 系统用户信息
@@ -110,7 +109,7 @@ public class PersonalInfoActivity extends Activity{
 			mUserInfoView.setUserName(mSystemUser.getRemarkName(), false);
 		}
 		
-		mEditUserIcon = (ImageView) findViewById(R.id.img_edit_user_icon);
+		mEditUserIcon = (CustomImageView) findViewById(R.id.img_edit_user_icon);
 		mEditUserNameEdt = (EditText) findViewById(R.id.edt_user_name);
 	}
 	
@@ -170,8 +169,7 @@ public class PersonalInfoActivity extends Activity{
 				mBitmap = data.getParcelableExtra("data");/*decodeUriAsBitmap(imageUri);*///decode bitmap/**/;
 				if (mBitmap != null){
 					mBitmap = ImageUtil.getInstance().zoomBitmap(mBitmap, 240, 240);
-					Bitmap newUserIcon = ImageUtil.getInstance().createCircleImage(mBitmap);
-					mEditUserIcon.setImageBitmap(newUserIcon);
+					mEditUserIcon.setImageBitmap(mBitmap);
 					if (tempFile != null){
 						boolean delete = tempFile.delete();
 						Log.i(TAG, "delete = " + delete);

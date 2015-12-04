@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -29,18 +27,19 @@ import com.tcl.wechat.action.recorder.RecorderAudioManager;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.database.WeiMsgRecordDao;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
-import com.tcl.wechat.model.WeiXinMsgRecorder;
+import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.ui.activity.BaiduMapActivity;
 import com.tcl.wechat.ui.activity.ChatActivity;
-import com.tcl.wechat.ui.activity.LoginActivity;
+import com.tcl.wechat.ui.activity.FamilyBoardMainActivity;
+import com.tcl.wechat.ui.activity.PlayVideoActivity;
 import com.tcl.wechat.ui.activity.ShowImageActivity;
 import com.tcl.wechat.ui.activity.ShowTextActivity;
 import com.tcl.wechat.ui.activity.WebViewActivity;
 import com.tcl.wechat.utils.DataFileTools;
-import com.tcl.wechat.utils.DateTimeUtil;
+import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.SystemTool;
@@ -60,14 +59,23 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	
 	private static BindUser mBindUser;
 	
-	private static WeiXinMsgRecorder mRecorder;
+	private static WeiXinMessage mRecorder;
 	
 	private static int mUpdateCnt = 0;
 	
 	private static boolean bPlaying = false;
 	
-	private static RecorderPlayerManager mAudioManager = RecorderPlayerManager.getInstance();
+	private static String mLastUserOpenid = null;
 	
+	private int[] mAllViewId = new int[]{
+			R.id.tv_textmsg_detail, 
+			R.id.img_imagemsg_detail, 
+			R.id.layout_videoview,
+			R.id.layout_audioview,
+			R.id.layout_locationview,
+			R.id.layout_linkview,
+			R.id.img_default_info,
+			R.id.default_user_info};
 	
 	@Override
 	public void onEnabled(Context context) {
@@ -100,13 +108,17 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			//新消息事件
 			Bundle bundle = intent.getExtras();
 			if (bundle != null){
-				WeiXinMsgRecorder recorder = bundle.getParcelable("WeiXinMsgRecorder");
+				WeiXinMessage recorder = bundle.getParcelable("WeiXinMsgRecorder");
 				Log.i(TAG, "Receive msg:" + recorder);
 				if (recorder == null){
 					return ;
 				}
+				
+				//消息信息
 				mRecorder = recorder;
-				mBindUser = WeiUserDao.getInstance().getUser(recorder.getOpenid());
+				if (!mRecorder.getOpenid().equals(mLastUserOpenid)){
+					mBindUser = WeiUserDao.getInstance().getUser(recorder.getOpenid());
+				}
 				if (mBindUser == null){
 					Log.e(TAG, "BindUser is NULL!!");
 					return ;
@@ -122,7 +134,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			mBindUser = WeiUserDao.getInstance().getLastBindUser();
 			if (mBindUser != null){
 				Log.d(TAG, "mRecorder:" + mRecorder);
-				mRecorder = WeiMsgRecordDao.getInstance().getLatestRecorder(mBindUser.getOpenId());
+				mRecorder = WeiRecordDao.getInstance().getLatestRecorder(mBindUser.getOpenId());
 				Log.d(TAG, "mRecorder:" + mRecorder);
 			} else {
 				mRecorder = null;
@@ -134,7 +146,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		} else if (ACTION_MAINVIEW.equals(action)){
 			//进入主界面
 			resetPlayAnim();
-			Intent mainintent = new Intent(context, LoginActivity.class);
+			Intent mainintent = new Intent(context, FamilyBoardMainActivity.class);
 			mainintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(mainintent);
 		} else if (ACTION_UPDATE_AUDIO_ANMI.equals(action)){
@@ -152,24 +164,24 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	        appWidgetManger.updateAppWidget(appWidgetIds, mRemoteViews);
 		} else {
 			//启动Activity
-			Intent actionIntent = createIntent(context, action);
+			Intent actionIntent = createIntent(context, intent);
 			if (actionIntent != null){
 				context.startActivity(actionIntent);
 			}
 		}
 	}
-	
+
 	/**
 	 * 获取Intent
 	 * @param context
 	 * @param action
 	 * @return
 	 */
-	public Intent createIntent(Context context, String action){
+	public Intent createIntent(Context context, Intent intent){
 		Intent mIntent = null;
 		
 		if (mRecorder == null){
-			mRecorder = WeiMsgRecordDao.getInstance().getLatestRecorder();
+			mRecorder = WeiRecordDao.getInstance().getLatestRecorder();
 		}
 		
 		if (mRecorder == null){
@@ -180,11 +192,11 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		if (mBindUser == null ){
 			mBindUser = WeiUserDao.getInstance().getUser(mRecorder.getOpenid());
 		}
-		
+		String action = intent.getAction();
 		if (ACTION_CHATVIEW.equals(action)) {
 			//进入聊天界面
 			resetPlayAnim();
-			mRecorder = WeiMsgRecordDao.getInstance().getLatestRecorder(mBindUser.getOpenId());
+			mRecorder = WeiRecordDao.getInstance().getLatestRecorder(mBindUser.getOpenId());
 			if (mBindUser != null && mRecorder != null){
 				mIntent = new Intent(context, ChatActivity.class);
 				Bundle bundle = new Bundle();
@@ -221,23 +233,15 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			//播放音频
 			String fileName = mRecorder.getFileName();
 			if (!TextUtils.isEmpty(fileName)){
-				
+
 				playAudio(fileName);
 				//更新播放状态
-//				WeiMsgRecordDao.getInstance().updatePlayState(mRecorder.getMsgid());
-//				//启动播放
-//				mIntent = new Intent(android.content.Intent.ACTION_VIEW);
-//				mIntent.setDataAndType(Uri.parse(fileName), "audio/amr");
-//				mIntent.setComponent(new ComponentName("com.android.music", 
-//						"com.android.music.MediaPlaybackActivity"));
-//				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			}
 		} else if (ACTION_PLAY_VIDEO.equals(action)) {
 			//播放视频
-			String fileName = DataFileTools.getInstance().getVideoFilePath(mRecorder.getMediaid());
-			if (!TextUtils.isEmpty(fileName)){
-				mIntent = new Intent(android.content.Intent.ACTION_VIEW);
-				mIntent.setDataAndType(Uri.parse(fileName), "video/mp4");
+			if (!TextUtils.isEmpty(mRecorder.getFileName())){
+				mIntent = new Intent(mContext, PlayVideoActivity.class);
+				mIntent.putExtra("FilePath", mRecorder.getFileName());
 				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			}
 		} else if (ACTION_SHOW_LOCATION.equals(action)) {
@@ -267,23 +271,18 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	private void playAudio(String fileName){
 		
 		
-		if (mAudioManager == null){
-			Log.e(TAG, "RecorderPlayerManager is not init!!");
-			return ;
-		}
-		
-		if (!mAudioManager.isPlaying()){
+		if (!RecorderPlayerManager.getInstance().isPlaying()){
 			
 			//播放音频
 			if (!TextUtils.isEmpty(fileName) ){
-				mAudioManager.play(fileName);
-				mAudioManager.setPlayCompletedListener(playCompletedListener);
+				RecorderPlayerManager.getInstance().play(fileName);
+				RecorderPlayerManager.getInstance().setPlayCompletedListener(playCompletedListener);
 			}
 			bPlaying = true;
 			mUpdateCnt = 0;
 			new Thread(mPlayIngRunnable).start();
 		} else { //如果正在播放，点击后，则需要暂停当前播放
-			mAudioManager.stop();
+			RecorderPlayerManager.getInstance().stop();
 			resetPlayAnim();
 		}
 	}
@@ -325,8 +324,9 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	private void resetPlayAnim(){
 		mUpdateCnt = 0;
 		bPlaying = false;
-		if (mAudioManager != null && mAudioManager.isPlaying()) {
-			mAudioManager.stop();
+		if (RecorderPlayerManager.getInstance() != null && 
+				RecorderPlayerManager.getInstance().isPlaying()) {
+			RecorderPlayerManager.getInstance().stop();
 		}
 		if (mRemoteViews == null){
 			initRemoteViews();
@@ -351,47 +351,59 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		Intent mainIntent = new Intent(ACTION_MAINVIEW);
 		PendingIntent mainPendingIntent = PendingIntent.getBroadcast(context, 0, mainIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.img_msgbd, mainPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		
+		//点击默认图标，进入主界面
+		Intent mainIntent2 = new Intent(ACTION_MAINVIEW);
+		PendingIntent mainPendingIntent2 = PendingIntent.getBroadcast(context, 0, mainIntent2, 0);
+		mRemoteViews.setOnClickPendingIntent(R.id.img_default_info, mainPendingIntent2);
 		
 		//进入聊天界面
 		Intent chatIntent = new Intent(ACTION_CHATVIEW);
 		PendingIntent chatPendingIntent = PendingIntent.getBroadcast(context, 0, chatIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.btn_reply, chatPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		
+		//用户头像，进入聊天页面
+		Intent chatIntent2 = new Intent(ACTION_CHATVIEW);
+		PendingIntent chatPendingIntent2 = PendingIntent.getBroadcast(context, 0, chatIntent2, 0);
+		mRemoteViews.setOnClickPendingIntent(R.id.img_user_icon, chatPendingIntent2);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		//文本消息
 		Intent textIntent = new Intent(ACTION_SHOW_TEXT);
 		PendingIntent textPendingIntent = PendingIntent.getBroadcast(context, 0, textIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.tv_textmsg_detail, textPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		Intent imageIntent = new Intent(ACTION_SHOW_IMAGE);
 		PendingIntent imagePendingIntent = PendingIntent.getBroadcast(context, 0, imageIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.img_imagemsg_detail, imagePendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		//音频消息
 		Intent audioIntent = new Intent(ACTION_PLAY_AUDIO);
 		PendingIntent audioPendingIntent = PendingIntent.getBroadcast(context, 0, audioIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.layout_audioview, audioPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		//视频消息
 		Intent videoIntent = new Intent(ACTION_PLAY_VIDEO);
 		PendingIntent videoPendingIntent = PendingIntent.getBroadcast(context, 0, videoIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.layout_videoview, videoPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		//位置信息
 		Intent loacationIntent = new Intent(ACTION_SHOW_LOCATION);
 		PendingIntent locationPendingIntent = PendingIntent.getBroadcast(context, 0, loacationIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.layout_locationview, locationPendingIntent);
-		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
+		//appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 		
 		//链接信息
 		Intent linkIntent = new Intent(ACTION_SHOW_LINK);
 		PendingIntent linkPendingIntent = PendingIntent.getBroadcast(context, 0, linkIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.layout_linkview, linkPendingIntent);
+		
 		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 	}
 	
@@ -399,7 +411,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 数据初始化
 	 */
 	private void initData(){
-		mRecorder = WeiMsgRecordDao.getInstance().getLatestRecorder();
+		mRecorder = WeiRecordDao.getInstance().getLatestRecorder();
 		if (mRecorder != null){
 			Log.d(TAG, "mRecorder:" + mRecorder);
 			mBindUser = WeiUserDao.getInstance().getUser(mRecorder.getOpenid());
@@ -426,46 +438,49 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		}
 		
 		if (mBindUser != null && mRecorder != null){
-			
-			//更新用户信息
-			setupUserView();
-			
-			//控件复位
-			resetViews();
-			
+	
 			//更新消息记录
 			String msgType = mRecorder.getMsgtype();
 			Log.i(TAG, "msgType : " + msgType);
 			
 			if (ChatMsgType.TEXT.equals(msgType)){
 				//文字显示控件
+				resetViews(R.id.tv_textmsg_detail);
 				setupTextView(context);
 				
 			} else if (ChatMsgType.IMAGE.equals(msgType)) {
 				//图像显示控件
+				resetViews(R.id.img_imagemsg_detail);
 				setupImageView();
 				
 			} else if (ChatMsgType.VOICE.equals(msgType)) {
 				//音频显示控件
+				resetViews(R.id.layout_audioview);
 				setupAudioView();
 				
 			} else if (ChatMsgType.VIDEO.equals(msgType) ||
 					ChatMsgType.SHORTVIDEO.equals(msgType)) {
 				//视频显示控件
+				resetViews(R.id.layout_videoview);
 				setupVideoView();
 				
-			} else if (ChatMsgType.LOCATION.equals(msgType)) {
+			} else if (ChatMsgType.MAP.equals(msgType)) {
 				//位置显示控件
+				resetViews(R.id.layout_locationview);
 				setupLocationView();
 				
-			} else if (ChatMsgType.LINK.equals(msgType)) {
+			} else if (ChatMsgType.WEB.equals(msgType)) {
 				//链接显示控件
+				resetViews(R.id.layout_linkview);
 				setupLinkView();
 			} 
+			
+			//更新用户头像
+			setupUserView();
 		} else {
 			
 			//控件复位
-			resetViews();
+			resetViews(0);
 			
 			//设置默认显示内容
 			setupDefaultView();
@@ -473,57 +488,62 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 	}
 	
-	/**
-	 * 控件状态复位
-	 */
-	public void resetViews(){
-		mRemoteViews.setViewVisibility(R.id.tv_textmsg_detail, View.GONE);
-		mRemoteViews.setViewVisibility(R.id.img_imagemsg_detail, View.GONE);
-		mRemoteViews.setViewVisibility(R.id.layout_videoview, View.GONE);
-		mRemoteViews.setViewVisibility(R.id.layout_audioview, View.GONE);
-		mRemoteViews.setViewVisibility(R.id.layout_locationview, View.GONE);
-		mRemoteViews.setViewVisibility(R.id.layout_linkview, View.GONE);
+	private void resetViews(int viewId){
+		for (int i = 0; i < mAllViewId.length; i++) {
+			if (viewId != mAllViewId[i]){
+				mRemoteViews.setViewVisibility(mAllViewId[i], View.GONE);
+			} else {
+				mRemoteViews.setViewVisibility(mAllViewId[i], View.VISIBLE);
+			}
+		}
 	}
 
 	/**
 	 * 显示用户信息
 	 */
 	public void setupUserView(){
-		updateImageView(R.id.img_user_icon, 80, 80, true);
-		mRemoteViews.setTextViewText(R.id.tv_user_name, mBindUser.getNickName());
+		
+		mRemoteViews.setViewVisibility(R.id.btn_reply, View.VISIBLE);
+		mRemoteViews.setViewVisibility(R.id.tv_user_name, View.VISIBLE);
+		mRemoteViews.setViewVisibility(R.id.tv_msg_receiver_time, View.VISIBLE);
+
+		if (mLastUserOpenid == null || !mLastUserOpenid.equals(mBindUser.getOpenId())){
+			updateImageView(R.id.img_user_icon, 80, 80, true);
+			String userName = mBindUser.getRemarkName();
+			if (TextUtils.isEmpty(userName)){
+				userName = mBindUser.getNickName();
+			}
+			mRemoteViews.setTextViewText(R.id.tv_user_name, userName);
+		}
 		mRemoteViews.setTextViewText(R.id.tv_msg_receiver_time, 
-				DateTimeUtil.getShortTime(mRecorder.getCreatetime()));
-		mRemoteViews.setTextColor(R.id.btn_reply, Color.WHITE);
+				DateUtils.getTimeShort(mRecorder.getCreatetime()));
 	}
 	
 	/**
 	 * 默认显示内容
 	 */
 	public void setupDefaultView(){
-		Bitmap userIcon = BitmapFactory.decodeResource(mContext.getResources(), 
-				R.drawable.head);
 		
-		mRemoteViews.setImageViewBitmap(R.id.img_user_icon, userIcon);
-		mRemoteViews.setTextViewText(R.id.tv_user_name, "悠生活");
-		mRemoteViews.setTextViewText(R.id.tv_msg_receiver_time, "6.8");
+		mRemoteViews.setViewVisibility(R.id.btn_reply, View.GONE);
+		mRemoteViews.setViewVisibility(R.id.img_user_icon, View.GONE);
+		mRemoteViews.setViewVisibility(R.id.tv_user_name, View.GONE);
+		mRemoteViews.setViewVisibility(R.id.tv_msg_receiver_time, View.GONE);
 		
-		mRemoteViews.setViewVisibility(R.id.layout_videoview, View.VISIBLE);
-		Bitmap imgBitmap = BitmapFactory.decodeResource(mContext.getResources(), 
-				R.drawable.message_video_bg);
-		mRemoteViews.setImageViewBitmap(R.id.img_videomsg_detail, imgBitmap);
-		
-		mRemoteViews.setTextColor(R.id.btn_reply, Color.GRAY);
+		mRemoteViews.setViewVisibility(R.id.img_user_icon, View.VISIBLE);
+		mRemoteViews.setViewVisibility(R.id.default_user_info, View.VISIBLE);
+		mRemoteViews.setViewVisibility(R.id.img_default_info, View.VISIBLE);
+		//默认头像
+		mRemoteViews.setImageViewResource(R.id.img_user_icon, R.drawable.head_default);
 	}
 	
 	/**
 	 * 显示文本信息
 	 */
 	public void setupTextView(Context context){
-		mRemoteViews.setViewVisibility(R.id.tv_textmsg_detail, View.VISIBLE);
 		CharSequence contentCharSeq = mRecorder.getContent();
 		if (!TextUtils.isEmpty(contentCharSeq)){
 			contentCharSeq = ExpressionUtil.getInstance().StringToCharacters(context, 
-					new StringBuffer(contentCharSeq));
+					new StringBuffer(contentCharSeq), true);
 		} else {
 			contentCharSeq = context.getString(R.string.no_message);
 		}
@@ -535,7 +555,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示图像信息
 	 */
 	public void setupImageView(){
-		mRemoteViews.setViewVisibility(R.id.img_imagemsg_detail, View.VISIBLE);
 		updateImageView(R.id.img_imagemsg_detail, 400, 400, false);
 	}
 	
@@ -543,9 +562,8 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示视频信息
 	 */
 	public void setupVideoView(){
-		mRemoteViews.setViewVisibility(R.id.layout_videoview, View.VISIBLE);
 		Bitmap thumbnailsBitmap = BitmapFactory.decodeFile(
-				DataFileTools.getInstance().getImageFilePath(mRecorder.getUrl())); 
+				DataFileTools.getImageFilePath(mRecorder.getUrl())); 
 		if (thumbnailsBitmap == null){
 			thumbnailsBitmap = BitmapFactory.decodeResource(
 					mContext.getResources(), R.drawable.message_video_bg);
@@ -558,7 +576,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示音频信息
 	 */
 	public void setupAudioView(){
-		mRemoteViews.setViewVisibility(R.id.layout_audioview, View.VISIBLE);
 		mRemoteViews.setViewVisibility(R.id.msg_play_time, View.VISIBLE);
 		int duration  = 0;
 		if (!TextUtils.isEmpty(mRecorder.getFileName())){
@@ -575,7 +592,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示位置信息
 	 */
 	public void setupLocationView(){
-		mRemoteViews.setViewVisibility(R.id.layout_locationview, View.VISIBLE);
 		mRemoteViews.setTextViewText(R.id.tv_location_detail, mRecorder.getLabel());
 	}
 	
@@ -583,7 +599,6 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示连接信息
 	 */
 	public void setupLinkView(){
-		mRemoteViews.setViewVisibility(R.id.layout_linkview, View.VISIBLE);
 		String titleHtml = "<a href=" + mRecorder.getUrl() + ">" + mRecorder.getTitle()  + 
 					       "</a>";
 		String descHtml = "<div>" + mRecorder.getDescription() + 
@@ -611,6 +626,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			url = mRecorder.getUrl();
 		}
 		if (TextUtils.isEmpty(url)){
+			defaultUserIcon();
 			return ;
 		}
 		Log.i(TAG, "ImageUrl:" + url);
@@ -645,5 +661,18 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		        appWidgetManger.updateAppWidget(appWidgetIds, mRemoteViews);
 			}
 		}, maxWidth, maxHeight);
+	}
+	
+	/**
+	 * 用户默认头像
+	 */
+	private void defaultUserIcon(){
+	
+		if (mRemoteViews == null){
+			initRemoteViews();
+		}
+		mRemoteViews.setImageViewResource(R.id.img_user_icon, R.drawable.head_default);
+		AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(mContext);
+        appWidgetManger.updateAppWidget(new int[]{R.id.img_user_icon}, mRemoteViews);
 	}
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="700dp"
+    android:layout_width="750dp"
     android:layout_height="400dp"
     android:layout_gravity="center"
     android:orientation="vertical" >
@@ -14,24 +14,27 @@
         android:text="@string/prompt_inquiry"
         android:textColor="#e0f0f0f0"
         android:textSize="36sp"
-        android:textStyle="bold"
-        android:textScaleX="1.2"
         android:background="@drawable/del_user_prompt_inquiry"/>
     
-    <TextView 
-        android:id="@+id/tv_deluser_info"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
-        android:paddingLeft="5dp"
-        android:gravity="left|center_vertical"
-        android:background="@drawable/del_user_content"
-        android:ellipsize="middle" 
-        android:singleLine="true"
-        android:maxEms="10"
-        android:text="@string/hint_delfriend"
-        android:textColor="@color/white"
-        android:textSize="36sp"/>
+        android:layout_weight="4" 
+        android:background="@drawable/del_user_content">
+        <TextView 
+	        android:id="@+id/tv_deluser_info"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:paddingLeft="@dimen/dp_10"
+	        android:paddingRight="@dimen/dp_20"
+	        android:gravity="left|center_vertical"
+	        android:ellipsize="middle" 
+	        android:singleLine="true"
+	        android:maxEms="16"
+	        android:text="@string/hint_delfriend"
+	        android:textColor="@color/white"
+	        android:textSize="32sp"/>
+    </LinearLayout>
     
     <LinearLayout 
         android:layout_width="match_parent"

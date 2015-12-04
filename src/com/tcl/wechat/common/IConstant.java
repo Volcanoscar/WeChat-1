@@ -70,6 +70,8 @@ public interface IConstant {
 		public static final String ACTION_APPWIDGET_UPDATE = "android.appwidget.action.APPWIDGET_UPDATE";
 		
 		public static final String ACTION_MSG_UPDATE = "android.appwidget.action.WEIXIN_MSG_UPDATE";
+		
+		public static final String ACTION_MSG_USER = "android.appwidget.action.UPDATE_USER";
 	}
 	
 	/**
@@ -145,9 +147,18 @@ public interface IConstant {
 	/**
 	 * 消息来源
 	 */
-	public static final class ChatMsgRource{
+	public static final class ChatMsgSource{
 		public static final String RECEIVEED = "0";
 		public static final String SENDED = "1";
+	}
+	
+	/**
+	 * 消息发送状态
+	 */
+	public static final class ChatMsgStatus{
+		public static final String SUCCESS = "0"; 	//发送成功
+		public static final String FAILED =  "1";  	//发送失败
+		public static final String SEND =    "2";  	//发送中
 	}
 	
 	/**
@@ -161,8 +172,8 @@ public interface IConstant {
 		public static final String VIDEO = "video";
 		public static final String VOICE = "voice";
 		public static final String TEXT = "text";
-		public static final String LOCATION = "location";
-		public static final String LINK = "link";
+		public static final String MAP = "location";
+		public static final String WEB = "link";
 		public static final String SHORTVIDEO = "shortvideo";
 		public static final String BARRAGE = "barrage";
 		public static final String NOTICE = "tvprogramnotice";
