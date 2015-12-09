@@ -8,7 +8,6 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.AndFilter;
 import org.jivesoftware.smack.filter.IQTypeFilter;
 import org.jivesoftware.smack.filter.PacketFilter;
@@ -382,7 +381,7 @@ public class WeiXmppManager {
 
 							String content = "<addmaindevice xmlns=\"tcl:hc:login\">"
 									+ "<deviceid>"
-									+ deviceid + "LEILIANG124"
+									+ deviceid
 									+ "</deviceid>"
 									+ "<password>"
 									+ password
@@ -519,7 +518,7 @@ public class WeiXmppManager {
 							Log.i(TAG,"send access info:" + userLoginIQ.toXML());
 							return null;
 						}
-					} catch (XMPPException e) {
+					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						Log.w(TAG, e.getMessage() + " ,ConnectCnt=" + (i + 1)
@@ -565,7 +564,7 @@ public class WeiXmppManager {
 				Log.d(TAG, "Sending an access request：" + content);
 				return;
 			}
-		} catch (XMPPException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			Log.w(TAG, "connection error:" + e.getMessage());
 			if (connection != null) {

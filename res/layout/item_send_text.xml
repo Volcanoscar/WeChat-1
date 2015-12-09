@@ -48,20 +48,20 @@
 		    android:layout_height="wrap_content"
 		    android:layout_toLeftOf="@id/tv_chat_text"
             android:layout_centerVertical="true"
+            android:gravity="right|center_vertical"
 		    android:orientation="vertical">
 		    <ProgressBar
 	            android:id="@+id/pbar_sending"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
-	            android:layout_gravity="center"
+	            android:layout_gravity="right|center_vertical"
 	            style="@style/chatmsgLoadingProgressBarStyle"
 	            android:visibility="gone" />
 		    <TextView 
 		        android:id="@+id/tv_progress"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:layout_gravity="center"
-		        android:gravity="center"
+		        android:layout_gravity="right|center_vertical"
 		        android:text="@string/progress"
 		        android:textSize="16sp"
 		        android:textColor="@color/gray"

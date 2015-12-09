@@ -75,6 +75,7 @@
     <string name="send_pic">发送(%1$d/%2$d)</string>
     <string name="select_pic_hint">你最多只能选择%d个图片</string>
     <string name="key_error">BaiDuMap API_KEY Error!</string>
+    <string name="unknown_location">[位置]未标注</string>
     
     <string name="copy">复制</string>
     <string name="delete">删除</string>

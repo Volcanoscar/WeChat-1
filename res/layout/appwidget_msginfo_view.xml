@@ -5,10 +5,10 @@
     
     <RelativeLayout
         android:id="@+id/chat_msg_layout"
-        android:layout_width="260dp"
-        android:layout_height="210dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="30dp">
+        android:layout_width="240dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginLeft="40dp">
         
         <!-- 默认消息显示控件 -->
         <ImageView 
@@ -53,18 +53,19 @@
         <LinearLayout
             android:id="@+id/layout_audioview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_centerInParent="true"
            	android:orientation="vertical"
            	android:gravity="center"
+           	android:background="@drawable/message_audio_bg"
             android:visibility="gone">
             <ImageView 
 	            android:id="@+id/img_voicemsg_detail"
 	            android:layout_width="230dp"
 	            android:layout_height="100dp"
-	            android:layout_weight="1"
+	            android:layout_gravity="center"
 	            android:src="@drawable/v_left_anim3"
-	            android:scaleType="center"
+	            android:scaleType="centerInside"
 	            android:background="@drawable/message_voice_bg"
 	            android:contentDescription="@string/contentDesc"/>
             <TextView 
@@ -91,7 +92,7 @@
 		        android:id="@+id/img_videomsg_detail"
 		        android:layout_width="match_parent"
 		        android:layout_height="match_parent"
-		        android:scaleType="fitXY"
+		        android:scaleType="center"
 		        android:contentDescription="@string/contentDesc"/>
 		    <ImageView 
 		        android:layout_width="wrap_content"

@@ -15,7 +15,6 @@ import com.tcl.wechat.action.recorder.Recorder;
 import com.tcl.wechat.action.recorder.RecorderAudioManager;
 import com.tcl.wechat.action.recorder.RecorderDialogManager;
 import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPrepareCompletedListener;
 import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.WeixinToast;
@@ -26,7 +25,7 @@ import com.tcl.wechat.utils.WeixinToast;
  *
  */
 
-public class AudioRecorderButton extends Button implements AudioPrepareCompletedListener{
+public class AudioRecorderButton extends Button{
 	
 
 	private static final int DISTANCE_Y_CANCEL = 50;
@@ -70,21 +69,26 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 		mDialogManager = new RecorderDialogManager(getContext());
 		mAudioManager = RecorderAudioManager.getInstance();
 		
-		mAudioManager.setFilePath(DataFileTools.getInstance().getRecordAudioPath());
-		mAudioManager.setAudioStateListener(this);
+		mAudioManager.setFilePath(DataFileTools.getRecordAudioPath());
+		//mAudioManager.setAudioStateListener(this);
 		
-		setOnLongClickListener(new View.OnLongClickListener() {
-			
-			@Override
-			public boolean onLongClick(View v) {
-				bReady = true;
-				mAudioManager.prepare();
-				if (mListener != null){
-					mListener.startToRecorder();
-				}
-				return false;
-			}
-		});
+		// setOnLongClickListener(new View.OnLongClickListener() {
+		//
+		// @Override
+		// public boolean onLongClick(View v) {
+		// bReady = true;
+		// mAudioManager.prepare();
+		// if (mListener != null){
+		// mListener.startToRecorder();
+		// }
+		//
+		// bRecording = true;
+		// mDialogManager.show();
+		// updateVoiceLevel();
+		//
+		// return false;
+		// }
+		// });
 		
 		setOnClickListener(new OnClickListener() {
 			
@@ -96,11 +100,17 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 		});
 	}
 	
-	@Override
-	public void prepareCompleted() {
-		mHandler.sendEmptyMessage(MSG_AUDIO_PREPARED);
+	public void onLongClick(){
+		bReady = true;
+		mAudioManager.prepare();
+		if (mListener != null){
+			mListener.startToRecorder();
+		}
+		
+		bRecording = true;
+		mDialogManager.show();
+		updateVoiceLevel();
 	}
-	
 	
 	private Runnable updateVoiceRunnable = new Runnable() {
 		
@@ -110,11 +120,11 @@ public class AudioRecorderButton extends Button implements AudioPrepareCompleted
 				try {
 					Thread.sleep(100);
 					mRecorderTime += 0.1f;
-					/*int voiceLevel = mAudioManager.getLevel();
-					Message msg = new Message();
-					msg.what = MSG_VOICE_CHANGED;
-					msg.arg1 = voiceLevel ;
-					mHandler.sendMessage(msg);*/
+					// int voiceLevel = mAudioManager.getLevel();
+					// Message msg = new Message();
+					// msg.what = MSG_VOICE_CHANGED;
+					// msg.arg1 = voiceLevel ;
+					// mHandler.sendMessage(msg);
 					mHandler.sendEmptyMessage(MSG_VOICE_CHANGED);
 				} catch (InterruptedException e) {
 					e.printStackTrace();

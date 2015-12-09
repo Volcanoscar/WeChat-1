@@ -3,18 +3,22 @@ package com.tcl.wechat.common;
 
 public interface IConstant {
 	//5s超时时间
-	public static final int LOGIN_TIME_OUT = 5 * 1000;
+	public static final int LOGIN_TIME_OUT = 2 * 1000;
 	
 	//进入主界面
 	public static final String ACTION_MAINVIEW = "android.appwidget.action.MAINVIEW";
 	//进入聊天界面
 	public static final String ACTION_CHATVIEW = "android.appwidget.action.CHATVIEW";
+	//进入聊天界面
+	public static final String ACTION_CHATVIEW2 = "android.appwidget.action.CHATVIEW2";
 	//用户解绑事件
 	public static final String ACTION_UNBIND_ENENT = "android.appwidget.action.UNBIND_ENENT";
 	
 	/**
 	 * 媒体处理相关类
 	 */
+	//切换风格
+	public static final String ACTION_STYLE_CHANGE = "android.appwidget.action.STYLE_CHANGE";
 	//播放视频action
 	public static final String ACTION_PLAY_VIDEO = "android.appwidget.action.PLAY_VIDEO";
 	//播放音频action
@@ -29,6 +33,12 @@ public interface IConstant {
 	public static final String ACTION_SHOW_LINK = "android.appwidget.action.SHOW_LINK";
 	
 	public static final String ACTION_UPDATE_AUDIO_ANMI = "android.appwidget.action.UPDATE_AUDIO_ANMI";
+	
+	//清除数据
+	public static final String ACTION_DATA_CLEARED = "com.mediatek.intent.action.SETTINGS_PACKAGE_DATA_CLEARED";
+	
+	//重启服务
+	public static final String ACTION_START_SERVICE = "com.mediatek.intent.action.START_SERVICE";
 	
 	//闹铃
 	public static final String ACTION_ONLINE_ALARM = "com.tcl.wechat.action.user_online_monitor";

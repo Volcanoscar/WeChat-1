@@ -6,14 +6,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
+import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,10 +33,12 @@ import android.text.TextWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -64,9 +69,8 @@ import com.tcl.wechat.ui.adapter.ChatMsgAdapter;
 import com.tcl.wechat.ui.adapter.FaceGVAdapter;
 import com.tcl.wechat.ui.adapter.FaceVPAdapter;
 import com.tcl.wechat.utils.ExpressionUtil;
-import com.tcl.wechat.utils.FontUtil;
 import com.tcl.wechat.utils.NetWorkUtil;
-import com.tcl.wechat.utils.SystemInfoUtil;
+import com.tcl.wechat.utils.WeixinToast;
 import com.tcl.wechat.view.AudioRecorderButton;
 import com.tcl.wechat.view.ChatListView;
 import com.tcl.wechat.view.ChatListView.OnRefreshListener;
@@ -142,10 +146,7 @@ public class ChatActivity extends BaseActivity {
 	
 	private LinkedList<String> mAllUserIds;
 	
-	/**
-	 * 聊天记录
-	 */
-	//private LinkedList<WeiXinMessage> mAllUserRecorders;
+	private boolean bNeedReply = false;
 	
 	/**
 	 * 静态表情列表
@@ -181,19 +182,17 @@ public class ChatActivity extends BaseActivity {
 		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		//mAllUserRecorders = new LinkedList<WeiXinMessage>();
 
+		//加载数据
+		initData();
 		initView();
 		initEvent();
 		
-		//加载数据
-		initData();
+		
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		}
 	}
 
 	private static final int MSG_UPDATE_MAINVIEW = 0x01;
@@ -242,7 +241,16 @@ public class ChatActivity extends BaseActivity {
 			Log.e(TAG, "BindUser Or SysBindUser is NULL !!");
 			return;
 		}
-
+		
+		bNeedReply = bundle.getBoolean("NeedReply");
+		Log.i(TAG, "bNeedReply:" + bNeedReply);
+	}
+	
+	/**
+	 * 加载数据
+	 */
+	private void loadData(){
+		//加载数据
 		new AsyncTask<Void, Void, Void>() {
 
 			@Override
@@ -344,6 +352,35 @@ public class ChatActivity extends BaseActivity {
 		mFaceViewPager = (ViewPager) findViewById(R.id.face_viewpager);
 		mDotsLayout = (LinearLayout) findViewById(R.id.face_dots_container);
 		mFaceLayout.setVisibility(View.GONE);
+		
+		mRecorderButton.setOnLongClickListener(new View.OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				if (mAdapter != null){
+					mAdapter.stopPlayAudio();
+				}
+				mRecorderButton.onLongClick();
+				return false;
+			}
+		});
+		
+		//需求：widget界面点击“回复”进入，则需要弹出软键盘
+		if (bNeedReply) {
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+
+				public void run() {
+					InputMethodManager inputManager = (InputMethodManager) mChatMsgEditText.getContext()
+							.getSystemService(Context.INPUT_METHOD_SERVICE);
+					inputManager.showSoftInput(mChatMsgEditText, 0);
+				}
+
+			}, 800);
+		}
+		
+		//异步加载数据
+		loadData();
 	}
 	
 	/**
@@ -365,6 +402,7 @@ public class ChatActivity extends BaseActivity {
 		
 		//TextView输入文本监听
 		mChatMsgEditText.addTextChangedListener(watcher);
+		
 	}
 
 	/**
@@ -837,6 +875,7 @@ public class ChatActivity extends BaseActivity {
 	 * @param v
 	 */
 	public void replyTextClick(View v) {
+		
 	}
 
 	/**
@@ -980,10 +1019,23 @@ public class ChatActivity extends BaseActivity {
 	}
 
 	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		// TODO Auto-generated method stub
+		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			Intent intent = new Intent(mContext, FamilyBoardMainActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+			finish();
+		}
+		return super.onTouchEvent(event);
+	}
+	
+	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 		super.onBackPressed();
 		mWeiXinMsgManager.deleteAllMessage();
+		finish();
 	}
 
 
@@ -997,12 +1049,14 @@ public class ChatActivity extends BaseActivity {
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
+		if (mAdapter != null){
+			mAdapter.stopPlayAudio();
+		}
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-
 		if (mWeiXinMsgControl != null) {
 			mWeiXinMsgControl.removeNewMessageListener(mNewMessageListener);
 		}

@@ -1,7 +1,5 @@
 package com.tcl.wechat.controller;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -26,6 +24,8 @@ public class OnLineStatusMonitor {
 	
 	private static final String TAG = OnLineStatusMonitor.class.getSimpleName();
 	
+	private static OnLineStatusMonitor mInstance;
+	
 	public static final int INTERVAL = 1000 * 60 * 60 * 48;// 48h
 	
 	private Context mContext;
@@ -34,9 +34,6 @@ public class OnLineStatusMonitor {
 	
 	private HashMap<String, PendingIntent> mAlarmsHashMap = new HashMap<String, PendingIntent>();
 	
-	private static final class OnLineStatusMonitorInstance{
-		private static final OnLineStatusMonitor mInstance = new OnLineStatusMonitor();
-	}
 	
 	private OnLineStatusMonitor() {
 		super();
@@ -45,7 +42,14 @@ public class OnLineStatusMonitor {
 	}
 	
 	public static OnLineStatusMonitor getInstance(){
-		return OnLineStatusMonitorInstance.mInstance;
+		if (mInstance == null){
+			mInstance = new OnLineStatusMonitor();
+		}
+		return mInstance;
+	}
+	
+	public static void releaseInstance(){
+		mInstance = null;
 	}
 	
 	/**

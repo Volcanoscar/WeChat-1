@@ -297,7 +297,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			protected Boolean doInBackground(Void... params) {
 				// TODO Auto-generated method stub
 				String fileName = MD5Util.hashKeyForDisk(mFileName);
-				String savePath = DataFileTools.getInstance().getTempPath();
+				String savePath = DataFileTools.getTempPath();
 				return ImageUtil.getInstance().saveBitmap(mBitmap, fileName,
 						savePath);
 			}
@@ -306,12 +306,11 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				mSaveProgressDialog.dismiss();
 				if (result) {
 					WeixinToast.makeText(String.format(
-							getString(R.string.save_image_hint), DataFileTools
-									.getInstance().getTempPath())).show();
+							getString(R.string.save_image_hint), DataFileTools.getTempPath())).show();
 				} else {
 					WeixinToast.makeText(String.format(
 							getString(R.string.save_image_failed),
-							DataFileTools.getInstance().getTempPath())).show();
+							DataFileTools.getTempPath())).show();
 				}
 			};
 		}.executeOnExecutor(WeApplication.getExecutorPool());

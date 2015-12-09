@@ -27,14 +27,14 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 	private MediaRecorder mMediaRecorder;
 	private boolean bPrepared = false;
 	
-	private AudioPrepareCompletedListener mListener;
-	/**
-	 * 设置监听器
-	 * @param listener
-	 */
-	public void setAudioStateListener(AudioPrepareCompletedListener listener){
-		mListener = listener;
-	}
+//	private AudioPrepareCompletedListener mListener;
+//	/**
+//	 * 设置监听器
+//	 * @param listener
+//	 */
+//	public void setAudioStateListener(AudioPrepareCompletedListener listener){
+//		mListener = listener;
+//	}
 	
 	/**
 	 * 实例对象类
@@ -78,9 +78,9 @@ public class RecorderAudioManager implements MediaRecorderImpl{
 			
 			//准备完成
 			bPrepared = true;
-			if (mListener != null){
-				mListener.prepareCompleted();
-			}
+//			if (mListener != null){
+//				mListener.prepareCompleted();
+//			}
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

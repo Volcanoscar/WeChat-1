@@ -27,16 +27,18 @@
 	           	android:layout_gravity="center"
 	            android:layout_height="0dp"
 	            android:layout_weight="1">
-		        <com.tcl.wechat.view.pageview.TextPageView 
-		            android:id="@+id/tv_familboard_msg"
-		            android:layout_width="match_parent"
-		            android:layout_height="match_parent"
-		            android:gravity="center"
-		            android:padding="@dimen/dp_8"
-		            android:maxLines="6"
-		            android:text=""
-		            android:textColor="@color/black"
-		            android:textSize="22sp"/>
+
+                <!-- <com.tcl.wechat.view.pageview.TextPageView -->
+                <!-- android:id="@+id/tv_familboard_msg" -->
+                <!-- android:layout_width="match_parent" -->
+                <!-- android:layout_height="match_parent" -->
+                <!-- android:gravity="center" -->
+                <!-- android:padding="@dimen/dp_8" -->
+                <!-- android:maxLines="6" -->
+                <!-- android:text="" -->
+                <!-- android:textColor="@color/black" -->
+                <!-- android:textSize="22sp"/> -->
+
         	</FrameLayout>
         </LinearLayout>
         <TextView 
@@ -94,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="@dimen/dp_50"
-        android:layout_marginTop="@dimen/dp_10"
+        android:layout_marginTop="@dimen/dp_20"
         android:src="@drawable/clip_5"
         android:contentDescription="@string/contentDesc"/>
 </RelativeLayout>

@@ -402,7 +402,7 @@ public class DataFileTools {
      * @param fileName
      */
     public void clearAudioRecorderCache(String fileName){
-    	String cachePath = getRecordAudioPath();
+    	String cachePath = getRecordVideoPath();
     	File file = new File(cachePath, fileName);
     	if (file != null && file.exists()){
     		file.delete();
@@ -419,6 +419,66 @@ public class DataFileTools {
     	if (file != null && file.exists()){
     		file.delete();
     	}
+    }
+    
+    /**
+     * 清除所有图片缓存文件
+     */
+    public static void clearAllIamgeCache(){
+    	try {
+			String cachePath = getRecordImagePath();
+			File file = new File(cachePath);
+			if (file != null && file.exists()){
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File delfile = new File(cachePath + File.separator + filelist[i]);
+					delfile.delete();
+				}
+				file.delete();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
+    /**
+     * 清除所有音频缓存文件
+     */
+    public static void clearAllAudioCache(){
+    	try {
+			String cachePath = getRecordAudioPath();
+			File file = new File(cachePath);
+			if (file != null && file.exists()){
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File delfile = new File(cachePath + File.separator + filelist[i]);
+					delfile.delete();
+				}
+				file.delete();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
+    /**
+     * 清除所有视频缓存文件
+     */
+    public static void clearAllVideoCache(){
+    	try {
+			String cachePath = getRecordVideoPath();
+			File file = new File(cachePath);
+			if (file != null && file.exists()){
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File delfile = new File(cachePath + File.separator + filelist[i]);
+					delfile.delete();
+				}
+				file.delete();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
     
     /**

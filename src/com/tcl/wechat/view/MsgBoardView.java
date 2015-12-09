@@ -46,7 +46,6 @@ import com.tcl.wechat.ui.activity.ShowTextActivity;
 import com.tcl.wechat.ui.activity.WebViewActivity;
 import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
-import com.tcl.wechat.utils.FontUtil;
 import com.tcl.wechat.utils.SystemInfoUtil;
 
 /**
@@ -460,6 +459,9 @@ public class MsgBoardView extends LinearLayout{
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(260, 200);
 		mMsgView.setLayoutParams(params);
 		TextView locationInfoTv = (TextView) mMsgView.findViewById(R.id.tv_location_info);
+		if (TextUtils.isEmpty(recorder.getLabel())){
+			recorder.setLabel(mContext.getResources().getString(R.string.unknown_location));
+		}
 		locationInfoTv.setText(recorder.getLabel());
 		return mMsgView;
 	}
@@ -575,6 +577,17 @@ public class MsgBoardView extends LinearLayout{
 				}
 			}
 		}, 400, 400);
+	}
+	
+	@Override
+	protected void onWindowVisibilityChanged(int visibility) {
+		
+		if (visibility != VISIBLE){
+			if (mAudioManager != null && mAudioManager.isPlaying()){
+				resetPlayAnim();
+				mAudioManager.stop();
+			}
+		}
 	}
 	
 	/**

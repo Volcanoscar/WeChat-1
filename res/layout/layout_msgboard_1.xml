@@ -7,7 +7,7 @@
     <RelativeLayout
         android:layout_width="@dimen/dp_520"
         android:layout_height="@dimen/dp_700"
-        android:layout_marginTop="@dimen/dp_90"
+        android:layout_marginTop="@dimen/dp_80"
        	android:layout_centerHorizontal="true"
         android:background="@drawable/main_familyboard_bg_1">
         <LinearLayout 
@@ -25,17 +25,19 @@
 	            android:layout_weight="1"
 	           	android:paddingLeft="@dimen/dp_10"
 	           	android:paddingRight="@dimen/dp_10">
-	            <com.tcl.wechat.view.pageview.TextPageView
-	                android:id="@+id/tv_familboard_msg"
-		            android:layout_width="match_parent"
-		            android:layout_height="match_parent"
-		            android:gravity="center"
-		            android:padding="@dimen/dp_3"
-		            android:maxLines="6"
-		            android:text=""
-		            android:textColor="@color/black"
-		            android:textSize="22sp"
-		            android:visibility="gone"/>
+
+                <!-- <com.tcl.wechat.view.pageview.TextPageView -->
+                <!-- android:id="@+id/tv_familboard_msg" -->
+                <!-- android:layout_width="match_parent" -->
+                <!-- android:layout_height="match_parent" -->
+                <!-- android:gravity="center" -->
+                <!-- android:padding="@dimen/dp_3" -->
+                <!-- android:maxLines="6" -->
+                <!-- android:text="" -->
+                <!-- android:textColor="@color/black" -->
+                <!-- android:textSize="22sp" -->
+                <!-- android:visibility="gone"/> -->
+
         	</FrameLayout>
         </LinearLayout>
         <TextView 

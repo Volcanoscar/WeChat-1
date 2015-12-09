@@ -6,10 +6,10 @@
     android:layout_gravity="center">
 	<ImageView
 	    android:id="@+id/img_video_thumbnails"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_centerInParent="true"
-        android:scaleType="centerInside"
+        android:scaleType="center"
 	 	android:adjustViewBounds="true"
  		android:contentDescription="@string/contentDesc"/>
     

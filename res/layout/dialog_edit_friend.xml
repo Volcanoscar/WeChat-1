@@ -23,7 +23,7 @@
         android:layout_weight="3"
         android:paddingLeft="@dimen/dp_20"
         android:paddingRight="@dimen/dp_30"
-        android:gravity="center"
+        android:gravity="left|center_vertical"
         android:background="@drawable/del_user_content"
         android:singleLine="true"
         android:maxLength="32"

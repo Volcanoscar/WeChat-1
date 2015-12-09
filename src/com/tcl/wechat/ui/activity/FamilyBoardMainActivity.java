@@ -14,11 +14,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.controller.OnLineStatusMonitor;
 import com.tcl.wechat.controller.WeiXinMsgControl;
@@ -27,6 +26,7 @@ import com.tcl.wechat.controller.listener.BindListener;
 import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.controller.listener.OnLineChanagedListener;
 import com.tcl.wechat.database.WeiQrDao;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.logcat.DLog;
 import com.tcl.wechat.model.BindUser;
@@ -58,8 +58,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 
 	private Context mContext;
 
-	private LinearLayout mTopLayout;
-	private LinearLayout mCenterLayout;
+	private RelativeLayout mMainView;
 	private ProgressBar mLoadingBar;
 	private UserInfoView mSystemUserInfo;
 	private UserInfoView mAddFriend;
@@ -171,8 +170,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 	 */
 	private void initView() {
 		mLoadingBar = (ProgressBar) findViewById(R.id.progress_loading);
-		mTopLayout = (LinearLayout) findViewById(R.id.layout_main_topview);
-		mCenterLayout = (LinearLayout) findViewById(R.id.layout_main_centerView);
+		mMainView = (RelativeLayout) findViewById(R.id.layout_main_contentview);
 		
 		mSystemUserInfo = (UserInfoView) findViewById(R.id.uv_system_user_info);
 		mAddFriend = (UserInfoView) findViewById(R.id.uv_add_fiend);
@@ -224,8 +222,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 		mWifiStateImg = (ImageView) findViewById(R.id.img_wifi_signal);
 		
 		mLoadingBar.setVisibility(View.VISIBLE);
-		mTopLayout.setVisibility(View.INVISIBLE);
-		mCenterLayout.setVisibility(View.INVISIBLE);
+		mMainView.setVisibility(View.GONE);
 		// 通知更新用户信息和留言板
 		//mHandler.sendEmptyMessage(MSG_UPDATE_SYSUSER);
 		
@@ -245,6 +242,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 		filter.addAction(CommandAction.ACTION_UPDATE_BINDUSER);
 		filter.addAction(CommandAction.ACTION_MSG_USER);
 		filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+		filter.addAction(CommandAction.ACTION_MSG_UPDATE);
 		registerReceiver(receiver, filter);
 	}
 
@@ -265,9 +263,14 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 			} else if (CommandAction.ACTION_MSG_USER.equals(action)) {
 				updateSystemUser();
 				updateBindUser();
+			} else if (CommandAction.ACTION_MSG_UPDATE.equals(action)) {
+				if (mNewMsgListener != null) {
+					mNewMsgListener.onNewMessage(WeiRecordDao.getInstance().getLatestRecorder());
+				}
 			} else if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {
 				int wifiState = intent.getIntExtra("wifi_state", 0);
-				int wifiLevel = Math.abs(((WifiManager) getSystemService(WIFI_SERVICE))
+				int wifiLevel = Math
+						.abs(((WifiManager) getSystemService(WIFI_SERVICE))
 								.getConnectionInfo().getRssi());
 				DLog.d(TAG, "wifiState:" + wifiState + ",wifiLevel:"
 						+ wifiLevel);
@@ -295,8 +298,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 				if (mMsgBoardGroupView != null){
 					mMsgBoardGroupView.loadMsgBoardData();
 				}
-				mTopLayout.setVisibility(View.VISIBLE);
-				mCenterLayout.setVisibility(View.VISIBLE);
+				mMainView.setVisibility(View.VISIBLE);
 				mLoadingBar.setVisibility(View.GONE);
 				break;
 			case MSG_UPDATE_APPWIDGET:
@@ -435,9 +437,7 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 			if (!TextUtils.isEmpty(headImageUrl)) {
 				mSystemUserInfo.setUserIcon(headImageUrl, true);
 			}
-		} else {
-			mTopLayout.setVisibility(View.INVISIBLE);
-		}
+		} 
 	}
 
 	/**
@@ -452,7 +452,6 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 		if (mMsgBoardGroupView != null) {
 			mMsgBoardGroupView.updateBindUser();
 		}
-		
 		mHandler.sendEmptyMessage(MSG_UPDATE_APPWIDGET);
 	}
 
@@ -477,9 +476,15 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 			WeixinToast.makeText(R.string.network_not_available).show();
 			break;
 		case WifiManager.WIFI_STATE_ENABLING:
-			WeixinToast.makeText(R.string.network_connectting).show();
 			mWifiStateImg.setImageResource(R.drawable.wifi_set);
 			mWifiStateImg.setImageLevel(level);
+			if (!WeiXmppManager.getInstance().isRegister()){
+				//如果没有注册，则开始注册
+				WeixinToast.makeText(R.string.register).show();
+				WeiXmppManager.getInstance().register();
+			} else {
+				WeixinToast.makeText(R.string.network_connectting, 1000).show();
+			}
 			break;
 		case WifiManager.WIFI_STATE_ENABLED:
 			mWifiStateImg.setImageResource(R.drawable.wifi_set);
@@ -492,19 +497,6 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 		default:
 			mWifiStateImg.setImageResource(R.drawable.wifi_set);
 			mWifiStateImg.setImageLevel(0);
-		}
-	}
-
-	/**
-	 * 等待
-	 */
-	private void waitFor(){
-		try {
-			Log.i(TAG, "waitFor....");
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
@@ -526,14 +518,19 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		super.onDestroy();
+		Log.i(TAG, "onDestroy-->>");
+		Intent intent = new Intent(ACTION_START_SERVICE);
+		sendBroadcast(intent);
 		unregisterReceiver(receiver);
 		if (mWeiXinMsgManager != null) {
 			mWeiXinMsgManager.removeNewMessageListener(mNewMsgListener);
+			mWeiXinMsgManager.removeNewMessageListener(mNewMsgListener);
+			mWeiXinMsgManager.removeOnLineStatusListener();
+			mWeiXinMsgManager = null;
 		}
 		OnLineStatusMonitor.getInstance().stopAllMonitor();
-		WeiXinMsgControl.getInstance().removeBindListener(mBindListener);
-		WeiXinMsgControl.getInstance().removeNewMessageListener(mNewMsgListener);
-		WeiXinMsgControl.mOnLineChanagedListener = null;
+		OnLineStatusMonitor.releaseInstance();
+		
+		super.onDestroy();
 	}
 }

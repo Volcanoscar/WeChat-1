@@ -1,21 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_height="match_parent" >
     
     <!-- 顶部topBar -->
-    <include 
+<!--     <include  -->
+<!--         android:layout_width="match_parent" -->
+<!--         android:layout_height="wrap_content" -->
+<!--         android:layout_alignParentTop="true" -->
+<!--         layout="@layout/appwidget_topbar" /> -->
+    <LinearLayout
+        android:id="@+id/layout_topview"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentTop="true"
+	    android:gravity="right|bottom" 
+	    android:orientation="horizontal">
+	    
+	    <ImageView
+	        android:id="@+id/img_appwidget"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="right|center_vertical"
+	        android:src="@drawable/appwidget_title"
+	        android:clickable="true"
+	        android:contentDescription="@string/contentDesc"/>
+	    
+	    <ImageButton
+	        android:id="@+id/imgbtn_appwidget"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="right|bottom"
+	        android:layout_marginLeft="10dp"
+	        android:clickable="true"
+	        android:background="@drawable/msgbd_chat_inlet_selector"
+	        android:contentDescription="@string/contentDesc"/>
+	</LinearLayout>
+	
+    <ImageView
+        android:id="@+id/img_appwidget_bg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        layout="@layout/appwidget_topbar" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_topview"
+        android:layout_marginTop="5dp"
+        android:clickable="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/appwidget_style2_bg"
+        android:contentDescription="@string/contentDesc"/>
     
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/appwidget_bg"
+        android:layout_below="@id/layout_topview"
         android:orientation="vertical" >
-        
         <!-- 消息模块 -->
 	    <include 
 	        android:layout_width="match_parent"
@@ -31,4 +68,4 @@
 	       	android:layout_weight="1"
 	       	layout="@layout/appwidget_userinfo_view"/>
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

@@ -48,6 +48,7 @@ import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant.ChatMsgSource;
 import com.tcl.wechat.common.IConstant.ChatMsgStatus;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.common.IConstant.CommandAction;
 import com.tcl.wechat.common.IConstant.EventReason;
 import com.tcl.wechat.common.IConstant.EventType;
 import com.tcl.wechat.controller.WeiXinMsgControl;
@@ -558,7 +559,6 @@ public class ChatMsgAdapter extends BaseAdapter {
 		} else {
 			holder.mVoiceLayout.setOnLongClickListener(new popAction(convertView, position, 1, false));
 		}
-		
 	}
 	
 	/**
@@ -603,7 +603,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 	private void handleLocationMessage(View convertView, int position, ViewHolder holder,
 			final WeiXinMessage message) {
 		if (TextUtils.isEmpty(message.getLabel())){
-			message.setLabel("未标注-");
+			message.setLabel(mContext.getResources().getString(R.string.unknown_location));
 		}
 		holder.mMessageTextTv.setText(message.getLabel());
 		holder.mMessageLayout.setOnClickListener(new OnClickListener() {
@@ -723,6 +723,17 @@ public class ChatMsgAdapter extends BaseAdapter {
 		// mPlaySoundAnimView.setBackgroundResource(R.drawable.v_right_anim3);
 		// }
 	}
+	
+	/**
+	 * 退出聊天界面，如果音频正在播放，则需要暂停
+	 */
+	public void stopPlayAudio(){
+		if (mAudioManager != null && mAudioManager.isPlaying()){
+			mAudioManager.stop();
+			resetPlayAnim();
+		}
+	}
+	
 	/**************************************************************************
 	 *                               音频播放完成
 	 *************************************************************************/
@@ -732,7 +743,6 @@ public class ChatMsgAdapter extends BaseAdapter {
 	/**************************************************************************
 	 *                               图片上传模块
 	 *************************************************************************/
-	
 	/**
 	 * 发送消息
 	 * @param result 图片上传返回结果
@@ -877,6 +887,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 				if (message == null){
 					return ;
 				}
+				
 				//删除数据库中数据
 				if (WeiRecordDao.getInstance().deleteRecorder(message.getMsgid())){
 					//动画
@@ -885,6 +896,10 @@ public class ChatMsgAdapter extends BaseAdapter {
 					} else if (fromOrTo == 1) {
 						rightRemoveAnimation(view, position);
 					}
+					
+					Intent intent = new Intent();
+					intent.setAction(CommandAction.ACTION_MSG_UPDATE);
+					WeApplication.getContext().sendBroadcast(intent);
 				}
 			}
 		});

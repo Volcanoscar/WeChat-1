@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tcl.wechat"
-    android:versionCode="17"
-    android:versionName="1.1.7">
+    android:versionCode="20"
+    android:versionName="1.2.0">
 
     <uses-sdk
         android:minSdkVersion="17"
-        android:targetSdkVersion="19" />
+        android:targetSdkVersion="21" />
     
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.REORDER_TASKS"/>
@@ -77,14 +77,12 @@
         <!--**********************************************************
         						Activity注册位置
          **********************************************************-->
-        <!-- 登录界面 -->
+        <!-- 主界面 -->
         <activity
             android:name="com.tcl.wechat.ui.activity.FamilyBoardMainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:screenOrientation="landscape"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:theme="@android:style/Theme.Translucent">
+            android:theme="@style/horizontal_slide">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -148,7 +146,9 @@
                 <action android:name="android.appwidget.action.WEIXIN_MSG_UPDATE"/>
                 <action android:name="android.appwidget.action.UNBIND_ENENT"/>
                 <action android:name="android.appwidget.action.MAINVIEW"/>
+                <action android:name="android.appwidget.action.STYLE_CHANGE"/>
                 <action android:name="android.appwidget.action.CHATVIEW"/>
+                <action android:name="android.appwidget.action.CHATVIEW2"/>
                 <action android:name="android.appwidget.action.PLAY_VIDEO"/>
                 <action android:name="android.appwidget.action.PLAY_AUDIO"/>
                 <action android:name="android.appwidget.action.SHOW_IMAGE"/>
@@ -156,6 +156,9 @@
                 <action android:name="android.appwidget.action.SHOW_LOCATION"/>
                 <action android:name="android.appwidget.action.SHOW_LINK"/>
                 <action android:name="android.appwidget.action.UPDATE_AUDIO_ANMI"/>
+                <!-- 以下为清除数据广播 -->
+                <action android:name="com.mediatek.intent.action.SETTINGS_PACKAGE_DATA_CLEARED" /> 
+                <category android:name="android.intent.category.DEFAULT" /> 
             </intent-filter>
             <meta-data 
                 android:name="android.appwidget.provider"
@@ -217,6 +220,10 @@
         <receiver android:name="com.tcl.wechat.receiver.MotitorReceiver">
             <intent-filter >
                 <action android:name="com.tcl.wechat.action.user_online_monitor"/>
+                <action android:name="com.mediatek.intent.action.START_SERVICE"/>
+                <!-- 以下为清除数据广播 -->
+                <action android:name="com.mediatek.intent.action.SETTINGS_PACKAGE_DATA_CLEARED" /> 
+                <category android:name="android.intent.category.DEFAULT" /> 
             </intent-filter>
         </receiver>
         

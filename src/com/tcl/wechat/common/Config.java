@@ -27,5 +27,7 @@ public class Config {
     
     /** 获取媒体文件地址 */
     public static String URL_GET_MEDIA = "http://file.api.weixin.qq.com/cgi-bin/media/get";
+    
+    public static int mWidgetStyleIndex = 0;//Widget默认风格
 
 }

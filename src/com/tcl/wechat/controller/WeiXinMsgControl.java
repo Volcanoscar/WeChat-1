@@ -28,7 +28,6 @@ import com.tcl.wechat.action.recorder.Recorder;
 import com.tcl.wechat.common.Config;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.controller.listener.BindListener;
-import com.tcl.wechat.controller.listener.LoginStateListener;
 import com.tcl.wechat.controller.listener.NetChangedListener;
 import com.tcl.wechat.controller.listener.NewMessageListener;
 import com.tcl.wechat.controller.listener.OnLineChanagedListener;
@@ -74,19 +73,15 @@ public class WeiXinMsgControl implements IConstant{
 	/**
 	 * 用户在线状态监听集合
 	 */
-	public static OnLineChanagedListener mOnLineChanagedListener;
+	private OnLineChanagedListener mOnLineChanagedListener;
 	
-	/**
-	 * 登录状态监听器
-	 */
-	public static LoginStateListener mLoginStateListener;
 	
 	private WeiXinNotifier mWeiXinNotifier = WeiXinNotifier.getInstance();
 	
 	private DataFileTools mDataFileTools = DataFileTools.getInstance();
 	
 	private static class WeiXinMsgManagerInstance{
-		private static final WeiXinMsgControl mInstance = new WeiXinMsgControl();
+		private static WeiXinMsgControl mInstance = new WeiXinMsgControl();
 	}
 
 	private WeiXinMsgControl() {
@@ -98,18 +93,14 @@ public class WeiXinMsgControl implements IConstant{
 		return WeiXinMsgManagerInstance.mInstance;
 	}
 	
+	public static void releaseInstance(){
+		WeiXinMsgManagerInstance.mInstance = null;
+	}
+	
 	public void initAllListener(){
 		mNewMsgListeners.clear();
 		mNetChangedListeners.clear();
 		mBindListeners.clear();
-	}
-	
-	public LoginStateListener getLoginStateListener() {
-		return mLoginStateListener;
-	}
-
-	public void setLoginStateListener(LoginStateListener listener) {
-		mLoginStateListener = listener;
 	}
 	
 	/**
@@ -145,6 +136,14 @@ public class WeiXinMsgControl implements IConstant{
 	}
 	
 	/**
+	 * 设置在线状态监听器
+	 * @param listener
+	 */
+	public void addOnLineStatusListener(OnLineChanagedListener listener){
+		mOnLineChanagedListener = listener;
+	}
+	
+	/**
 	 * 移除新消息监听器
 	 * @param listener
 	 */
@@ -160,13 +159,10 @@ public class WeiXinMsgControl implements IConstant{
 		}
 	}
 	
-	/**
-	 * 设置在线状态监听器
-	 * @param listener
-	 */
-	public void addOnLineStatusListener(OnLineChanagedListener listener){
-		mOnLineChanagedListener = listener;
-	}
+	public void removeOnLineStatusListener(){
+		mOnLineChanagedListener = null;
+	} 
+	
 	
 	/**
 	 * 接收notice消息
@@ -391,6 +387,10 @@ public class WeiXinMsgControl implements IConstant{
 	public void notifyMsgReceive(WeiXinMessage recorder){
 		
 		if (recorder == null){
+			return ;
+		}
+		
+		if (mNewMsgListeners == null){
 			return ;
 		}
 		

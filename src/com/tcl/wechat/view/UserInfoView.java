@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.util.AttributeSet;
@@ -24,7 +23,6 @@ import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.utils.ImageUtil;
-import com.tcl.wechat.utils.NameLengthFilter;
 import com.tcl.wechat.view.listener.UserIconClickListener;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
 

@@ -3,7 +3,6 @@ package com.tcl.wechat.xmpp;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.tcl.wechat.common.IConstant;
@@ -11,7 +10,6 @@ import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiNotice;
 import com.tcl.wechat.model.WeiXinMessage;
-import com.tcl.wechat.utils.NanoHTTPD;
 
 /**
  * Xmpp服务类
@@ -22,29 +20,29 @@ public class WeiXmppService extends Service implements IConstant{
 
 	private static final String TAG = WeiXmppService.class.getSimpleName();
 	
-	private ICallback iCallback = null;
-	private NanoHTTPD nanoHTTPD=null;
+	//private ICallback iCallback = null;
+	//private NanoHTTPD nanoHTTPD=null;
 	
 	/**
 	 * 绑定一个服务类
 	 */	
-	private final IRemoteService.Stub mBinder = new IRemoteService.Stub() {
-
-		@Override
-		public void registerCallback(ICallback cb) throws RemoteException {
-			iCallback = cb;
-		}
-
-		@Override
-		public void unregisterCallback() throws RemoteException {
-			iCallback = null;
-		}			
-	};
+	// private final IRemoteService.Stub mBinder = new IRemoteService.Stub() {
+	//
+	// @Override
+	// public void registerCallback(ICallback cb) throws RemoteException {
+	// iCallback = cb;
+	// }
+	//
+	// @Override
+	// public void unregisterCallback() throws RemoteException {
+	// iCallback = null;
+	// }
+	// };
 	
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
-		return mBinder;
+		return null;
 	}
 	
 	@Override
@@ -56,7 +54,7 @@ public class WeiXmppService extends Service implements IConstant{
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
+		Log.i(TAG, "onCreate-->>");
 		//添加Xmpp事件监听器
 		WeiXmppManager.getInstance().addListener(eventListener);
 		
@@ -74,6 +72,9 @@ public class WeiXmppService extends Service implements IConstant{
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.i(TAG, "onStartCommand-->>");
+		
+		
 		flags = START_STICKY;
 		
 		//开启服务登陆服务器，在主线程中操作，注意网络请求
@@ -176,13 +177,18 @@ public class WeiXmppService extends Service implements IConstant{
 		}
 	};
 	
+	
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-	 
-		if(nanoHTTPD != null){
-			nanoHTTPD.stop();
-		}
+		Log.i(TAG, "onDestroy-->>");
+		// if(nanoHTTPD != null){
+		// nanoHTTPD.stop();
+		// }
+
+		Intent intent = new Intent();
+		intent.setAction("com.tcl.wechat.xmpp.WeiXmppService");
+		startService(intent);
 	}
 }

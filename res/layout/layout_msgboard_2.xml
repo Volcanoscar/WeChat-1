@@ -8,7 +8,7 @@
        	android:layout_width="@dimen/dp_550"
         android:layout_height="@dimen/dp_700"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/dp_70"
+        android:layout_marginTop="@dimen/dp_60"
         android:background="@drawable/main_familyboard_bg_2">
         <LinearLayout  
             android:id="@+id/layout_familboard_msg"
@@ -23,18 +23,20 @@
 	           	android:layout_width="wrap_content"
 	            android:layout_height="0dp"
 	            android:layout_weight="1">
-	            <com.tcl.wechat.view.pageview.TextPageView 
-		            android:id="@+id/tv_familboard_msg"
-		            android:layout_width="match_parent"
-		            android:layout_height="match_parent"
-		            android:gravity="center"
-		            android:layout_marginTop="@dimen/dp_100"
-		            android:padding="3dp"
-		            android:maxLines="6"
-		            android:text=""
-		            android:textColor="@color/black"
-		            android:textSize="22sp"
-		            android:rotation="-2"/>
+
+	            <com.tcl.wechat.view.pageview.TextPageView
+	                android:id="@+id/tv_familboard_msg"
+	                android:layout_width="match_parent"
+	                android:layout_height="match_parent"
+	                android:layout_marginTop="@dimen/dp_100"
+	                android:gravity="center"
+	                android:maxLines="6"
+	                android:padding="3dp"
+	                android:rotation="-2"
+	                android:text=""
+	                android:textColor="@color/black"
+	                android:textSize="22sp" />
+
 	        </FrameLayout>
         </LinearLayout>
        	<TextView 

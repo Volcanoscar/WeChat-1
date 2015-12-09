@@ -12,6 +12,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -40,6 +41,8 @@ import com.tcl.wechat.utils.WeixinToast;
 public class PlayVideoActivity extends Activity implements OnGestureListener,
 		OnClickListener, OnBufferingUpdateListener, OnCompletionListener, 
 		MediaPlayer.OnPreparedListener, SurfaceHolder.Callback {
+	
+	private static final String TAG = PlayVideoActivity.class.getSimpleName();
 	
 	private static final int MSG_SHOW_CONTROLVIEW = 0x01;
 	private static final int MSG_UPDATE_PROGRESS = 0x02;
@@ -340,19 +343,23 @@ public class PlayVideoActivity extends Activity implements OnGestureListener,
 		// TODO Auto-generated method stub
 		mVideoWidth = mMediaPlayer.getVideoWidth();
 		mVideoHeight = mMediaPlayer.getVideoHeight();
+		
 		//视频宽高比
 		float ratio = mVideoWidth / (float)mVideoHeight;
 		if (ratio > mScreenRatio) {
 			mVideoWidth = mScreenWidth;
-			mVideoHeight = (int) (mScreenHeight * ratio);
+			mVideoHeight = (int) (mScreenWidth * ratio);
 		} else {
 			mVideoHeight = mScreenHeight;
-			mVideoWidth = (int) (mScreenWidth * ratio);
+			mVideoWidth = (int) (mScreenHeight * ratio);
 		}
+		Log.i(TAG, "VideoSize:[" + mVideoWidth + "," + mVideoHeight + 
+				"],ScreenSize:[" + mScreenWidth + "," + mScreenHeight + 
+				"],LayoutSize:[" + mVideoWidth + "," + mVideoHeight + "]");
 		LayoutParams params = new LayoutParams(mVideoWidth, mVideoHeight);
 		params.gravity = Gravity.CENTER;
 		mSurfaceView.setLayoutParams(params);
-		mSurfaceHolder.setFixedSize(mVideoWidth, mVideoHeight);
+		
 		//mMediaPlayer.start();
 		//请求音频焦点
 		if (requestAudioFocus()) {

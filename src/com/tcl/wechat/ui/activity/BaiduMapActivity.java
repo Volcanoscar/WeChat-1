@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -85,6 +86,9 @@ public class BaiduMapActivity extends Activity {
 			double latx = Double.parseDouble(recorder.getLocation_x());
 			double laty = Double.parseDouble(recorder.getLocation_y());
 			mAddress = recorder.getLabel();
+			if (TextUtils.isEmpty(mAddress)){
+				mAddress = getResources().getString(R.string.unknown_location);
+			}
 			mLatLng = new LatLng(latx, laty);
 		}
 		
