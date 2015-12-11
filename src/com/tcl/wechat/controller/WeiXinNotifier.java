@@ -107,12 +107,17 @@ public class WeiXinNotifier {
 				contentText = ExpressionUtil.getInstance().StringToCharacters(mContext, 
 						new StringBuffer(contentText), false).toString();
 			} 
-		} else if (ChatMsgType.VIDEO.equals(weiXinMsg.getMsgtype())){
+		} else if (ChatMsgType.VIDEO.equals(weiXinMsg.getMsgtype()) ||
+				ChatMsgType.SHORTVIDEO.equals(weiXinMsg.getMsgtype())){
 			contentText = "[小视频]";
 		} else if (ChatMsgType.VOICE.equals(weiXinMsg.getMsgtype())){
 			contentText = "[语音]";
 		} else if (ChatMsgType.IMAGE.equals(weiXinMsg.getMsgtype())){
 			contentText = "[图片]";
+		} else if (ChatMsgType.MAP.equals(weiXinMsg.getMsgtype())){
+			contentText = "[位置]";
+		} else if (ChatMsgType.WEB.equals(weiXinMsg.getMsgtype())){
+			contentText = "[链接]";
 		}
 		contentBuffer.append(contentText);
 		
