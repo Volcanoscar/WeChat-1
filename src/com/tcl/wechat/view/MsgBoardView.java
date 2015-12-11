@@ -576,7 +576,7 @@ public class MsgBoardView extends LinearLayout{
 					}
 				}
 			}
-		}, 400, 400);
+		});
 	}
 	
 	@Override

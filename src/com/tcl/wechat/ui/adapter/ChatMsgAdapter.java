@@ -12,8 +12,6 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.text.ClipboardManager;
@@ -62,7 +60,6 @@ import com.tcl.wechat.ui.activity.PlayVideoActivity;
 import com.tcl.wechat.ui.activity.ShowImageActivity;
 import com.tcl.wechat.ui.activity.ShowTextActivity;
 import com.tcl.wechat.ui.activity.WebViewActivity;
-import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
 import com.tcl.wechat.view.ChatMsgImageView2;
@@ -267,7 +264,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 			try {
 				holder.mMessageTimeTv = (TextView) convertView.findViewById(R.id.tv_mseeage_time);
 				holder.mMessageLayout = (RelativeLayout) convertView.findViewById(R.id.layout_msg_info);
-				holder.mMessageImageImg = (ImageView) convertView.findViewById(R.id.img_video_thumbnails);
+				holder.mChatImageView = (ChatMsgImageView2) convertView.findViewById(R.id.img_video_thumbnails);
 				holder.mMessageStatusImg = (ImageView) convertView.findViewById(R.id.img_msg_status);
 				holder.mMessageProgressBar = (ProgressBar) convertView.findViewById(R.id.pbar_sending);
 				holder.mMessageProgressTv = (TextView) convertView.findViewById(R.id.tv_progress);
@@ -569,14 +566,16 @@ public class ChatMsgAdapter extends BaseAdapter {
 	 */
 	private void handleVideoMessage(View convertView, int position, ViewHolder holder,
 			final WeiXinMessage message) {
+		holder.mChatImageView.setImageBitmap(message);
+		/*
 		Bitmap thumbnailsBitmap = BitmapFactory.decodeFile(
 				DataFileTools.getImageFilePath(message.getUrl())); 
 		if (thumbnailsBitmap != null){
-			holder.mMessageImageImg.setImageBitmap(thumbnailsBitmap);
+			holder.mChatImageView.setImageBitmap(thumbnailsBitmap);
 		} else {
 			holder.mMessageImageImg.setImageBitmap(BitmapFactory.decodeResource(
 					mContext.getResources(), R.drawable.message_video_bg));
-		}
+		}*/
 		holder.mMessageLayout.setOnClickListener(new OnClickListener() {
 			
 			@Override

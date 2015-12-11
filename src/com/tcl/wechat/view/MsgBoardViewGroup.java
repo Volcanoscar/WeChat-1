@@ -174,9 +174,12 @@ public class MsgBoardViewGroup extends LinearLayout{
 			//再此只要跟新view即可
 			MsgBoardView msgBoardView = mMsgBoardViewMap.get(openid);
 			if (msgBoardView != null){
+				mAllRecorderInfos.remove(0);
+				mAllRecorderInfos.addFirst(new RecorderInfo(bindUser, recorder));
 				msgBoardView.receiveNewMessage(bindUser, recorder);
 			}
 		} else { //不在第一位 或者 不存在
+			Log.i(TAG, "mAllRecorderInfos11:" + mAllRecorderInfos.toString());
 			removeAllView();
 			RecorderInfo info = new RecorderInfo(bindUser, recorder);
 			updateRecorderInfo(openid);
@@ -184,7 +187,7 @@ public class MsgBoardViewGroup extends LinearLayout{
 			mMsgBoardViewMap.clear();
 			
 			int size = mAllRecorderInfos.size();
-			Log.i(TAG, "addRecorderSize:" + size);
+			Log.i(TAG, "addRecorderSize:" + size + ", mAllRecorderInfos:" + mAllRecorderInfos.toString());
 			for (int i = 0; i < size; i++) {
 				RecorderInfo recorderInfo = mAllRecorderInfos.get(i);
 				addRecorderColumn(recorderInfo.getBindUser(), recorderInfo.getRecorder(), i);

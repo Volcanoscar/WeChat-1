@@ -23,7 +23,7 @@
     		android:layout_height="wrap_content"
     		android:layout_centerVertical="true"
     		android:layout_alignParentLeft="true">
-	        <ImageView
+	        <com.tcl.wechat.view.ChatMsgImageView2
 			    android:id="@+id/img_video_thumbnails"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"

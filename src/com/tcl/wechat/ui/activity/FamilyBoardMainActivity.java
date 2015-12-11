@@ -176,6 +176,8 @@ public class FamilyBoardMainActivity extends BaseActivity implements IConstant {
 		mAddFriend = (UserInfoView) findViewById(R.id.uv_add_fiend);
 		mAddFriend.setUserName("");
 		
+		mSystemUserInfo.setFocusable(false);
+		mSystemUserInfo.setFocusableInTouchMode(false);
 		mSystemUserInfo.setUserIconClickListener(new UserIconClickListener() {
 
 			@Override
