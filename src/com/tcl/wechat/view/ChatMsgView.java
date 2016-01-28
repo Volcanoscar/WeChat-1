@@ -26,9 +26,9 @@ import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiXinMessage;
@@ -215,7 +215,7 @@ public class ChatMsgView extends RelativeLayout{
 		
 		CharSequence contentCharSeq = null;
 		if (recorder != null ){
-			contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+			contentCharSeq = new ExpressionUtil().StringToSpannale(mContext, 
 					new StringBuffer(recorder.getContent()));
 		} else {
 			contentCharSeq = mContext.getString(R.string.no_message);

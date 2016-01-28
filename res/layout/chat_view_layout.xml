@@ -38,7 +38,6 @@
         android:src="@drawable/chat_clip_2" />
 
     <!-- 用户头像 -->
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,7 +68,7 @@
             android:textColor="@color/black"
             android:textSize="28sp" />
     </LinearLayout>
-
+    
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_1380"
@@ -112,7 +111,7 @@
                     android:layout_marginTop="@dimen/dp_10"
                     android:layout_weight="1"
                     android:background="@drawable/chat_msg_edit_bg"
-                    android:inputType="text"
+                    android:inputType="textMultiLine"
                     android:textSize="24sp" />
 
                 <Button
@@ -165,9 +164,19 @@
                 android:layout_alignParentLeft="true"
                 android:layout_marginTop="@dimen/dp_20"
                 android:background="@drawable/sound_reply_selector" />
+            
+            <!-- 拍照按钮 -->
+            <Button
+                android:id="@+id/btn_video_reply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_15"
+                android:layout_marginLeft="@dimen/dp_120"
+                android:layout_toRightOf="@id/btn_sound_reply"
+                android:background="@drawable/video_reply_selector"
+                android:onClick="videoReplyClick" />
 
-            <!-- 文字消息回复按钮 -->
-
+            <!-- 文字回复按钮 -->
             <Button
                 android:id="@+id/btn_msg_reply"
                 android:layout_width="wrap_content"
@@ -199,5 +208,20 @@
                 android:onClick="imgReplyClick" />
         </RelativeLayout>
     </LinearLayout>
+    
+    <!-- 未读消息提示 -->
+    <Button 
+        android:id="@+id/btn_unread_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="@dimen/dp_320"
+        android:layout_marginRight="@dimen/dp_120"
+        android:background="@drawable/unread_bg"
+        android:textColor="@color/green"
+        android:textSize="22sp"
+        android:clickable="true"
+        android:onClick="scroolToNewMesssage"
+        android:visibility="gone"/>
 
 </RelativeLayout>

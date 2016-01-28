@@ -345,7 +345,7 @@ public class ImageLoader{
 	 * @param reqHeight
 	 * @return
 	 */
-	private Bitmap decodeSampledBitmapFromResource(String pathName,
+	public Bitmap decodeSampledBitmapFromResource(String pathName,
 			int reqWidth, int reqHeight){
 		// 第一次解析将inJustDecodeBounds设置为true，来获取图片大小
 		final BitmapFactory.Options options = new BitmapFactory.Options();

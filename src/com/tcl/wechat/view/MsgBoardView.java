@@ -31,21 +31,23 @@ import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
 import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.ui.activity.BaiduMapActivity;
 import com.tcl.wechat.ui.activity.ChatActivity;
+import com.tcl.wechat.ui.activity.FilePreviewActivity;
 import com.tcl.wechat.ui.activity.PlayVideoActivity;
 import com.tcl.wechat.ui.activity.ShowImageActivity;
 import com.tcl.wechat.ui.activity.ShowTextActivity;
 import com.tcl.wechat.ui.activity.WebViewActivity;
 import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
+import com.tcl.wechat.utils.FileSizeUtil;
 import com.tcl.wechat.utils.SystemInfoUtil;
 
 /**
@@ -96,16 +98,9 @@ public class MsgBoardView extends LinearLayout{
 	private WeiXinMessage mRecorder;
 	
 	/**
-	 * 音频播放播放管理类
-	 */
-	private RecorderPlayerManager mAudioManager;
-	
-	/**
 	 * 音频播放动画View；
 	 */
 	private View mPlaySoundAnimView; 
-	
-	private WeiRecordDao mRecordDao;
 	
 	/**
 	 * 未读消息
@@ -121,8 +116,6 @@ public class MsgBoardView extends LinearLayout{
 		super(context, attrs);
 		mContext = context;
 		mInflater = LayoutInflater.from(context);
-		mAudioManager = RecorderPlayerManager.getInstance();
-		mRecordDao = WeiRecordDao.getInstance();
 	}
 	
 	public void setupView(int screen){
@@ -153,7 +146,7 @@ public class MsgBoardView extends LinearLayout{
 	public void addData(BindUser bindUser, WeiXinMessage recorder){
 		mBindUser = bindUser;
 		mRecorder = recorder;
-		mAllUnReadedMsgCnt = mRecordDao.getAllUnreadedMsgCnt(mBindUser.getOpenId());
+		mAllUnReadedMsgCnt = WeiRecordDao.getInstance().getAllUnreadedMsgCnt(mBindUser.getOpenId());
 		mUnReadedMsgCnt = mAllUnReadedMsgCnt;
 		upadteView(mBindUser, mRecorder);
 	}
@@ -163,7 +156,7 @@ public class MsgBoardView extends LinearLayout{
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_EMPTY, 1000);
+			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_EMPTY, 500);
 			
 			Intent intent = new Intent(mContext, ChatActivity.class);
 			Bundle bundle = new Bundle();
@@ -185,7 +178,7 @@ public class MsgBoardView extends LinearLayout{
 		
 		mBindUser = bindUser;
 		mRecorder = recorder;
-		mAllUnReadedMsgCnt = mRecordDao.getAllUnreadedMsgCnt(mBindUser.getOpenId());
+		mAllUnReadedMsgCnt = WeiRecordDao.getInstance().getAllUnreadedMsgCnt(mBindUser.getOpenId());
 		if (mUnReadedMsgCnt < mAllUnReadedMsgCnt) {
 			mUnReadedMsgCnt ++;
 		}
@@ -209,6 +202,8 @@ public class MsgBoardView extends LinearLayout{
 		mUserInfoViewUv.setUserName(userName);
 		if (headImageUrl != null && userName != null){
 			mUserInfoViewUv.setUserIcon(headImageUrl, false);
+		} else if ("-2".equals(bindUser.getSex())){
+			mUserInfoViewUv.setUserIcon(R.drawable.default_device_icon, true);
 		}
 	}
 	
@@ -247,7 +242,7 @@ public class MsgBoardView extends LinearLayout{
 		
 		Log.i(TAG, "22AllUnReadedMsgCnt:" + mAllUnReadedMsgCnt + ", UnReadedMsgCnt:" + mUnReadedMsgCnt);
 		
-		if (mUnReadedMsgCnt > 0){
+		if (mUnReadedMsgCnt > 0 && mUnReadedMsgCnt <= mAllUnReadedMsgCnt){
 			mUnReadMsgIndicatorTv.setVisibility(View.VISIBLE);
 			mUnReadMsgIndicatorTv.setText(String.format(mContext.getString(R.string.page_Indicator), 
 					mUnReadedMsgCnt, mAllUnReadedMsgCnt));
@@ -266,7 +261,7 @@ public class MsgBoardView extends LinearLayout{
 					mRecorder.setReaded("1");
 					mUnReadedMsgCnt --;
 					updateMsgStatue();
-					mRecordDao.updateMessageReadState(mRecorder.getMsgid(), "1");
+					WeiRecordDao.getInstance().updateMessageReadState(mRecorder.getMsgid(), "1");
 				} 
 				break;
 
@@ -274,7 +269,7 @@ public class MsgBoardView extends LinearLayout{
 				mAllUnReadedMsgCnt = 0;
 				mUnReadedMsgCnt = 0;
 				updateMsgStatue();
-				mRecordDao.updateAllMessageReadState(mBindUser.getOpenId());
+				WeiRecordDao.getInstance().updateAllMessageReadState(mBindUser.getOpenId());
 				break;
 			default:
 				break;
@@ -318,6 +313,16 @@ public class MsgBoardView extends LinearLayout{
 		} else if (ChatMsgType.WEB.equals(msgType)) {
 			//加载链接显示控件
 			mView = setupLinkView(recorder);
+		} else if (ChatMsgType.FILE.equals(msgType)) {
+			//加载文件显示控件
+			mView = setupFileView(recorder);
+		} else if (ChatMsgType.MUSIC.equals(msgType)){
+			//加载音乐文件显示控件
+			mView = setupMusicFileView(recorder);
+		}
+		
+		if (mView == null){
+			return null;
 		}
 		
 		mView.setClickable(true);
@@ -354,9 +359,10 @@ public class MsgBoardView extends LinearLayout{
 			
 		} else if (ChatMsgType.VIDEO.equals(msgType) 
 				|| ChatMsgType.SHORTVIDEO.equals(msgType)){
-//			mIntent = new Intent(Intent.ACTION_VIEW);
-//			String fileName = DataFileTools.getInstance().getVideoFilePath(recorder.getMediaid());
-//			mIntent.setDataAndType(Uri.parse(fileName), "video/mp4");
+			// mIntent = new Intent(Intent.ACTION_VIEW);
+			// String fileName =
+			// DataFileTools.getInstance().getVideoFilePath(recorder.getMediaid());
+			// mIntent.setDataAndType(Uri.parse(fileName), "video/mp4");
 			if (!TextUtils.isEmpty(recorder.getFileName())){
 				mIntent = new Intent(mContext, PlayVideoActivity.class);
 				mIntent.putExtra("FilePath", recorder.getFileName());
@@ -372,6 +378,12 @@ public class MsgBoardView extends LinearLayout{
 			
 		} else if (ChatMsgType.WEB.equals(msgType)) {
 			mIntent = new Intent(mContext, WebViewActivity.class); 
+			mIntent.putExtra("LinkUrl", recorder.getUrl());
+		} else if (ChatMsgType.FILE.equals(msgType)){
+			mIntent = new Intent(mContext, FilePreviewActivity.class);
+			mIntent.putExtra("WeiXinMsgRecorder", recorder);
+		} else if (ChatMsgType.MUSIC.equals(msgType)){
+			mIntent = new Intent(mContext, WebViewActivity.class);
 			mIntent.putExtra("LinkUrl", recorder.getUrl());
 		}
 		return mIntent;
@@ -390,7 +402,7 @@ public class MsgBoardView extends LinearLayout{
 		TextView textInfoTv = (TextView) mMsgView.findViewById(R.id.tv_msgboard_textinfo);
 		CharSequence contentCharSeq = recorder.getContent();
 		if (!TextUtils.isEmpty(contentCharSeq)){
-			contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+			contentCharSeq = new ExpressionUtil().StringToSpannale(mContext, 
 					new StringBuffer(contentCharSeq));
 		} else {
 			contentCharSeq = mContext.getString(R.string.no_message);
@@ -444,7 +456,7 @@ public class MsgBoardView extends LinearLayout{
 		mMsgView = mInflater.inflate(R.layout.layout_chat_imageview, null);
 		ImageView imageView = (ImageView) mMsgView.findViewById(R.id.img_src_image);
 		ProgressBar loadProgressBar = (ProgressBar) mMsgView.findViewById(R.id.loading);
-		updateImage(recorder.getUrl(), imageView, loadProgressBar);
+		updateImage(recorder, imageView, loadProgressBar);
 		return mMsgView;
 	}
 	
@@ -487,6 +499,76 @@ public class MsgBoardView extends LinearLayout{
 	}
 
 	/**
+	 * 文件显示控件
+	 * @param recorder
+	 * @return
+	 */
+	private View setupFileView(final WeiXinMessage recorder){
+		Log.i(TAG, "WeiXinMsgRecorder:" + recorder);
+		View mMsgView = mInflater.inflate(R.layout.layout_msgboard_fileview, null);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(260, 200);
+		mMsgView.setLayoutParams(params);
+		
+		ImageView mFileIconImg = (ImageView) mMsgView.findViewById(R.id.img_file_icon);
+		TextView mTitleTv = (TextView) mMsgView.findViewById(R.id.file_title);
+		TextView mDetailTv = (TextView) mMsgView.findViewById(R.id.file_detail);
+		try {
+			mTitleTv.setText(recorder.getContent());
+			String fileSize = FileSizeUtil.FormetFileSize(Long.parseLong(recorder.getFileSize()));
+			mDetailTv.setText(fileSize);
+			String fileType = recorder.getLabel();
+			if ("mp3".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_mp3_icon);
+			} else if("wma".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_wma_icon);
+			} else if ("png".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_png_icon);
+			} else if ("jpg".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_jpg_icon);
+			} else if ("jepg".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_jpg_icon);
+			} else if ("doc".equals(fileType) 
+					|| "docx".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_doc_icon);
+			} else if ("ppt".equals(fileType)
+					|| "pptx".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_ppt_icon);
+			} else if ("xls".equals(fileType)
+					|| "xlsx".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_xls_icon);
+			} else if ("pdf".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_pdf_icon);
+			} else if ("txt".equals(fileType)){
+				mFileIconImg.setImageResource(R.drawable.file_txt_icon);
+			} else {
+				mFileIconImg.setImageResource(R.drawable.file_def_icon);
+			}
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return mMsgView;
+	}
+	
+	/**
+	 * 音乐文件显示控件
+	 * @param recorder
+	 * @return
+	 */
+	private View setupMusicFileView(final WeiXinMessage recorder){
+		Log.i(TAG, "WeiXinMsgRecorder:" + recorder);
+		View mMsgView = mInflater.inflate(R.layout.layout_msgboard_musicview, null);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(280, 200);
+		mMsgView.setLayoutParams(params);
+		
+		TextView titleTv = (TextView) mMsgView.findViewById(R.id.music_title);
+		TextView artistTv = (TextView) mMsgView.findViewById(R.id.music_artist);
+		titleTv.setText(recorder.getContent());
+		artistTv.setText(recorder.getLabel());
+		return mMsgView;
+	}
+	
+	/**
 	 * 设置视频图片视图
 	 * @param recorder
 	 * @return
@@ -496,7 +578,7 @@ public class MsgBoardView extends LinearLayout{
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(260, 200);
 		mVideoView.setLayoutParams(params);
 		ImageView thumbnailsImg = (ImageView) mVideoView.findViewById(R.id.img_video_thumbnails);
-		updateImage(recorder.getUrl(), thumbnailsImg, null);
+		updateImage(recorder, thumbnailsImg, null);
 		return mVideoView;
 	}
 	
@@ -506,20 +588,20 @@ public class MsgBoardView extends LinearLayout{
 	 */
 	private void playAudio(String fileName){
 		
-		if (mAudioManager == null){
+		if (RecorderPlayerManager.getInstance() == null){
 			Log.e(TAG, "RecorderPlayerManager is not init!!");
 			return ;
 		}
 		
-		if (!mAudioManager.isPlaying()){
+		if (!RecorderPlayerManager.getInstance().isPlaying()){
 			//更新消息状态
-			mRecordDao.updateMessagePlayState(mRecorder.getMsgid());
+			WeiRecordDao.getInstance().updateMessagePlayState(mRecorder.getMsgid());
 			mHandler.sendEmptyMessageDelayed(MSG_MSGCNT_REDUCE, 1000);
 			
 			//播放音频
 			if (!TextUtils.isEmpty(fileName) ){
-				mAudioManager.play(fileName);
-				mAudioManager.setPlayCompletedListener(playCompletedListener);
+				RecorderPlayerManager.getInstance().play(fileName);
+				RecorderPlayerManager.getInstance().setPlayCompletedListener(playCompletedListener);
 				
 				//音频点击，进行播放动画
 				mPlaySoundAnimView = mView.findViewById(R.id.view_chat_anim_view);
@@ -528,7 +610,7 @@ public class MsgBoardView extends LinearLayout{
 				anim.start();
 			}
 		} else { //如果正在播放，点击后，则需要暂停当前播放
-			mAudioManager.stop();
+			RecorderPlayerManager.getInstance().stop();
 			resetPlayAnim();
 		}
 	}
@@ -539,9 +621,26 @@ public class MsgBoardView extends LinearLayout{
 	 * @param mImageView
 	 * @param progressBar
 	 */
-	private void updateImage(String url, final ImageView mImageView, 
+	private void updateImage(final WeiXinMessage recorder, final ImageView mImageView, 
 			final ProgressBar progressBar){
 		
+		//处理airkiss模式发送过来的图片
+		if ("set".equals(recorder.getFormat())){
+			String filePath = recorder.getFileName();
+			Log.d(TAG, "Format:" + recorder.getFormat() + ",filePath:" + filePath);
+			if (!TextUtils.isEmpty(filePath)){
+				Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+				mImageView.setImageBitmap(bitmap);
+				if (progressBar != null && progressBar.getVisibility() == VISIBLE){
+					progressBar.setVisibility(GONE);
+				}
+			} else {
+				mImageView.setImageResource(R.drawable.pictures_no);
+			}
+			return ;
+		}
+		
+		String url = recorder.getUrl();
 		if (TextUtils.isEmpty(url) || mImageView == null){
 			return ;
 		}
@@ -583,9 +682,10 @@ public class MsgBoardView extends LinearLayout{
 	protected void onWindowVisibilityChanged(int visibility) {
 		
 		if (visibility != VISIBLE){
-			if (mAudioManager != null && mAudioManager.isPlaying()){
+			if (RecorderPlayerManager.getInstance() != null 
+					&& RecorderPlayerManager.getInstance().isPlaying()){
 				resetPlayAnim();
-				mAudioManager.stop();
+				RecorderPlayerManager.getInstance().stop();
 			}
 		}
 	}

@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.controller.ActivityManager;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
@@ -37,9 +36,13 @@ public class DelUserDialog extends Dialog {
 	
 	private Button mCancelBtn, mConfrimBtn;
 	
-	private ActivityManager mActivityManager;
+	//private ActivityManager mActivityManager;
 	
 	private UserInfoEditListener mEditListener;
+	
+	public void setUserInfoEditListener(UserInfoEditListener listener){
+		mEditListener = listener;
+	}
 	
 	public DelUserDialog(Context context) {
 		this(context, R.style.dialogStyle);
@@ -73,9 +76,6 @@ public class DelUserDialog extends Dialog {
 		});
 		
 		setContentView(mView);
-		
-		mActivityManager = ActivityManager.getInstance();
-		mEditListener = mActivityManager.getUserInfoEditListener();
 	}
 	
 	public void showDailog(BindUser bindUser){

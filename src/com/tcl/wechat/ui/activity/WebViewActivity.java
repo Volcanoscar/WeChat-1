@@ -45,7 +45,7 @@ public class WebViewActivity extends Activity{
 	private void initView() {
 		// TODO Auto-generated method stub
 		mWebView = (MsgWebView) findViewById(R.id.webview);
-		mWebView.setBarHeight(8);
+		mWebView.setBarHeight(4);
 		mWebView.setClickable(true);
 		mWebView.setUseWideViewPort(true);
 		mWebView.setSupportZoom(true);

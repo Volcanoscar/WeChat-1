@@ -23,7 +23,17 @@ public class WeiXinMessage implements Parcelable {
 	 */
 	private String toOpenid;
 	
-	/** 消息的类型:文本（text）、图片（image）、音频（voice）、视频（video）、链接（link）、地理位置(location) 和 小视频 (shortvideo)*/
+	/** 消息的类型:
+	 * 		文本（text）
+	 * 		图片（image）
+	 * 		音频（voice）
+	 * 		视频（video）
+	 * 		链接（link）
+	 * 		文件（file） 
+	 * 		音乐（music）
+	 * 		地理位置(location) 
+	 * 	 	小视频 (shortvideo)
+	 */
 	private String msgtype;
 	
 	/** 防止丢失消息，回复id给服务器，服务器判断是否有消息丢失*/

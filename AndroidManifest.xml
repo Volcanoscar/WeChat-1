@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tcl.wechat"
-    android:versionCode="21"
-    android:versionName="1.2.1">
+    android:versionCode="33"
+    android:versionName="1.3.3">
 
     <uses-sdk
         android:minSdkVersion="17"
@@ -14,7 +14,7 @@
 	<uses-permission android:name="android.permission.CAMERA"/>
 	<uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <uses-permission android:name="android.permission.VIBRATE" /> 
+    <uses-permission android:name="android.permission.VIBRATE" />
     
     <!-- 访问网络权限 -->
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -34,6 +34,7 @@
 	<uses-permission android:name="android.permission.WRITE_OWNER_DATA" />
     <uses-permission android:name="android.permission.READ_OWNER_DATA" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
+    
     <!-- 判断当前应用是否在前台 -->
     <uses-permission android:name="android.permission.GET_TASKS"/>
     
@@ -53,10 +54,11 @@
     
     <!-- 支持大屏、中屏、小屏及不同分辨率 -->
     <supports-screens
-          android:largeScreens="true"   
-          android:normalScreens="true"  
-          android:smallScreens="true"   
-          android:anyDensity="true" />
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <application
         android:name=".WeApplication"
@@ -128,6 +130,10 @@
         <!-- 文本预览界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.ShowTextActivity"
             android:theme="@style/Anim_scale"/>
+         <!-- 文件预览界面 -->
+        <activity android:name="com.tcl.wechat.ui.activity.FilePreviewActivity"
+            android:label="@string/file_preview"
+            android:theme="@style/Anim_scale"/>
         <!-- 拍照界面 -->
         <activity android:name="com.tcl.wechat.ui.activity.CustomCameraActivity"
             android:screenOrientation="landscape"
@@ -157,6 +163,8 @@
                 <action android:name="android.appwidget.action.SHOW_TEXT"/>
                 <action android:name="android.appwidget.action.SHOW_LOCATION"/>
                 <action android:name="android.appwidget.action.SHOW_LINK"/>
+                <action android:name="android.appwidget.action.SHOW_FILE"/>
+                <action android:name="android.appwidget.action.SHOW_MUSIC"/>
                 <action android:name="android.appwidget.action.UPDATE_AUDIO_ANMI"/>
                 <!-- 以下为清除数据广播 -->
                 <action android:name="com.mediatek.intent.action.SETTINGS_PACKAGE_DATA_CLEARED" /> 
@@ -221,8 +229,9 @@
         <!-- 闹钟通知消息接收器 -->
         <receiver android:name="com.tcl.wechat.receiver.MotitorReceiver">
             <intent-filter >
-                <action android:name="com.tcl.wechat.action.user_online_monitor"/>
-                <action android:name="com.mediatek.intent.action.START_SERVICE"/>
+				<action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <!-- <action android:name="com.tcl.wechat.action.user_online_monitor"/> -->
+				<action android:name="com.mediatek.intent.action.START_SERVICE"/>
                 <!-- 以下为清除数据广播 -->
                 <action android:name="com.mediatek.intent.action.SETTINGS_PACKAGE_DATA_CLEARED" /> 
                 <category android:name="android.intent.category.DEFAULT" /> 

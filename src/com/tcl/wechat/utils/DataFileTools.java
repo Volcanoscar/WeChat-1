@@ -30,6 +30,8 @@ public class DataFileTools {
 	
 	private static final String FOLDER_RECORD_IMAGE = "image"; //图片文件路径
 	
+	private static final String FOLDER_RECORD_FILE = "file"; 	//文件路径
+	
 	private static final String FOLDER_TEMP = "temp";   		//临时缓存文件
 	
 	private static final String FOLDER_CACHE = "cache";			//缓存文件路径
@@ -118,6 +120,19 @@ public class DataFileTools {
 		return null;
 	}
 	
+	/**
+	 * 获取图像文件存储路径 /wechat/cache/file
+	 * @return
+	 */
+	public static String getRecordFilePath(){
+		if (isSdCardExist()){
+			return Environment.getExternalStorageDirectory() + 
+					File.separator + FOLDER_APP_LOCAL +
+					File.separator + FOLDER_CACHE +
+					File.separator + FOLDER_RECORD_FILE;
+		}
+		return null;
+	}
 	
 	/**
 	 * 缓存存储路径 /wechat/cache
@@ -209,6 +224,23 @@ public class DataFileTools {
 		}
 		String fileName = MD5Util.hashKeyForDisk(url) + ".mp4";
 		String cachePath = getRecordVideoPath();
+		File file = new File(cachePath, fileName);
+		if (file != null && file.exists()){
+			return file.getAbsolutePath();
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取文件绝对路径
+	 * @param fileName
+	 * @return
+	 */
+	public static String getFilePath(String fileName){
+		if (TextUtils.isEmpty(fileName)){
+			return null;
+		}
+		String cachePath = getRecordFilePath();
 		File file = new File(cachePath, fileName);
 		if (file != null && file.exists()){
 			return file.getAbsolutePath();
@@ -532,5 +564,14 @@ public class DataFileTools {
         }
         return false;
     }
+    
+    public static boolean hasSdcard() {
+		if (Environment.getExternalStorageState().equals(
+				Environment.MEDIA_MOUNTED)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
     
 }

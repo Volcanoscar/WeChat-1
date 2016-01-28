@@ -27,9 +27,10 @@
             android:layout_centerVertical="true"
             android:gravity="left|center_vertical"
             android:background="@drawable/chatto_bg"
-            android:lineSpacingMultiplier="1.2"
+            android:lineSpacingMultiplier="1.3"
             android:textColor="@color/black"
             android:textSize="22sp"
+            android:maxWidth="@dimen/dp_1000"
             android:autoLink="web" />
        
         <ImageView

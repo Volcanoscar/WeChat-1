@@ -7,7 +7,6 @@ import android.net.ConnectivityManager;
 import android.util.Log;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.common.IConstant.StartServiceMode;
 import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.utils.WeixinToast;
 import com.tcl.wechat.xmpp.WeiXmppManager;
@@ -28,24 +27,31 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
 		// TODO Auto-generated method stub
 		
 		String action = intent.getAction();
+
 		if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action)){
 			
 			if (NetWorkUtil.isWifiConnected()){
 				if (firstConnect){
 					firstConnect = false;
 					Log.d(TAG, "network connected!!");
-					Intent serviceIntent = new Intent(context, WeiXmppService.class);
-			    	//serviceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);  
-			    	//serviceIntent.putExtra("startmode", StartServiceMode.OWN);
-			    	context.startService(serviceIntent); 
+					startService(context); 
 				}
 				
 			} else {
 				WeiXmppManager.getInstance().disconnection();
 				firstConnect = true;
 				Log.d(TAG, "network disConnected!!");
-				WeixinToast.makeText(R.string.network_not_available).show();
+				WeixinToast.makeText(context, R.string.network_not_available).show();
 			}
 		}
+	}
+	
+	/**
+	 * 启动服务
+	 * @param context
+	 */
+	private void startService(Context context) {
+		Intent serviceIntent = new Intent(context, WeiXmppService.class);
+		context.startService(serviceIntent); 
 	}
 }

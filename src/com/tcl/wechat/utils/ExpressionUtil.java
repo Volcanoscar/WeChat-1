@@ -22,17 +22,17 @@ public class ExpressionUtil {
 	
 	private DecimalFormat decimalFormat = new DecimalFormat("000");
 	
-	private static class ExpressionUtilaInstance{
-		private static final ExpressionUtil mInstance = new ExpressionUtil();
-	}
-	
-	private ExpressionUtil() {
-		super();
-	}
-
-	public static ExpressionUtil getInstance(){
-		return  ExpressionUtilaInstance.mInstance;
-	}
+//	private static class ExpressionUtilaInstance{
+//		private static final ExpressionUtil mInstance = new ExpressionUtil();
+//	}
+//	
+//	private ExpressionUtil() {
+//		super();
+//	}
+//
+//	public static ExpressionUtil getInstance(){
+//		return  ExpressionUtilaInstance.mInstance;
+//	}
 	
 	 /**匹配Emoji表情符，用于转化为资源名.顺序排列，不能打乱*/
     public static final String[] QQ_STRINGS = {"/::)","/::~","/::B","/::|","/:8-)",

@@ -2,8 +2,8 @@ package com.tcl.wechat.ui.activity;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -41,10 +41,12 @@ import com.tcl.wechat.utils.WeixinToast;
  * @author rex.lei
  * 
  */
-public class ShowImageActivity extends Activity implements OnTouchListener {
+public class ShowImageActivity extends BaseActivity implements OnTouchListener {
 
 	private static final String TAG = ShowImageActivity.class.getSimpleName();
 
+	private Context mContext;
+	
 	private ImageView mImageView;
 	private ProgressDialog mDownloadProgressDialog;
 	private ProgressDialog mSaveProgressDialog;
@@ -103,6 +105,8 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_image_preview);
 
+		mContext = this;
+		
 		DisplayMetrics dm = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
 		displayWidth = dm.widthPixels;
@@ -118,24 +122,32 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			return;
 		}
 		mRecorder = bundle.getParcelable("WeiXinMsgRecorder");
-		mFileName = mRecorder.getUrl();
 		if (mRecorder == null) {
 			return;
 		}
-
 		mImageView = (ImageView) findViewById(R.id.img_preview);
 		mImageView.setOnTouchListener(this);
-
+		
 		// 显示进度条
 		mDownloadProgressDialog = ProgressDialog.show(this, null,
 				getString(R.string.loading));
 		mDownloadProgressDialog.setCancelable(true);
+		
+		if ("set".equals(mRecorder.getFormat())){
+			mFileName = mRecorder.getFileName();
+			mBitmap = BitmapFactory.decodeFile(mFileName);
+			drawBitmap();
+			mDownloadProgressDialog.dismiss();
+		} else {
+			
+			mFileName = mRecorder.getUrl();
+			
+			// 预加载所有图片的url
+			loadImageUrl();
 
-		// 预加载所有图片的url
-		loadImageUrl();
-
-		// 加载显示当前图片
-		loadImage();
+			// 加载显示当前图片
+			loadImage();
+		}
 	}
 
 	/**
@@ -192,7 +204,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 		//接收到的消息，需从网络下载
 		if (TextUtils.isEmpty(mFileName)) {
 			dismissProgressDialog();
-			WeixinToast.makeText(R.string.load_img_failed).show();
+			WeixinToast.makeText(mContext, R.string.load_img_failed).show();
 			return;
 		}
 
@@ -206,7 +218,8 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 				mBitmap = BitmapFactory.decodeResource(getResources(),
 						R.drawable.pictures_no);
 				mImageView.setImageBitmap(mBitmap);
-				WeixinToast.makeText(R.string.load_img_failed).show();
+				center();
+				WeixinToast.makeText(mContext, R.string.load_img_failed).show();
 			}
 
 			@Override
@@ -252,7 +265,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			if (mCurImageIndex > 0) {
 				mCurImageIndex--;
 			} else {
-				WeixinToast.makeText(R.string.is_first_image, 1000).show();
+				WeixinToast.makeText(mContext, R.string.is_first_image, 1000).show();
 				return;
 			}
 			mFileName = mAllUserImageUrl.get(mCurImageIndex);
@@ -273,7 +286,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			if (mCurImageIndex < mAllUserImageUrl.size() - 1) {
 				mCurImageIndex++;
 			} else {
-				WeixinToast.makeText(R.string.is_last_image, 1000).show();
+				WeixinToast.makeText(mContext, R.string.is_last_image, 1000).show();
 				return;
 			}
 			mFileName = mAllUserImageUrl.get(mCurImageIndex);
@@ -296,7 +309,7 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			@Override
 			protected Boolean doInBackground(Void... params) {
 				// TODO Auto-generated method stub
-				String fileName = MD5Util.hashKeyForDisk(mFileName);
+				String fileName = MD5Util.hashKeyForDisk(mFileName) + ".jpg";
 				String savePath = DataFileTools.getTempPath();
 				return ImageUtil.getInstance().saveBitmap(mBitmap, fileName,
 						savePath);
@@ -305,10 +318,10 @@ public class ShowImageActivity extends Activity implements OnTouchListener {
 			protected void onPostExecute(Boolean result) {
 				mSaveProgressDialog.dismiss();
 				if (result) {
-					WeixinToast.makeText(String.format(
+					WeixinToast.makeText(mContext, String.format(
 							getString(R.string.save_image_hint), DataFileTools.getTempPath())).show();
 				} else {
-					WeixinToast.makeText(String.format(
+					WeixinToast.makeText(mContext, String.format(
 							getString(R.string.save_image_failed),
 							DataFileTools.getTempPath())).show();
 				}

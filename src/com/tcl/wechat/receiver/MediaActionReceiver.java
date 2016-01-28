@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.tcl.wechat.action.recorder.Recorder;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.ui.activity.VideoPlayerActivity;
 

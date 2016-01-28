@@ -7,6 +7,11 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import com.tcl.wechat.WeApplication;
+
+import android.content.ContentResolver;
+import android.widget.Toast;
+
 /**
  * 日期工具类
  * 
@@ -14,11 +19,29 @@ import java.util.Locale;
  * 
  */
 public class DateUtils {
+	
+	
+	private static String mTimeFormat = "HH:mm";
+	
+	private static SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
+
+	public static void initDataFormat() {
+		ContentResolver cv = WeApplication.getContext().getContentResolver();
+		String strTimeFormat = android.provider.Settings.System.getString(cv,
+				android.provider.Settings.System.TIME_12_24);
+
+		if (strTimeFormat.equals("24")){
+			mTimeFormat = "HH:mm";
+			mFormat = new SimpleDateFormat("HH:mm"); 
+		} else {
+			mTimeFormat = "hh:mm";
+			mFormat = new SimpleDateFormat("hh:mm");
+		}
+	}
 
 	public static String getTimeShort(String time) {
 		try {
-			SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-			return formatter.format(new Date(Long.parseLong(time)));
+			return mFormat.format(new Date(Long.parseLong(time)));
 		} catch (Exception e){
 			e.printStackTrace();
 			return "";
@@ -34,17 +57,17 @@ public class DateUtils {
 			localCalendar.setTime(paramDate);
 			int i = localCalendar.get(11);
 			if (i > 17)
-				str = "晚上 HH:mm";
+				str = "晚上 " + mTimeFormat;
 			else if ((i >= 0) && (i <= 6))
-				str = "凌晨 HH:mm";
+				str = "凌晨 " + mTimeFormat;
 			else if ((i > 11) && (i <= 17))
-				str = "下午 HH:mm";
+				str = "下午 " + mTimeFormat;
 			else
-				str = "上午 HH:mm";
+				str = "上午 " + mTimeFormat;
 		} else if (isYesterday(l)) {
-			str = "昨天 HH:mm";
+			str = "昨天 " + mTimeFormat;
 		} else {
-			str = "M月d日 HH:mm";
+			str = "M月d日 " + mTimeFormat;
 		}
 		return new SimpleDateFormat(str, Locale.CHINA).format(paramDate);
 	}

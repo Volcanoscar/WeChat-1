@@ -53,7 +53,7 @@ public class ImageLruCache implements ImageCache{
 			}
 		};
 		
-		File cacheDir = new File(DataFileTools.getInstance().getRecordImagePath());
+		File cacheDir = new File(DataFileTools.getRecordImagePath());
 		if (!cacheDir.exists()){
 			cacheDir.mkdirs();
 		}

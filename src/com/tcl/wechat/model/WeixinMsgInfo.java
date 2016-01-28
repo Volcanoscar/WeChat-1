@@ -1,6 +1,6 @@
 package com.tcl.wechat.model;
 
-import com.tcl.wechat.action.recorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.Recorder;
 
 
 

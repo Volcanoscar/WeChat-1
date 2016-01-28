@@ -44,6 +44,8 @@ public class PlayVideoActivity extends Activity implements OnGestureListener,
 	
 	private static final String TAG = PlayVideoActivity.class.getSimpleName();
 	
+	private Context mContext;
+	
 	private static final int MSG_SHOW_CONTROLVIEW = 0x01;
 	private static final int MSG_UPDATE_PROGRESS = 0x02;
 	
@@ -88,6 +90,8 @@ public class PlayVideoActivity extends Activity implements OnGestureListener,
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_player);
+		
+		mContext = this;
 		
 		DisplayMetrics dm = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -370,7 +374,7 @@ public class PlayVideoActivity extends Activity implements OnGestureListener,
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		// TODO Auto-generated method stub
-		WeixinToast.makeText(R.string.play_complete).show();
+		WeixinToast.makeText(mContext, R.string.play_complete).show();
 		finish();
 	}
 

@@ -80,7 +80,7 @@ public class WeiXinLoginReceiver extends BroadcastReceiver {
 		SharedEditer editer = new SharedEditer(SystemShared.SHARE_TERMINAL_INFO);
 		String localIp = editer.getString("localip", "");
 		String curIp = SystemInfoUtil.getLocalIpAddress();
-		if (!curIp.equals(localIp)){
+		if (curIp != null && !curIp.equals(localIp)){
 			editer.putString("localip", curIp);
 			final HashMap<String, String> hashMap = new HashMap<String, String>();
 			hashMap.put("deviceid",SystemInfoUtil.getDeviceId());

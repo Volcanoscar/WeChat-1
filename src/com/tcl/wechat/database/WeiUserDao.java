@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.model.BindUser;
 
 /**
@@ -27,19 +28,15 @@ public class WeiUserDao {
 	
 	private WeiUserDao(Context context) {
 		super();
-		mDbHelper = new DBHelper(context);
+		mDbHelper = DBHelper.getInstance();
 		mDbHelper.getReadableDatabase();
 	}
 
-	public static void initWeiUserDao(Context context){
-		if (mInstance == null){
-			mInstance = new WeiUserDao(context);
-		}
-	}
-	
 	public static WeiUserDao getInstance(){
 		if (mInstance == null){
-			throw new NullPointerException("WeiUserDao is Null, You should initialize WeiUserDao first");
+			synchronized (WeiUserDao.class) {
+				mInstance = new WeiUserDao(WeApplication.getContext());
+			}
 		}
 		return mInstance;
 	}
@@ -172,8 +169,8 @@ public class WeiUserDao {
 				
 				//异常则不进行更新
 				if (TextUtils.isEmpty(bindUser.getOpenId()) || 
-						TextUtils.isEmpty(bindUser.getNickName()) ||
-						TextUtils.isEmpty(bindUser.getHeadImageUrl())){
+						TextUtils.isEmpty(bindUser.getNickName()) 
+						/*TextUtils.isEmpty(bindUser.getHeadImageUrl())*/){
 					continue;
 				}
 				
@@ -332,14 +329,14 @@ public class WeiUserDao {
 	public LinkedList<BindUser> getBindUsers(){
 		LinkedList<BindUser> userList = new LinkedList<BindUser>();
 		SQLiteDatabase db = mDbHelper.getReadableDatabase();
-		BindUser systemUser = getSystemUser();
+		/*BindUser systemUser = getSystemUser();
 		if (systemUser == null){
 			return userList;
-		}
+		}*/
 		db.beginTransaction();
 		try {
-			String selection = Property.COLUMN_OPENID+ "!=?";
-			String[] selectionArgs = new String[]{systemUser.getOpenId()};
+			String selection = Property.COLUMN_USERSEX + "!=?";
+			String[] selectionArgs = new String[]{"-1"};
 			String orderBy = Property.COLUMN_ID + " DESC ";
 			Cursor cursor = db.query(Property.TABLE_USER, null, selection, selectionArgs , null, null, orderBy);
 			if (cursor != null){

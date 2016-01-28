@@ -5,14 +5,9 @@ import java.io.File;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.tcl.wechat.common.IConstant;
-import com.tcl.wechat.controller.OnLineStatusMonitor;
-import com.tcl.wechat.controller.WeiXinMsgControl;
-import com.tcl.wechat.model.OnLineStatus;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.xmpp.WeiXmppService;
 
@@ -30,8 +25,13 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 		// TODO Auto-generated method stub
 		String action = intent.getAction();
 		Log.d(TAG, "action:" + action);
-		if (ACTION_ONLINE_ALARM.equals(action)){
-			Bundle bundle = intent.getExtras();
+		if (Intent.ACTION_BOOT_COMPLETED.equals(action)){
+			
+			//启动服务
+			startService(context);
+			
+		} else if (ACTION_ONLINE_ALARM.equals(action)){
+			/*Bundle bundle = intent.getExtras();
 			if (bundle != null){
 				OnLineStatus status = (OnLineStatus) bundle.getSerializable("OnLineStatus");
 				if (status == null){
@@ -41,7 +41,7 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 				String openid = status.getOpenid();
 				OnLineStatusMonitor.getInstance().stopMonitor(openid);
 				WeiXinMsgControl.getInstance().notifyUserStatusChaned(status);
-			}
+			}*/
 		} else if (ACTION_DATA_CLEARED.equals(action)){
 			clearData();
 		} else if (ACTION_START_SERVICE.equals(action)){
@@ -49,6 +49,15 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 			service.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startService(service);
 		}
+	}
+	
+	/**
+	 * 启动服务
+	 * @param context
+	 */
+	private void startService(Context context){
+		Intent serviceIntent = new Intent(context, WeiXmppService.class);
+    	context.startService(serviceIntent); 
 	}
 	
 	/**
@@ -69,10 +78,11 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 			public void run() {
 				//清除缓存数据
 				boolean bRet = true;
-				Log.i(TAG, "start to clear data!!");
-				bRet &= deletefile(DataFileTools.getRecordImagePath());
-				bRet &= deletefile(DataFileTools.getRecordAudioPath());
-				bRet &= deletefile(DataFileTools.getRecordVideoPath());
+//				Log.i(TAG, "start to clear data!!");
+//				bRet &= deletefile(DataFileTools.getRecordImagePath());
+//				bRet &= deletefile(DataFileTools.getRecordAudioPath());
+//				bRet &= deletefile(DataFileTools.getRecordVideoPath());
+				bRet &= deletefile(DataFileTools.getCachePath());
 				Log.i(TAG, "clear data finish, Ret = " + bRet);
 			}
 		}).start();
@@ -96,7 +106,8 @@ public class MotitorReceiver extends BroadcastReceiver implements IConstant{
 						deletefile(delpath + File.separator + filelist[i]);
 					}
 				}
-				file.delete();
+				//add by rex.lei  2016.1.28
+				//file.delete();
 			}
 
 		} catch (Exception e) {

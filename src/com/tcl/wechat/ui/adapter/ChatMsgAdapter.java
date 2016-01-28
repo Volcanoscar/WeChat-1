@@ -12,6 +12,8 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.text.ClipboardManager;
@@ -39,10 +41,11 @@ import android.widget.TextView;
 import com.nineoldandroids.view.ViewHelper;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.action.recorder.Recorder;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.imageloader.ImageLoader;
 import com.tcl.wechat.common.IConstant.ChatMsgSource;
 import com.tcl.wechat.common.IConstant.ChatMsgStatus;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
@@ -56,12 +59,15 @@ import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.model.WeixinMsgInfo;
 import com.tcl.wechat.ui.activity.BaiduMapActivity;
+import com.tcl.wechat.ui.activity.FilePreviewActivity;
 import com.tcl.wechat.ui.activity.PlayVideoActivity;
 import com.tcl.wechat.ui.activity.ShowImageActivity;
 import com.tcl.wechat.ui.activity.ShowTextActivity;
 import com.tcl.wechat.ui.activity.WebViewActivity;
 import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
+import com.tcl.wechat.utils.FileSizeUtil;
+import com.tcl.wechat.utils.NetWorkUtil;
 import com.tcl.wechat.view.ChatMsgImageView2;
 import com.tcl.wechat.xmpp.ReplyResult;
 import com.tcl.wechat.xmpp.XmppEvent;
@@ -72,6 +78,7 @@ import com.tcl.wechat.xmpp.XmppEventListener;
  * @author rex.lei
  *
  */
+@SuppressWarnings("deprecation")
 @SuppressLint("InflateParams") 
 public class ChatMsgAdapter extends BaseAdapter {
 	
@@ -90,11 +97,15 @@ public class ChatMsgAdapter extends BaseAdapter {
     private static final int MESSAGE_TYPE_SENT_WEB = 9;
     private static final int MESSAGE_TYPE_RECV_LOCATION = 10;
     private static final int MESSAGE_TYPE_SENT_LOCATION = 11;
+    private static final int MESSAGE_TYPE_RECV_FILE = 12;
+    private static final int MESSAGE_TYPE_SEND_FILE = 13;
+    private static final int MESSAGE_TYPE_RECV_MUSIC = 14;
+    private static final int MESSAGE_TYPE_SEND_MUSIC = 15;
 	
 	private Context mContext;
 	private LayoutInflater mInflater;
 	
-	private static final int TYPE_COUNT = 12;
+	private static final int TYPE_COUNT = 16;
 	
 	/** 音频显示最大宽度标尺*/
 	private static final int CHAT_VIEW_WIDTH = 800;
@@ -115,17 +126,10 @@ public class ChatMsgAdapter extends BaseAdapter {
 	/** 执行动画的时间   */
 	protected long mAnimationTime = 150;
 	
-	/** 音频播放管理类  */
-	private RecorderPlayerManager mAudioManager;
-	
-	private WeiXinMsgManager mWeiXinMsgManager;
-	
 	public ChatMsgAdapter(Context context) {
 		super();
 		this.mContext = context;
 		mInflater = LayoutInflater.from(context);
-		mAudioManager = RecorderPlayerManager.getInstance();
-		mWeiXinMsgManager = WeiXinMsgManager.getInstance();
 		
 		mMinItemWidth = (int) (CHAT_VIEW_WIDTH * 0.1f);
 		mMaxItemWidth = (int) (CHAT_VIEW_WIDTH * 0.8f);
@@ -135,14 +139,14 @@ public class ChatMsgAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		return mWeiXinMsgManager.getMessageCount();
+		return WeiXinMsgManager.getInstance().getMessageCount();
 	}
 
 
 	@Override
 	public WeiXinMessage getItem(int position) {
 		// TODO Auto-generated method stub
-		return mWeiXinMsgManager.getMessage(position);
+		return WeiXinMsgManager.getInstance().getMessage(position);
 	}
 
 	@Override
@@ -153,12 +157,9 @@ public class ChatMsgAdapter extends BaseAdapter {
 	
 	@Override
 	public int getItemViewType(int position) {
-		WeiXinMessage message = mWeiXinMsgManager.getMessage(position);
+		WeiXinMessage message = WeiXinMsgManager.getInstance().getMessage(position);
 		String msgType = message.getMsgtype();
-		if (ChatMsgType.TEXT.equals(msgType)) {
-			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
-					MESSAGE_TYPE_RECV_TXT : MESSAGE_TYPE_SENT_TXT;
-		} else if (ChatMsgType.IMAGE.equals(msgType)) {
+		if (ChatMsgType.IMAGE.equals(msgType)) {
 			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
 					MESSAGE_TYPE_RECV_IMAGE : MESSAGE_TYPE_SENT_IMAGE;
 		} else if (ChatMsgType.VOICE.equals(msgType)) {
@@ -174,8 +175,16 @@ public class ChatMsgAdapter extends BaseAdapter {
 		} else if (ChatMsgType.WEB.equals(msgType)) {
 			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
 					MESSAGE_TYPE_RECV_WEB : MESSAGE_TYPE_SENT_WEB;
-		}
-		return 0; //发送
+		} else if (ChatMsgType.FILE.equals(msgType)) {
+			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
+					MESSAGE_TYPE_RECV_FILE : MESSAGE_TYPE_SEND_FILE;
+		} else if (ChatMsgType.MUSIC.equals(msgType)) {
+			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
+					MESSAGE_TYPE_RECV_MUSIC : MESSAGE_TYPE_SEND_MUSIC;
+		} else {
+			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
+					MESSAGE_TYPE_RECV_TXT : MESSAGE_TYPE_SENT_TXT;
+		} 
 	}
 	
 	@Override
@@ -213,6 +222,14 @@ public class ChatMsgAdapter extends BaseAdapter {
 			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
 					mInflater.inflate(R.layout.item_received_webmsg, null) :
 					mInflater.inflate(R.layout.item_send_webmsg, null);
+		} else if (ChatMsgType.FILE.equals(msgType)) {
+			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
+					mInflater.inflate(R.layout.item_received_file, null) :
+					mInflater.inflate(R.layout.item_received_file, null);
+		} else if (ChatMsgType.MUSIC.equals(msgType)) {
+			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
+					mInflater.inflate(R.layout.item_received_music, null) :
+					mInflater.inflate(R.layout.item_received_music, null);
 		} else {
 			return ChatMsgSource.RECEIVEED.equals(message.getReceived()) ?
 					mInflater.inflate(R.layout.item_received_text, null) :
@@ -291,13 +308,30 @@ public class ChatMsgAdapter extends BaseAdapter {
 				holder.mMessageProgressTv = (TextView) convertView.findViewById(R.id.tv_progress);
 			} catch (Exception e) {
 			}
+		} else if (ChatMsgType.FILE.equals(msgType)) {
+			try {
+				holder.mMessageStatusImg = (ImageView) convertView.findViewById(R.id.img_file_icon);
+				holder.mMessageTimeTv = (TextView) convertView.findViewById(R.id.tv_mseeage_time);
+				holder.mMessageLayout = (RelativeLayout) convertView.findViewById(R.id.layout_msg_info);
+				holder.mMessageTextTv = (TextView) convertView.findViewById(R.id.tv_file_title);
+				holder.mMessageDetatilTv = (TextView) convertView.findViewById(R.id.tv_file_detail);
+			} catch (Exception e) {
+			}
+		}else if (ChatMsgType.MUSIC.equals(msgType)) {
+			try {
+				holder.mMessageTimeTv = (TextView) convertView.findViewById(R.id.tv_mseeage_time);
+				holder.mMessageLayout = (RelativeLayout) convertView.findViewById(R.id.layout_msg_info);
+				holder.mMessageTextTv = (TextView) convertView.findViewById(R.id.tv_music_title);
+				holder.mMessageDetatilTv = (TextView) convertView.findViewById(R.id.tv_music_detail);
+			} catch (Exception e) {
+			}
 		}
 	}
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		final ViewHolder holder;
-		WeiXinMessage message = mWeiXinMsgManager.getMessage(position);
+		WeiXinMessage message = WeiXinMsgManager.getInstance().getMessage(position);
 		if (message == null){
 			return null;
 		}
@@ -322,7 +356,6 @@ public class ChatMsgAdapter extends BaseAdapter {
 		/** 消息显示内容*/
 		private TextView mMessageTextTv;
 		private TextView mMessageDetatilTv;
-		private ImageView mMessageImageImg;
 		private FrameLayout mVoiceLayout;
 		private ChatMsgImageView2 mChatImageView;
 		
@@ -349,7 +382,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 			} else {
 			    // 两条消息时间离得如果稍长，显示时间
 			    if (DateUtils.isCloseEnough(timestamp, 
-			    		Long.parseLong(mWeiXinMsgManager.getMessage(position - 1).getCreatetime()))) {
+			    		Long.parseLong(WeiXinMsgManager.getInstance().getMessage(position - 1).getCreatetime()))) {
 			    	holder.mMessageTimeTv.setVisibility(View.GONE);
 			    } else {
 			    	holder.mMessageTimeTv.setText(DateUtils.getTimestampString(new Date(timestamp)));
@@ -381,6 +414,12 @@ public class ChatMsgAdapter extends BaseAdapter {
 			
 		} else if (ChatMsgType.WEB.equals(msgType)) {
 			handleWebMessage(convertView, position, holder, message);
+			
+		} else if (ChatMsgType.FILE.equals(msgType)) {
+			handleFileMessage(convertView, position, holder, message);
+			
+		} else if (ChatMsgType.MUSIC.equals(msgType)) {
+			handleMusicMessage(convertView, position, holder, message);
 		}
 	}
 
@@ -397,7 +436,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 		if (!TextUtils.isEmpty(content)) {
 			content = content.replace("<![CDATA[", "").replace("]]>", "");
 		}
-		final CharSequence contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(mContext, 
+		final CharSequence contentCharSeq = new ExpressionUtil().StringToSpannale(mContext, 
 				new StringBuffer(content));
 		
 		holder.mMessageTextTv.setTypeface(WeApplication.getInstance().getTypeface2());
@@ -446,47 +485,48 @@ public class ChatMsgAdapter extends BaseAdapter {
 	 */
 	private void handleImageMessage(View convertView, int position, final ViewHolder holder,
 			final WeiXinMessage message) {
-		String state = message.getStatus();
-		if (ChatMsgSource.RECEIVEED.equals(message.getReceived())) {
+		
+		if ("set".equals(message.getFormat())){//处理airkiss模式发送过来的图片文件
+			String filePath = message.getFileName();
+			if (!TextUtils.isEmpty(filePath)){
+				Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+				holder.mChatImageView.setImageBitmap(bitmap);
+			} else {
+				holder.mChatImageView.setImageResource(R.drawable.pictures_no);
+			}
+		} else if (ChatMsgSource.RECEIVEED.equals(message.getReceived())) {
 			holder.mChatImageView.setImageBitmap(message);
 		} else {
-			if (ChatMsgStatus.SUCCESS.equals(state) || !TextUtils.isEmpty(message.getUrl())){
-				holder.mChatImageView.setImageBitmap(message);
-			} else if (ChatMsgStatus.SEND.equals(state)){
-				holder.mMessageProgressBar.setVisibility(View.VISIBLE);
-				holder.mMessageProgressTv.setVisibility(View.VISIBLE);
-				holder.mMessageProgressTv.setText(String.format(
-						mContext.getString(R.string.progress), 0));
-				
-				WeiXinMsgManager.getInstance().setMessageStatus(position, ChatMsgStatus.SEND);
-				holder.mChatImageView.setUploadImage(message, new UploadListener() {
-					
-					@Override
-					public void onResult(String result) {
-							
-						Log.i(TAG, "UploadImage Result:" + result);
-						holder.mMessageProgressBar.setVisibility(View.GONE);
-						holder.mMessageProgressTv.setVisibility(View.GONE);
-						sendImageMessage(result, message);
-					}
-					
-					@Override
-					public void onProgressUpdate(int progress) {
-						Log.i(TAG, "progress:" + progress);
-						holder.mMessageProgressTv.setText(String.format(
-								mContext.getString(R.string.progress), progress));
-					}
-					
-					@Override
-					public void onError(int errorCode) {
-						
-					}
-				});
+			try {
+				//1、设置图片信息
+				Bitmap bitmap = ImageLoader.getInstance().decodeSampledBitmapFromResource(
+						message.getFileName(), 400, 400);
+				if (bitmap != null){
+					holder.mChatImageView.setImageBitmap(bitmap);
+				} else if (!TextUtils.isEmpty(message.getUrl())){
+					holder.mChatImageView.setImageBitmap(message);
+				} else {
+					holder.mChatImageView.setImageResource(R.drawable.pictures_no);
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			//2、上传图片
+			if (NetWorkUtil.isNetworkAvailable()){
+				sendImage(message, holder);
 			} else {
-			}		
-		}
-		
-		if (ChatMsgSource.SENDED.equals(message.getReceived())){
+				//更新内存数据
+				WeiXinMsgManager.getInstance().setMessageStatus(message.getMsgid(), 
+						ChatMsgStatus.FAILED);
+				//更新数据库
+				WeiRecordDao.getInstance().updateMessageState(message.getMsgid(),
+						ChatMsgStatus.FAILED);
+				holder.mMessageStatusImg.setVisibility(View.VISIBLE);
+			}
+			
+			//3、更新状态
 			if (ChatMsgStatus.FAILED.equals(message.getStatus())){
 				holder.mMessageStatusImg.setVisibility(View.VISIBLE);
 			} else {
@@ -494,6 +534,8 @@ public class ChatMsgAdapter extends BaseAdapter {
 			}
 		}
 		
+		
+		//4、点击事件
 		holder.mChatImageView.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -504,6 +546,8 @@ public class ChatMsgAdapter extends BaseAdapter {
 				mContext.startActivity(intent);
 			}
 		});
+		
+		//5、长按事件
 		if (ChatMsgSource.RECEIVEED.equals(message.getReceived())){
 			holder.mChatImageView.setOnLongClickListener(new popAction(convertView, position, 0, false));
 		} else {
@@ -544,13 +588,18 @@ public class ChatMsgAdapter extends BaseAdapter {
 			}
 		}
 		
+		final boolean bPalyable = duration > 0 ? true : false;
+		
 		holder.mVoiceLayout.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				playAudio(message, holder);
+				if (bPalyable){
+					playAudio(message, holder);
+				}
 			}
 		});
+		
 		if (ChatMsgSource.RECEIVEED.equals(message.getReceived())){
 			holder.mVoiceLayout.setOnLongClickListener(new popAction(convertView, position, 0, false));
 		} else {
@@ -654,6 +703,100 @@ public class ChatMsgAdapter extends BaseAdapter {
 		}
 	}
 	
+	/**
+	 * 文件消息处理（通过airkiss接收过来的文件）
+	 * @param convertView
+	 * @param position
+	 * @param holder
+	 * @param message
+	 */
+	private void handleFileMessage(View convertView, int position, ViewHolder holder,
+			final WeiXinMessage message){
+		try {
+			holder.mMessageTextTv.setText(message.getContent());
+			String fileSize = FileSizeUtil.FormetFileSize(Long.parseLong(message.getFileSize()));
+			holder.mMessageDetatilTv.setText(fileSize);
+			String fileType = message.getLabel();
+			if ("mp3".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_mp3_icon);
+			} else if ("wma".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_wma_icon);
+			} else if ("png".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_png_icon);
+			} else if ("jpg".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_jpg_icon);
+			} else if ("jepg".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_jpg_icon);
+			} else if ("doc".equals(fileType) 
+					|| "docx".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_doc_icon);
+			} else if ("ppt".equals(fileType)
+					|| "pptx".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_ppt_icon);
+			} else if ("xls".equals(fileType)
+					|| "xlsx".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_xls_icon);
+			} else if ("pdf".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_pdf_icon);
+			} else if ("txt".equals(fileType)){
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_txt_icon);
+			} else {
+				holder.mMessageStatusImg.setImageResource(R.drawable.file_def_icon);
+			}
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		holder.mMessageLayout.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(mContext, FilePreviewActivity.class);
+				intent.putExtra("WeiXinMsgRecorder", message);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				mContext.startActivity(intent);
+			}
+		});
+		
+		if (ChatMsgSource.RECEIVEED.equals(message.getReceived())){
+			holder.mMessageLayout.setOnLongClickListener(new popAction(convertView, position, 0, true));
+		} else {
+			holder.mMessageLayout.setOnLongClickListener(new popAction(convertView, position, 1, true));
+		}
+	}
+	
+	/**
+	 * 音乐文件消息处理
+	 * @param convertView
+	 * @param position
+	 * @param holder
+	 * @param message
+	 */
+	private void handleMusicMessage(View convertView, int position,
+			ViewHolder holder, final WeiXinMessage message) {
+		holder.mMessageTextTv.setText(message.getContent());
+		holder.mMessageDetatilTv.setText(message.getLabel());
+		
+		holder.mMessageLayout.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(mContext, WebViewActivity.class);
+				intent.putExtra("LinkUrl", message.getUrl());
+				mContext.startActivity(intent);
+			}
+		});
+		
+		if (ChatMsgSource.RECEIVEED.equals(message.getReceived())){
+			holder.mMessageLayout.setOnLongClickListener(new popAction(convertView, position, 0, true));
+		} else {
+			holder.mMessageLayout.setOnLongClickListener(new popAction(convertView, position, 1, true));
+		}
+	}
+	
 	/**************************************************************************
 	 *                               音频播放模块
 	 *************************************************************************/
@@ -663,9 +806,10 @@ public class ChatMsgAdapter extends BaseAdapter {
 	 * @param holder
 	 */
 	private void playAudio(final WeiXinMessage message, ViewHolder holder){
-		if (mAudioManager.isPlaying()){
-			mAudioManager.stop();
+		if (RecorderPlayerManager.getInstance().isPlaying()){
+			RecorderPlayerManager.getInstance().stop();
 			resetPlayAnim();
+			return;
 		}
 		
 		//播放音频
@@ -675,8 +819,8 @@ public class ChatMsgAdapter extends BaseAdapter {
 			return ;
 		}
 		
-		mAudioManager.play(filePath);
-		mAudioManager.setPlayCompletedListener(new AudioPlayCompletedListener() {
+		RecorderPlayerManager.getInstance().play(filePath);
+		RecorderPlayerManager.getInstance().setPlayCompletedListener(new AudioPlayCompletedListener() {
 			
 			@Override
 			public void onError(int errorcode) {
@@ -727,8 +871,8 @@ public class ChatMsgAdapter extends BaseAdapter {
 	 * 退出聊天界面，如果音频正在播放，则需要暂停
 	 */
 	public void stopPlayAudio(){
-		if (mAudioManager != null && mAudioManager.isPlaying()){
-			mAudioManager.stop();
+		if (RecorderPlayerManager.getInstance() != null && RecorderPlayerManager.getInstance().isPlaying()){
+			RecorderPlayerManager.getInstance().stop();
 			resetPlayAnim();
 		}
 	}
@@ -740,8 +884,71 @@ public class ChatMsgAdapter extends BaseAdapter {
 	
 	
 	/**************************************************************************
-	 *                               图片上传模块
+	 *                               图片处理模块
 	 *************************************************************************/
+	
+	/**
+	 * 上传图片至服务器
+	 * @param message
+	 * @param holder
+	 */
+	private void sendImage(final WeiXinMessage message, final ViewHolder holder){
+		
+		String state = message.getStatus();
+		
+		if (ChatMsgStatus.SEND.equals(state)){
+			
+			//需要上传
+			holder.mMessageProgressBar.setVisibility(View.VISIBLE);
+			holder.mMessageProgressTv.setVisibility(View.VISIBLE);
+			holder.mMessageProgressTv.setText(String.format(
+					mContext.getString(R.string.progress), 0));
+			
+			//切换状态
+			WeiXinMsgManager.getInstance().setMessageStatus(message.getMsgid(), 
+					ChatMsgStatus.SENDING);
+			WeiRecordDao.getInstance().updateMessageState(message.getMsgid(), 
+					ChatMsgStatus.FAILED);
+			//上传图片
+			holder.mChatImageView.setUploadImage(message, new UploadListener() {
+				
+				@Override
+				public void onResult(String result) {
+						
+					Log.i(TAG, "UploadImage Result:" + result);
+					holder.mMessageProgressBar.setVisibility(View.GONE);
+					holder.mMessageProgressTv.setVisibility(View.GONE);
+					if (!TextUtils.isEmpty(result)){
+						sendImageMessage(result, message);
+					} else {
+						holder.mMessageStatusImg.setVisibility(View.VISIBLE);
+						
+						WeiXinMsgManager.getInstance().setMessageStatus(message.getMsgid(), 
+								ChatMsgStatus.FAILED);
+						WeiRecordDao.getInstance().updateMessageState(message.getMsgid(),
+								ChatMsgStatus.FAILED);
+					}
+				}
+				
+				@Override
+				public void onProgressUpdate(int progress) {
+					Log.i(TAG, "progress:" + progress);
+					holder.mMessageProgressTv.setText(String.format(
+							mContext.getString(R.string.progress), progress));
+					if (progress == 100){
+						WeiRecordDao.getInstance().updateMessageReadState(
+								message.getMsgid(), ChatMsgStatus.SUCCESS);
+					}
+				}
+				
+				@Override
+				public void onError(int errorCode) {
+					
+				}
+			});
+		}
+	}
+	
 	/**
 	 * 发送消息
 	 * @param result 图片上传返回结果
@@ -749,24 +956,21 @@ public class ChatMsgAdapter extends BaseAdapter {
 	 */
 	private void sendImageMessage(String result, WeiXinMessage message){
 		try {
-			if (!TextUtils.isEmpty(result)) {
-				
-				JSONObject object = new JSONObject(result);
-				String mediaid = (String) object.get("media_id");
-				
-				// 生成对应的消息类型
-				Recorder recorder = new Recorder();
-				recorder.setFileName(recorder.getFileName());
+			JSONObject object = new JSONObject(result);
+			String mediaid = (String) object.get("media_id");
+			
+			// 生成对应的消息类型
+			Recorder recorder = new Recorder();
+			recorder.setFileName(recorder.getFileName());
 
-				WeixinMsgInfo weixinMsgInfo = new WeixinMsgInfo();
-				weixinMsgInfo.setFromusername(message.getOpenid());
-				weixinMsgInfo.setTousername(message.getToOpenid());
-				weixinMsgInfo.setMessageid(message.getMsgid());
-				weixinMsgInfo.setMsgtype(ChatMsgType.IMAGE);
-				weixinMsgInfo.setRecorder(recorder);
-				weixinMsgInfo.setMediaid(mediaid);
-				WeiXinMsgControl.getInstance().replyMessage(mXmppEventListener, weixinMsgInfo);
-			}
+			WeixinMsgInfo weixinMsgInfo = new WeixinMsgInfo();
+			weixinMsgInfo.setFromusername(message.getOpenid());
+			weixinMsgInfo.setTousername(message.getToOpenid());
+			weixinMsgInfo.setMessageid(message.getMsgid());
+			weixinMsgInfo.setMsgtype(ChatMsgType.IMAGE);
+			weixinMsgInfo.setRecorder(recorder);
+			weixinMsgInfo.setMediaid(mediaid);
+			WeiXinMsgControl.getInstance().replyMessage(mXmppEventListener, weixinMsgInfo);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -791,13 +995,15 @@ public class ChatMsgAdapter extends BaseAdapter {
 					if (!TextUtils.isEmpty(url)) {
 						Log.i(TAG, "Result url:" + url);
 						WeiXinMsgManager.getInstance().setMessageUrl(msgid, url);
+						WeiXinMsgManager.getInstance().setMessageStatus(msgid, 
+								ChatMsgStatus.SUCCESS);
 						
 						//更新URL
 						WeiRecordDao.getInstance().updateRecorderUrl(
 								msgid, result.getResult());
 						
 						//状态修改为发送成功
-						WeiRecordDao.getInstance().updateMessageReadState(
+						WeiRecordDao.getInstance().updateMessageState(
 								msgid, ChatMsgStatus.SUCCESS);
 					} else {
 						//状态修改为发送失败
@@ -850,7 +1056,6 @@ public class ChatMsgAdapter extends BaseAdapter {
 		mPopupWindow.setOutsideTouchable(true);
 		mCopyTv.setOnClickListener(new View.OnClickListener() {
 
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -861,9 +1066,9 @@ public class ChatMsgAdapter extends BaseAdapter {
 					ClipboardManager clipboardManager = (ClipboardManager) mContext
 							.getSystemService(Context.CLIPBOARD_SERVICE);
 					//clipboardManager.setText(mAllRecorders.get(position).getContent());
-					String content = mWeiXinMsgManager.getMessage(position).getContent()
+					String content = WeiXinMsgManager.getInstance().getMessage(position).getContent()
 							.replace("<![CDATA[", "").replace("]]>", "");
-					clipboardManager.setText(ExpressionUtil.getInstance().StringToSpannale(mContext, 
+					clipboardManager.setText(new ExpressionUtil().StringToSpannale(mContext, 
 							new StringBuffer(content)));
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -881,7 +1086,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 				}
 				
 				//TODO 在此要通知进行清除数据库，更新数据
-				WeiXinMessage message = mWeiXinMsgManager.getMessage(position);
+				WeiXinMessage message = WeiXinMsgManager.getInstance().getMessage(position);
 				
 				if (message == null){
 					return ;
@@ -1002,7 +1207,7 @@ public class ChatMsgAdapter extends BaseAdapter {
 		animator.addListener(new AnimatorListenerAdapter() {
 			@Override
 			public void onAnimationEnd(Animator animation) {
-				mWeiXinMsgManager.deleteMessage(dismissPosition);
+				WeiXinMsgManager.getInstance().deleteMessage(dismissPosition);
 				notifyDataSetChanged();
 				ViewHelper.setAlpha(dismissView, 1f);
 				ViewHelper.setTranslationX(dismissView, 0);

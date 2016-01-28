@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.model.DeviceInfo;
 
 
@@ -27,19 +28,15 @@ public class DeviceDao {
 	private static DeviceDao mInstance;
 
 	private DeviceDao(Context context){
-		mDbHelper = new DBHelper(context);
+		mDbHelper = DBHelper.getInstance();
 		mDbHelper.getReadableDatabase();
-	}
-	
-	public static void initDeviceDao(Context context){
-		if (mInstance == null){
-			mInstance = new DeviceDao(context);
-		}
 	}
 	
 	public static DeviceDao getInstance(){
 		if (mInstance == null){
-			throw new NullPointerException("DeviceDao is Null, You should initialize DeviceDao first!!");
+			synchronized (DeviceDao.class) {
+				mInstance = new DeviceDao(WeApplication.getContext());
+			}
 		}
 		return mInstance;
 	}

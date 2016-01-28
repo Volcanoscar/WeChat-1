@@ -14,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.model.QrInfo;
 
 /**
@@ -28,19 +29,15 @@ public class WeiQrDao {
 	private static WeiQrDao mInstance;
 
 	private WeiQrDao(Context context){
-		mDbHelper = new DBHelper(context);
+		mDbHelper = DBHelper.getInstance();
 		mDbHelper.getReadableDatabase();
-	}
-	
-	public static void initWeiUserDao(Context context){
-		if (mInstance == null){
-			mInstance = new WeiQrDao(context);
-		}
 	}
 	
 	public static WeiQrDao getInstance(){
 		if (mInstance == null){
-			throw new NullPointerException("WeiQrDao is Null, You should initialize WeiQrDao first");
+			synchronized (WeiQrDao.class) {
+				mInstance = new WeiQrDao(WeApplication.getContext());
+			}
 		}
 		return mInstance;
 	}

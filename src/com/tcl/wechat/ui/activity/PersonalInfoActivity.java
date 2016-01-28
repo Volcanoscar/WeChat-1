@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
@@ -26,6 +29,7 @@ import com.tcl.wechat.database.WeiUserDao;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.ImageUtil;
+import com.tcl.wechat.utils.WeixinToast;
 import com.tcl.wechat.view.CustomImageView;
 import com.tcl.wechat.view.UserInfoView;
 import com.tcl.wechat.xmpp.WeiXmppManager;
@@ -45,7 +49,9 @@ public class PersonalInfoActivity extends BaseActivity{
 	
 	private static final String PHOTO_FILE_NAME = "system.jpg";
 	
-	private static Bitmap mBitmap;
+	private Context mContext;
+	
+	private Bitmap mBitmap;
 
 	private File tempFile;
 	
@@ -61,11 +67,6 @@ public class PersonalInfoActivity extends BaseActivity{
 	 */
 	private BindUser mSystemUser ;
 	
-	/**
-	 * 工具类
-	 */
-	private DataFileTools mDataFileTools;
-	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +78,8 @@ public class PersonalInfoActivity extends BaseActivity{
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_personal_info);
         
-        mDataFileTools = DataFileTools.getInstance();
-        
+        mContext = this;
+
         initData();
         initView();
 	}
@@ -128,39 +129,79 @@ public class PersonalInfoActivity extends BaseActivity{
 	 */
 	@SuppressLint("InlinedApi") 
 	public void selectIconClick(View view){
-		// 激活系统图库，选择一张图片
-		Intent intent = new Intent(Intent.ACTION_PICK);  
-		intent.setType("image/*");  
-		startActivityForResult(intent, PHOTO_REQUEST_GALLERY);
+		showSelectDialog();
 	}
 	
-	/*
-	 * 从相机获取
-	 */
-	public void camera(View view) {
-		Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-		// 判断存储卡是否可以用，可用进行存储
-		if (mDataFileTools.isSdCardExist()) {
-			intent.putExtra(MediaStore.EXTRA_OUTPUT,
-					Uri.fromFile(new File(Environment
-							.getExternalStorageDirectory(), PHOTO_FILE_NAME)));
+	private void showSelectDialog() {
+		final AlertDialog dlg = new AlertDialog.Builder(this).create();
+        dlg.show();
+        Window window = dlg.getWindow();
+        window.setContentView(R.layout.alertdialog);
+        TextView cameraTv = (TextView) window.findViewById(R.id.tv_content1);
+        cameraTv.setText(R.string.take_picture);
+        cameraTv.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	startCamera();
+            	dlg.cancel();
+            }
+        });
+        
+        TextView galleryTv = (TextView) window.findViewById(R.id.tv_content2);
+        galleryTv.setText(R.string.gallery);
+        galleryTv.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	startAlbum();
+            	dlg.cancel();
+            }
+        });
+	}
+	
+	public void startCamera() {
+		try {
+			Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+			// 判断存储卡是否可以用，可用进行存储
+			if (hasSdcard()) {
+				intent.putExtra(MediaStore.EXTRA_OUTPUT,
+						Uri.fromFile(new File(DataFileTools.getRecordImagePath(), PHOTO_FILE_NAME)));
+			}
+			startActivityForResult(intent, PHOTO_REQUEST_CAMERA);
+		} catch (Exception e) {
+			e.printStackTrace();
+			//则提示用户打开相机失败！
+			WeixinToast.makeText(mContext, getString(R.string.camera_open_failed)).show();
 		}
-		startActivityForResult(intent, PHOTO_REQUEST_CAMERA);
 	}
-	
+
+	/**
+	 * 从图库获取
+	 */
+	public void startAlbum() {
+		// 激活系统图库，选择一张图片
+		try {
+			Intent intent = new Intent(Intent.ACTION_PICK);
+			intent.setType("image/*");
+			startActivityForResult(intent, PHOTO_REQUEST_GALLERY);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			WeixinToast.makeText(mContext, getString(R.string.garrly_open_failed)).show();
+		}
+	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode != -1){//返回失败
+			return ;
+		}
 		if (requestCode == PHOTO_REQUEST_GALLERY) {
 			if (data != null) {
 				// 得到图片的全路径
 				Uri uri = data.getData();
-				//imageUri = uri;
 				crop(uri);
 			}
 		} else if (requestCode == PHOTO_REQUEST_CAMERA) {
-			if (mDataFileTools.isSdCardExist()) {
-				tempFile = new File(Environment.getExternalStorageDirectory(),
+			if (hasSdcard()) {
+				tempFile = new File(DataFileTools.getRecordImagePath(),
 						PHOTO_FILE_NAME);
 				crop(Uri.fromFile(tempFile));
 			} 
@@ -232,6 +273,7 @@ public class PersonalInfoActivity extends BaseActivity{
 		}
 		
 		if (mBitmap != null){
+			WeApplication.getImageLruCache().putBitmap(mSystemUser.getHeadImageUrl(), mBitmap);
 			WeApplication.getImageLoader().put(mSystemUser.getHeadImageUrl(), mBitmap);
 			mUserInfoView.setUserIcon(mBitmap, false);
 		}
@@ -251,6 +293,16 @@ public class PersonalInfoActivity extends BaseActivity{
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
+		fixInputMethodManagerLeak(mContext);
 		super.onDestroy();
+	}
+	
+	private boolean hasSdcard() {
+		if (Environment.getExternalStorageState().equals(
+				Environment.MEDIA_MOUNTED)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

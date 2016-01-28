@@ -1,6 +1,5 @@
 package com.tcl.wechat.database;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -12,7 +11,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.common.IConstant.ChatMsgType;
+import com.tcl.wechat.common.IConstant.DownloadState;
 import com.tcl.wechat.controller.OnLineStatusMonitor;
 import com.tcl.wechat.model.BindUser;
 import com.tcl.wechat.model.WeiXinMessage;
@@ -32,20 +33,15 @@ public class WeiRecordDao {
 	
 	private WeiRecordDao(Context context) {
 		super();
-		mDbHelper = new DBHelper(context);
+		mDbHelper = DBHelper.getInstance();
 		mDbHelper.getReadableDatabase();
 	}
 
-	public static void initWeiRecordDao(Context context){
-		if (mInstance == null){
-			mInstance = new WeiRecordDao(context);
-		}
-	}
-	
 	public static WeiRecordDao getInstance(){
 		if (mInstance == null){
-			throw new NullPointerException("WeiRecordDao is Null, " +
-					"You should initialize WeiRecordDao first!!");
+			synchronized (WeiRecordDao.class) {
+				mInstance = new WeiRecordDao(WeApplication.getContext());
+			}
 		}
 		return mInstance;
 	}
@@ -283,6 +279,25 @@ public class WeiRecordDao {
 		return recorders;
 	}
 	
+	/**
+	 * 获取最新消息的msgid
+	 * @return
+	 */
+	public String getLatestRecorderId(String openid){
+		String msgId = "";
+		//select msgid from messagedetail where  _id=(select max(_id) from messagedetail where received="0")
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		String[] columns = new String[]{Property.COLUMN_MSGID};
+		String selection = "_id=(select max(_id) from messagedetail where received=\"0\" and " + 
+						Property.COLUMN_OPENID + " =? " +  ")";
+		String[] selectionArgs = new String[]{openid};
+		Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, columns , selection, selectionArgs, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			msgId = cursor.getString(cursor.getColumnIndex(Property.COLUMN_MSGID));
+			cursor.close();
+		}
+		return msgId;
+	}
 	
 	/**
 	 * 获取数据库最新消息记录
@@ -320,7 +335,7 @@ public class WeiRecordDao {
 				cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME)) , 
 				cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILESIZE)) , 
 				cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILETIME)) , 
-				"");
+				cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 		}
 		cursor.close();
 		return recorder;
@@ -362,7 +377,7 @@ public class WeiRecordDao {
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME)) , 
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILESIZE)) , 
 					cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILETIME)) , 
-					"");
+					cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
 		}
 		cursor.close();
 		return recorder;
@@ -562,7 +577,7 @@ public class WeiRecordDao {
 	 * @param openid
 	 * @return
 	 */
-	public LinkedList<WeiXinMessage> getUserRecorder(int pageIndex, String openid){
+	public LinkedList<WeiXinMessage> getUserRecorder(int startIndex, String openid){
 		LinkedList<WeiXinMessage> recorders = null;
 		
 		//SELECT * from userMsgRecord where _id order by create_time DESC LIMIT 0,10
@@ -573,11 +588,66 @@ public class WeiRecordDao {
 							 + Property.COLUMN_TOOPENID + "=?";
 			String[] selectionArgs = new String[]{openid, openid};
 			String orderBy = Property.COLUMN_ID + " DESC ";
-			String limit = String.valueOf(pageIndex * 15) + "," + " 15";
+			String limit = String.valueOf(startIndex) + "," + " 15";
 			Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, null, selection, selectionArgs, null, null, orderBy, limit);
 			if (cursor != null){
 				recorders = new LinkedList<WeiXinMessage>();
 				while (cursor.moveToNext()){
+					WeiXinMessage recorder = new WeiXinMessage(
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_OPENID)), 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_TOOPENID)), 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_MSGTYPE)), 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_MSGID)), 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_CONTENT)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_URL)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_LOCATIONX)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_LOCATIONY)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_LABEL)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_TITLE)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_DESCRIPTION)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_FORMAT)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_CREATE_TIME)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_MDDIAID)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_THUMBMEDIAID)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_READED)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_RECEIVED)) ,
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILESIZE)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILETIME)) , 
+							cursor.getString(cursor.getColumnIndex(Property.COLUMN_STATUS)));
+					recorders.addFirst(recorder);
+				}
+				db.setTransactionSuccessful();
+				cursor.close();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		} finally {
+			if (db != null){
+				db.endTransaction();
+			}
+		}
+		return recorders;
+	}
+	
+	/**
+	 * 获取所有未读消息
+	 * @param startTime
+	 * @param openid
+	 * @return
+	 */
+	public LinkedList<WeiXinMessage> getUnreadRecorder(String startTime, String openid){
+		LinkedList<WeiXinMessage> recorders = new LinkedList<WeiXinMessage>();
+		//select * from messagedetail where fromuseropenid = "oOAgYvwgM3Rvifhru2jk60IOg__w" and createtime > "1451977835829";
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		db.beginTransaction();
+		try {
+			String selection = "(" + Property.COLUMN_OPENID + " =? or "+ Property.COLUMN_TOOPENID + " =? ) and " + Property.COLUMN_CREATE_TIME + " >? ";
+			String[] selectionArgs = new String[]{openid, openid, startTime};
+			String orderBy = Property.COLUMN_ID + " DESC ";;
+			Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, null, selection, selectionArgs, null, null, orderBy);
+			if (cursor != null){
+				while (cursor.moveToNext()) {
 					WeiXinMessage recorder = new WeiXinMessage(
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_OPENID)), 
 							cursor.getString(cursor.getColumnIndex(Property.COLUMN_TOOPENID)), 
@@ -681,8 +751,8 @@ public class WeiRecordDao {
 		Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, columns, selection, selectionArgs, null, null, null);
 		if (cursor != null && cursor.moveToLast()){
 			latestTime = cursor.getString(cursor.getColumnIndex(Property.COLUMN_CREATE_TIME));
+			cursor.close();
 		}
-		cursor.close();
 		return latestTime;
 	}
 	
@@ -752,6 +822,26 @@ public class WeiRecordDao {
 	}
 	
 	/**
+	 * 更新Url信息
+	 * @param messageid 
+	 * @param url
+	 * @return
+	 */
+	public boolean updateFileName(String messageid, String filePath){
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		
+		ContentValues values = new ContentValues();
+		values.put(Property.COLUMN_FILENAME, filePath);
+		values.put(Property.COLUMN_STATUS, DownloadState.DOWNLOAD_COMPLETED);
+		String whereClause = Property.COLUMN_MSGID + "=?";
+		String[] whereArgs = new String[]{messageid};
+		if (db.update(Property.TABLE_USERMSGRECORD, values, whereClause, whereArgs) > 0 ){
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * 获取用户未读消息个数
 	 * @param openid
 	 * @return
@@ -812,11 +902,13 @@ public class WeiRecordDao {
 	 * @param msgid
 	 * @return
 	 */
-	public boolean setMessageReaded(){
+	public boolean setMessageReaded(String openid){
 		SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put(Property.COLUMN_READED, "1");
-		if (db.update(Property.TABLE_USERMSGRECORD, values, null, null) > 0){
+		String whereClause = Property.COLUMN_OPENID + "=? or " + Property.COLUMN_TOOPENID + "=?";
+		String[] whereArgs = new String[]{openid, openid};
+		if (db.update(Property.TABLE_USERMSGRECORD, values, whereClause, whereArgs) > 0){
 			return true;
 		}
 		return false;
@@ -877,6 +969,24 @@ public class WeiRecordDao {
 		return status;
 	}
 	
+	/**
+	 * 获取文件名称
+	 * @param msgId
+	 * @return
+	 */
+	public String getFileName(String msgId){
+		String fileName = null;
+		SQLiteDatabase db = mDbHelper.getReadableDatabase();
+		String[] columns = new String[]{Property.COLUMN_FILENAME};
+		String selection = Property.COLUMN_MSGID + "=?";
+		String[] selectionArgs = new String[]{msgId};
+		Cursor cursor = db.query(Property.TABLE_USERMSGRECORD, columns, selection, selectionArgs, null, null, null);
+		if (cursor != null && cursor.moveToFirst()){
+			fileName = cursor.getString(cursor.getColumnIndex(Property.COLUMN_FILENAME));
+			cursor.close();
+		}
+		return fileName;
+	}
 	/**
 	 * 更新消息状态：
 	 * 发送成功、失败、发送中

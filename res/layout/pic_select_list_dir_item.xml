@@ -16,7 +16,6 @@
         android:paddingRight="12dp"
         android:paddingTop="9dp"
         android:scaleType="fitXY"
-        android:src="@drawable/pictures_no" 
         android:contentDescription="@string/contentDesc"/>
 
     <LinearLayout
@@ -31,14 +30,18 @@
             android:id="@+id/id_dir_item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:padding="@dimen/dp_5"
+            android:gravity="left|center_vertical"
             android:text="@string/all_pictures"
-            android:textSize="12sp" />
+            android:textColor="@color/black"
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/id_dir_item_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:padding="@dimen/dp_5"
+            android:gravity="left|center_vertical"
             android:text="@string/pic_count"
             android:textColor="#444"
             android:textSize="18sp" />

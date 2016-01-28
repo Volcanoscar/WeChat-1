@@ -38,6 +38,8 @@ public class Unbind {
 	private Map<String, String> mValues;
 	private XmppEventListener mListener;
 	private XMPPConnection mXmppConnection;
+	private PacketListener mPacketListener = null;
+	
 	
 	public Unbind(Map<String, String> mValues, XmppEventListener mListener) {
 		super();
@@ -87,8 +89,11 @@ public class Unbind {
 	private void addUnbindListener() {
 		ProviderManager.getInstance().addIQProvider("unbind", "tcl:hc:wechat", new UnbindProvider());
 		PacketFilter filter = new PacketTypeFilter(UnbindResultIQ.class);
-		
-		mXmppConnection.addPacketListener(new PacketListener() {
+		if (mPacketListener != null){
+			mXmppConnection.removePacketListener(mPacketListener);
+			mPacketListener = null;
+		}
+		mXmppConnection.addPacketListener(mPacketListener = new PacketListener() {
 			
 			@Override
 			public void processPacket(Packet packet) {

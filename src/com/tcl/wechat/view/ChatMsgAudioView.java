@@ -14,9 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.IConstant.ChatMsgSource;
 import com.tcl.wechat.model.WeiXinMessage;
 

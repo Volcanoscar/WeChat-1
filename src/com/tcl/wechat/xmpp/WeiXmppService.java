@@ -20,25 +20,6 @@ public class WeiXmppService extends Service implements IConstant{
 
 	private static final String TAG = WeiXmppService.class.getSimpleName();
 	
-	//private ICallback iCallback = null;
-	//private NanoHTTPD nanoHTTPD=null;
-	
-	/**
-	 * 绑定一个服务类
-	 */	
-	// private final IRemoteService.Stub mBinder = new IRemoteService.Stub() {
-	//
-	// @Override
-	// public void registerCallback(ICallback cb) throws RemoteException {
-	// iCallback = cb;
-	// }
-	//
-	// @Override
-	// public void unregisterCallback() throws RemoteException {
-	// iCallback = null;
-	// }
-	// };
-	
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -186,9 +167,5 @@ public class WeiXmppService extends Service implements IConstant{
 		// if(nanoHTTPD != null){
 		// nanoHTTPD.stop();
 		// }
-
-		Intent intent = new Intent();
-		intent.setAction("com.tcl.wechat.xmpp.WeiXmppService");
-		startService(intent);
 	}
 }

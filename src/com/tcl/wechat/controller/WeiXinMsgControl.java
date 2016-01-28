@@ -24,7 +24,7 @@ import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.action.recorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.Recorder;
 import com.tcl.wechat.common.Config;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.controller.listener.BindListener;
@@ -58,27 +58,23 @@ public class WeiXinMsgControl implements IConstant{
 	/**
 	 *	消息监听集合
 	 */
-	public static ArrayList<NewMessageListener> mNewMsgListeners = new ArrayList<NewMessageListener>();
+	public ArrayList<NewMessageListener> mNewMsgListeners = new ArrayList<NewMessageListener>();
 	
 	/**
 	 * 网络变化监听集合
 	 */
-	public static ArrayList<NetChangedListener> mNetChangedListeners = new ArrayList<NetChangedListener>();
+	public ArrayList<NetChangedListener> mNetChangedListeners = new ArrayList<NetChangedListener>();
 	
 	/**
 	 * 绑定解绑集合
 	 */
-	public static ArrayList<BindListener> mBindListeners = new ArrayList<BindListener>();
+	public ArrayList<BindListener> mBindListeners = new ArrayList<BindListener>();
 	
 	/**
 	 * 用户在线状态监听集合
 	 */
 	private OnLineChanagedListener mOnLineChanagedListener;
 	
-	
-	private WeiXinNotifier mWeiXinNotifier = WeiXinNotifier.getInstance();
-	
-	private DataFileTools mDataFileTools = DataFileTools.getInstance();
 	
 	private static class WeiXinMsgManagerInstance{
 		private static WeiXinMsgControl mInstance = new WeiXinMsgControl();
@@ -175,7 +171,7 @@ public class WeiXinMsgControl implements IConstant{
 				weiNotice.getNickName(), weiNotice.getSex(), 
 				weiNotice.getHeadImageUrl(), "false");
 		
-		int size = WeiXinMsgControl.mBindListeners.size();
+		int size = mBindListeners.size();
 		
 		Log.d(TAG, "receive Notice Event:" + event);
 		if (event.equals("bind")){
@@ -183,7 +179,7 @@ public class WeiXinMsgControl implements IConstant{
 				Log.e(TAG, "addUser ERROR!!");
 			}
 			for (int i = 0; i < size; i++) {
-				WeiXinMsgControl.mBindListeners.get(i).onBind(bindUser.getOpenId(), 0);
+				mBindListeners.get(i).onBind(bindUser.getOpenId(), 0);
 			}
 		}else if (event.equals("unbind")){
 			/**
@@ -196,7 +192,7 @@ public class WeiXinMsgControl implements IConstant{
 			}
 			//1、发送解绑通知,更新界面
 			for (int i = 0; i < size; i++) {
-				WeiXinMsgControl.mBindListeners.get(i).onUnbind(openId);
+				mBindListeners.get(i).onUnbind(openId);
 			}
 			
 			//2、清除用户状态检测
@@ -254,7 +250,7 @@ public class WeiXinMsgControl implements IConstant{
 			//1、保存消息记录
 		if (WeiRecordDao.getInstance().addRecorder(weiXinMsg)){
 			//2、消息提示
-			mWeiXinNotifier.notify(weiXinMsg);
+			WeiXinNotifier.getInstance().notify(weiXinMsg);
 			notifyAppWidget(weiXinMsg);
 			
 			//3、通知接收
@@ -315,7 +311,7 @@ public class WeiXinMsgControl implements IConstant{
 				//清除头像
 				BindUser delUser = WeiUserDao.getInstance().getUser(openId);
 				if (delUser != null){
-					mDataFileTools.clearImageRecorderCache(delUser.getHeadImageUrl());
+					DataFileTools.getInstance().clearImageRecorderCache(delUser.getHeadImageUrl());
 				}
 				
 				//清除缓存数据
@@ -629,11 +625,11 @@ public class WeiXinMsgControl implements IConstant{
 		}
 		String msgType = recorder.getMsgtype();
 		if (ChatMsgType.IMAGE.equals(msgType)){
-			mDataFileTools.clearImageRecorderCache(recorder.getUrl());
+			DataFileTools.getInstance().clearImageRecorderCache(recorder.getUrl());
 		} else if (ChatMsgType.VIDEO.equals(msgType)){
-			mDataFileTools.clearVideoRecorderCache(recorder.getFileName());
+			DataFileTools.getInstance().clearVideoRecorderCache(recorder.getFileName());
 		} else if (ChatMsgType.VOICE.equals(msgType)){
-			mDataFileTools.clearAudioRecorderCache(recorder.getFileName());
+			DataFileTools.getInstance().clearAudioRecorderCache(recorder.getFileName());
 		}
 	}
 	
@@ -666,13 +662,13 @@ public class WeiXinMsgControl implements IConstant{
 		File savePath = null;
 		String msgType = recorder.getMsgtype();
 		if (ChatMsgType.VOICE.equals(msgType)){
-			cachePath = mDataFileTools.getRecordAudioPath();
+			cachePath = DataFileTools.getRecordAudioPath();
 		} else if (ChatMsgType.IMAGE.equals(msgType)){
-			cachePath = mDataFileTools.getRecordImagePath();
+			cachePath = DataFileTools.getRecordImagePath();
 		} else if (ChatMsgType.VIDEO.equals(msgType) || ChatMsgType.SHORTVIDEO.equals(msgType)){
-			cachePath = mDataFileTools.getRecordVideoPath();
+			cachePath = DataFileTools.getRecordVideoPath();
 		} else {
-			cachePath = mDataFileTools.getCachePath();
+			cachePath = DataFileTools.getCachePath();
 		}
 		
 		File file = new File(cachePath);

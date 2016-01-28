@@ -16,6 +16,7 @@
     <string name="login_success">登录成功</string>
     <string name="login_failed">登录失败</string>
     <string name="wait">请稍等</string>
+    <string name="my_device">我的设备</string>
     
     
     
@@ -60,7 +61,15 @@
     <string name="play_time">播放进度：%1$02d:%2$02d</string>
     <string name="total_time">影片长度：%1$02d:%2$02d</string>
     
+    <!-- 文件浏览界面 -->
+    <string name="file_preview">文件预览</string>
+    <string name="open_with_otherapp">用其他应用打开</string>
+    <string name="hint_open_file">暂时不能打开该文件\r\n你可以用其他应用打开</string>
+    <string name="file_open_failed">文件打开失败</string>
+    <string name="file_error">下载失败，文件可能已损坏!</string>
+    
     <!-- 聊天界面 -->
+    <string name="unread_hint">%d条未读消息</string>
     <string name="slide_cancel_send">手指上滑，取消发送</string>
     <string name="release_cancel_send">松开手指，取消发送</string>
     <string name="recorder_too_short">录音 时间过短</string>
@@ -69,6 +78,7 @@
     <string name="all_pictures">所有图片</string>
     <string name="pic_count">%d &#160;张</string>
     <string name="camera_open_failed">相机打开失败</string>
+    <string name="garrly_open_failed">相册打开失败</string>
     <string name="loading">Loading&#160;</string>
     <string name="no_picture">暂无图片</string>
     <string name="send">发&#160;&#160;&#160;&#160;送</string>

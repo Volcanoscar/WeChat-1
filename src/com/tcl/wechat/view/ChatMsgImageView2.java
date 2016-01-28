@@ -17,7 +17,9 @@ import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.action.imageloader.ImageLoader;
 import com.tcl.wechat.common.IConstant;
+import com.tcl.wechat.common.IConstant.ChatMsgStatus;
 import com.tcl.wechat.controller.listener.UploadListener;
+import com.tcl.wechat.database.WeiRecordDao;
 import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.utils.AccessTokenRequest;
 import com.tcl.wechat.utils.AccessTokenRequest.TokenRequestListener;
@@ -47,6 +49,9 @@ public class ChatMsgImageView2 extends ImageView implements IConstant{
 	public ChatMsgImageView2(Context context, AttributeSet attrs,
 			int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
+		setMinimumWidth(100);
+		setMinimumHeight(100);
+		setScaleType(ScaleType.CENTER_CROP);
 	}
 	
 	public void setImageBitmap(WeiXinMessage message){
@@ -60,16 +65,14 @@ public class ChatMsgImageView2 extends ImageView implements IConstant{
 	public void setUploadImage(WeiXinMessage message, UploadListener listener){
 		
 		mListener = listener;
-		//显示图片
-		ImageLoader.getInstance().loadImage(message.getFileName(), this);
-		//上传图片
+		
 		uploadImage(message);
 	}
 	
 	/**
 	 * 加载本次图片
 	 * @MethodName: loadImage 
-	 * @Description: TODO 
+	 * @Description: TODO .
 	 * @param @param fileName
 	 * @return void
 	 * @throws
@@ -126,7 +129,10 @@ public class ChatMsgImageView2 extends ImageView implements IConstant{
 
 			@Override
 			public void onError(String arg0, String arg1, int arg2) {
-
+				setErrorImage();
+				if (mListener != null){
+					mListener.onResult(null);
+				}
 			}
 		});
 	}
@@ -139,8 +145,20 @@ public class ChatMsgImageView2 extends ImageView implements IConstant{
 	private void sendPost(String accesstoken, final WeiXinMessage message){
 		
 		String fileName = message.getFileName();
+		if (TextUtils.isEmpty(fileName)){
+			return ;
+		}
+		
 		String thumbFileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length());
-		String savePath = PictureUtil.compressImage(getContext(), fileName, thumbFileName, 40);
+		String savePath = PictureUtil.compressImage(getContext(), fileName, thumbFileName, 80);
+		
+		if (TextUtils.isEmpty(savePath)){
+			setErrorImage();
+			if (mListener != null){
+				mListener.onResult(null);
+			}
+			return ;
+		}
 		
 		Log.i(TAG, "thumbFileName:" + thumbFileName + ",savePath:" + savePath);
 		
@@ -165,12 +183,18 @@ public class ChatMsgImageView2 extends ImageView implements IConstant{
 				if (mListener != null){
 					mListener.onProgressUpdate(progress);
 				}
+				if (progress == 100){
+					WeiRecordDao.getInstance().updateMessageState(message.getMsgid(), ChatMsgStatus.SUCCESS);
+				}
 			}
 
 			@Override
 			public void onError(int errorCode) {
 				// TODO Auto-generated method stub
 				setErrorImage();
+				if (mListener != null){
+					mListener.onResult(null);
+				}
 			}
 		}).executeOnExecutor(WeApplication.getExecutorPool(), buffer.toString());
 	}

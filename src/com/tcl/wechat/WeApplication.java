@@ -1,5 +1,6 @@
 package com.tcl.wechat;
 
+import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,16 +17,17 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.baidu.mapapi.SDKInitializer;
 import com.tcl.wechat.action.imageloader.ImageLruCache;
-import com.tcl.wechat.controller.DatabaseController;
 import com.tcl.wechat.database.AppInfoDao;
 import com.tcl.wechat.database.DeviceDao;
 import com.tcl.wechat.database.WeiQrDao;
 import com.tcl.wechat.model.AppInfo;
 import com.tcl.wechat.model.DeviceInfo;
 import com.tcl.wechat.model.QrInfo;
+import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.SystemInfoUtil;
 import com.tcl.wechat.xmpp.WeiXmppManager;
 import com.tcl.wechat.xmpp.WeiXmppService;
+import com.tencent.wechat.AirKissHelper;
 
 public class WeApplication extends Application {
 
@@ -81,9 +83,6 @@ public class WeApplication extends Application {
 		//百度地图初始化
         SDKInitializer.initialize(mContext);
 		
-		//初始化数据库
-		initDateBase();
-		
 		//初始化设备信息
 		initDevice();
 		
@@ -93,6 +92,10 @@ public class WeApplication extends Application {
 		//初始化图片加载器
 		initImageLoader();
 		
+		//注册设备
+		initAirkissMode();
+		
+    	//初始化字体
 		try {
 			mTypeface1 = Typeface.createFromAsset(getAssets(), "fonts/oop.TTF");
 			mTypeface2 = Typeface.createFromAsset(getAssets(), "fonts/regular.TTF");
@@ -102,16 +105,10 @@ public class WeApplication extends Application {
 	}
 
 	/**
-	 * 初始化数据库
-	 */
-	private void initDateBase() {
-		DatabaseController.getController(mContext).initDataBase();
-	}
-	
-	/**
 	 * 初始化设备信息，为后面的注册，登录等做准备
 	 */
 	private void initDevice() {
+		initFilePath();
 		if (!WeiXmppManager.getInstance().isRegister()){
 			
 			//初始化二维码数据库
@@ -153,6 +150,37 @@ public class WeApplication extends Application {
 				}
 			}
 		}
+			
+	}
+	
+	/**
+	 * 文件目录初始化
+	 */
+	private void initFilePath(){
+		File audioPath = new File(DataFileTools.getRecordAudioPath());
+		if (!audioPath.exists()){
+			audioPath.mkdirs();
+		}
+		
+		File videoPath = new File(DataFileTools.getRecordVideoPath());
+		if (!videoPath.exists()){
+			videoPath.mkdirs();
+		}
+		
+		File imagePath = new File(DataFileTools.getRecordImagePath());
+		if (!imagePath.exists()){
+			imagePath.mkdirs();
+		}
+		
+		File filePath = new File(DataFileTools.getRecordFilePath());
+		if (!filePath.exists()){
+			filePath.mkdirs();
+		}
+		
+		File tempFile = new File(DataFileTools.getTempPath());
+		if (!tempFile.exists()){
+			tempFile.mkdirs();
+		}
 	}
 	
 	/**
@@ -176,6 +204,18 @@ public class WeApplication extends Application {
 		mImageCache = new ImageLruCache();
 		mImageLoader = new ImageLoader(mRequestQueue, mImageCache);
 	}
+	
+	/**
+	 * 注册设备（注入Airkiss模式）
+	 */
+	private void initAirkissMode(){
+		
+		String memberId = DeviceDao.getInstance().getMemberId();
+		
+		if (!TextUtils.isEmpty(memberId)){
+			AirKissHelper.getInstance().start(memberId);
+		}
+	}
 
 	/**
 	 * 字体：娃娃体
@@ -190,4 +230,10 @@ public class WeApplication extends Application {
 	public Typeface getTypeface2() {
 		return mTypeface2;
 	}
+	
+	static {
+		System.loadLibrary("airkiss3");
+	}
+	
+	
 }

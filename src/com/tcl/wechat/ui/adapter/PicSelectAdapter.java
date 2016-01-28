@@ -78,7 +78,6 @@ public class PicSelectAdapter extends CommonAdapter<String>{
 			@Override
 			public void onClick(View v){
 				
-
 				// 已经选择过该图片
 				if (mSelectedImage.contains(mDirPath + "/" + item)){
 					mSelectedImage.remove(mDirPath + "/" + item);
@@ -87,7 +86,7 @@ public class PicSelectAdapter extends CommonAdapter<String>{
 					mSelectCount --;
 				} else { // 未选择该图片
 					if (mSelectCount >= MAX_SELECT_COUNT){
-						WeixinToast.makeText(String.format(mContext.getResources()
+						WeixinToast.makeText(mContext, String.format(mContext.getResources()
 								.getString(R.string.select_pic_hint), MAX_SELECT_COUNT)).show();
 						return ;
 					}

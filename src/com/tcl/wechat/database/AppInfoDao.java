@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.model.AppInfo;
 
 /**
@@ -13,25 +14,21 @@ import com.tcl.wechat.model.AppInfo;
  * @author rex.lei
  *
  */
-public class AppInfoDao
-{
+public class AppInfoDao {
+	
 	private DBHelper mDbHelper;
 	private static AppInfoDao mInstance;
-
-	private AppInfoDao(Context context){
-		mDbHelper = new DBHelper(context);
-		mDbHelper.getReadableDatabase();
-	}
 	
-	public static void initAppDao(Context context){
-		if (mInstance == null){
-			mInstance = new AppInfoDao(context);
-		}
+	private AppInfoDao(Context context){
+		mDbHelper = DBHelper.getInstance();
+		mDbHelper.getReadableDatabase();
 	}
 	
 	public static AppInfoDao getInstance(){
 		if (mInstance == null){
-			throw new NullPointerException("AppDao is Null, You should initialize AppDao first!!");
+			synchronized (AppInfo.class) {
+				mInstance = new AppInfoDao(WeApplication.getContext());
+			}
 		}
 		return mInstance;
 	}

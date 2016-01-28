@@ -11,11 +11,11 @@ import android.view.View;
 import android.widget.Button;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.action.recorder.Recorder;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderDialogManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioRecorderStateListener;
+import com.tcl.wechat.action.audiorecorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderDialogManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioRecorderStateListener;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.WeixinToast;
 
@@ -52,24 +52,22 @@ public class AudioRecorderButton extends Button{
     private float mRecorderTime; 				//录音时间
     
     private RecorderDialogManager mDialogManager;
-    private RecorderAudioManager mAudioManager;
     
     private AudioRecorderStateListener mListener;
     public void setRecorderCompletedListener(AudioRecorderStateListener listener){
     	mListener = listener;
     }
-	
+    
 	public AudioRecorderButton(Context context) {
-		super(context, null);
+		this(context, null);
 	}
 	
 	public AudioRecorderButton(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
 		mDialogManager = new RecorderDialogManager(getContext());
-		mAudioManager = RecorderAudioManager.getInstance();
 		
-		mAudioManager.setFilePath(DataFileTools.getRecordAudioPath());
+		RecorderAudioManager.getInstance().setFilePath(DataFileTools.getRecordAudioPath());
 		//mAudioManager.setAudioStateListener(this);
 		
 		// setOnLongClickListener(new View.OnLongClickListener() {
@@ -95,14 +93,14 @@ public class AudioRecorderButton extends Button{
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				WeixinToast.makeText(R.string.long_press_to_record).show();
+				WeixinToast.makeText(getContext(), R.string.long_press_to_record).show();
 			}
 		});
 	}
 	
 	public void onLongClick(){
 		bReady = true;
-		mAudioManager.prepare();
+		RecorderAudioManager.getInstance().prepare();
 		if (mListener != null){
 			mListener.startToRecorder();
 		}
@@ -154,7 +152,7 @@ public class AudioRecorderButton extends Button{
 				break;
 				
 			case MSG_VOICE_CHANGED:
-				mDialogManager.updateVoiceLevle(mAudioManager.getLevel());
+				mDialogManager.updateVoiceLevle(RecorderAudioManager.getInstance().getLevel());
 				break;
 				
 			case MSG_DIALOG_DIMISS:
@@ -198,22 +196,23 @@ public class AudioRecorderButton extends Button{
 			if (!bRecording || mRecorderTime < 0.6){
 				
 				mDialogManager.tooShort();
-				mAudioManager.cancel();
+				RecorderAudioManager.getInstance().cancel();
 				mHandler.sendEmptyMessageDelayed(MSG_DIALOG_DIMISS, 1300);
 				
 			}else if (mCurrentState == STATE_RECORDING){
 				mDialogManager.dismiss();
-				mAudioManager.release();
+				RecorderAudioManager.getInstance().release();
 				
 				if (mListener != null){
-					File file = new File(mAudioManager.getCurrentPath());
+					File file = new File(RecorderAudioManager.getInstance().getCurrentPath());
 					int duration = (int)(Math.ceil(RecorderAudioManager.getDuration(file) / 1000.0 ));
-					mListener.onCompleted(new Recorder(mAudioManager.getCurrentPath(), duration, file.length()));
+					mListener.onCompleted(new Recorder(RecorderAudioManager.getInstance().getCurrentPath(), 
+							duration, file.length()));
 				}
 			} else if (mCurrentState == STATE_WANT_TO_CANCEL){
 				
 				mDialogManager.dismiss();
-				mAudioManager.cancel();
+				RecorderAudioManager.getInstance().cancel();
 			}
 			reset();
 			break;

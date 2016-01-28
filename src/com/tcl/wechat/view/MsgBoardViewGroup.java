@@ -187,7 +187,6 @@ public class MsgBoardViewGroup extends LinearLayout{
 			mMsgBoardViewMap.clear();
 			
 			int size = mAllRecorderInfos.size();
-			Log.i(TAG, "addRecorderSize:" + size + ", mAllRecorderInfos:" + mAllRecorderInfos.toString());
 			for (int i = 0; i < size; i++) {
 				RecorderInfo recorderInfo = mAllRecorderInfos.get(i);
 				addRecorderColumn(recorderInfo.getBindUser(), recorderInfo.getRecorder(), i);

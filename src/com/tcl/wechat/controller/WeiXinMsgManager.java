@@ -1,6 +1,5 @@
 package com.tcl.wechat.controller;
 
-import java.security.Key;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -17,12 +16,8 @@ public class WeiXinMsgManager {
 	
 	/**
 	 * 消息存储实体类 
-	 * {@link Key}messageid
-	 * {@link WeiXinMessage} 消息实体类
 	 */
 	private LinkedList<WeiXinMessage> mAllMessage = new LinkedList<WeiXinMessage>();
-	
-	private WeiRecordDao mRecordDao = WeiRecordDao.getInstance();
 	
 	private static class ChatMsgManagerInstannce{
 		private static final WeiXinMsgManager mInstance = new WeiXinMsgManager();
@@ -45,7 +40,6 @@ public class WeiXinMsgManager {
 		return mAllMessage.get(position);
 	}
 	
-	
 	/**
 	 * 添加消息
 	 * @param message
@@ -59,6 +53,12 @@ public class WeiXinMsgManager {
 	 * @param position 消息编号
 	 */
 	public void deleteMessage(int position){
+		if (mAllMessage == null || mAllMessage.isEmpty()){
+			return ;
+		}
+		if (position < 0 || position >= mAllMessage.size()){
+			return ;
+		}
 		mAllMessage.remove(position);
 	}
 	
@@ -76,12 +76,25 @@ public class WeiXinMsgManager {
 	
 	/**
 	 * 加载消息
-	 * @param indexPage 当前页码编号
 	 * @param openid 指定用户的openid
 	 */
-	public synchronized void loadMessage(int indexPage, String openid){
+	public synchronized void loadMessage( String openid){
 		LinkedList<WeiXinMessage> datas = WeiRecordDao.getInstance().getUserRecorder(
-				indexPage, openid);
+				0, openid);
+		if (datas == null || datas.isEmpty()){
+			return ;
+		}
+		mAllMessage.addAll(datas);
+	}
+	
+	/**
+	 * 获取所有未读消息
+	 * @param lastMsgTime
+	 * @param openid
+	 */
+	public synchronized void loadAllUnreadMessage(String lastMsgTime, String openid){
+		LinkedList<WeiXinMessage> datas = WeiRecordDao.getInstance().getUnreadRecorder(
+				lastMsgTime, openid);
 		if (datas == null || datas.isEmpty()){
 			return ;
 		}
@@ -115,7 +128,7 @@ public class WeiXinMsgManager {
 			message.setStatus(status);
 			mAllMessage.remove(position);
 			mAllMessage.add(position, message);
-			mRecordDao.updateMessageState(message.getMsgid(), status);
+			WeiRecordDao.getInstance().updateMessageState(message.getMsgid(), status);
 		}
 	}
 	
@@ -129,8 +142,9 @@ public class WeiXinMsgManager {
 		for (int i = 0; i < size; i++) {
 			WeiXinMessage message = mAllMessage.get(i);
 			if (msgid.equals(message.getMsgid())){
-				message.setStatus(ChatMsgStatus.SUCCESS);
 				mAllMessage.remove(i);
+
+				message.setStatus(status);
 				mAllMessage.add(i, message);
 				break;
 			}
@@ -152,7 +166,7 @@ public class WeiXinMsgManager {
 			message.setUrl(url);
 			mAllMessage.remove(position);
 			mAllMessage.add(position, message);
-			mRecordDao.updateRecorderUrl(message.getMsgid(), url);
+			WeiRecordDao.getInstance().updateRecorderUrl(message.getMsgid(), url);
 		}
 	}
 	
@@ -170,7 +184,7 @@ public class WeiXinMsgManager {
 				message.setUrl(url);
 				mAllMessage.remove(i);
 				mAllMessage.add(i, message);
-				mRecordDao.updateRecorderUrl(message.getMsgid(), url);
+				WeiRecordDao.getInstance().updateRecorderUrl(message.getMsgid(), url);
 				break;
 			}
 		}

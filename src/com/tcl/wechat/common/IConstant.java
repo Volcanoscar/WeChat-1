@@ -31,6 +31,10 @@ public interface IConstant {
 	public static final String ACTION_SHOW_LOCATION = "android.appwidget.action.SHOW_LOCATION";
 	//显示链接内容
 	public static final String ACTION_SHOW_LINK = "android.appwidget.action.SHOW_LINK";
+	//显示文件内容
+	public static final String ACTION_SHOW_FILE = "android.appwidget.action.SHOW_FILE";
+	//显示音乐内容
+	public static final String ACTION_SHOW_MUSIC = "android.appwidget.action.SHOW_MUSIC";
 	
 	public static final String ACTION_UPDATE_AUDIO_ANMI = "android.appwidget.action.UPDATE_AUDIO_ANMI";
 	
@@ -168,7 +172,8 @@ public interface IConstant {
 	public static final class ChatMsgStatus{
 		public static final String SUCCESS = "0"; 	//发送成功
 		public static final String FAILED =  "1";  	//发送失败
-		public static final String SEND =    "2";  	//发送中
+		public static final String SEND =    "2";  	//开始发送
+		public static final String SENDING = "3";  	//发送中
 	}
 	
 	/**
@@ -184,6 +189,8 @@ public interface IConstant {
 		public static final String TEXT = "text";
 		public static final String MAP = "location";
 		public static final String WEB = "link";
+		public static final String FILE = "file";
+		public static final String MUSIC = "music";
 		public static final String SHORTVIDEO = "shortvideo";
 		public static final String BARRAGE = "barrage";
 		public static final String NOTICE = "tvprogramnotice";
@@ -195,6 +202,12 @@ public interface IConstant {
 	 *
 	 */
 	public static final class DownloadState{
+		public static final String STATE_START_DOWNLOAD = "0";	//开始下载
+		public static final String STATE_DOWNLOAD_PREGRESS = "1";//下载中
+		public static final String STATE_DOWNLOAD_CONPLETED = "2";//下载完成
+		public static final String STATE_DOWNLOAD_FAILED = "3";//下载失败
+		public static final String STATE_FILE_NOTFOUND = "4";//文件未发现
+		
 		public static final String DOWNLOAD_COMPLETED = "String com.tcl.wechat.DOWNLOAD_COMPLETED";
 	}
 	
@@ -210,6 +223,8 @@ public interface IConstant {
 		public static final String KEY_REGISTENER_SUCCESS = "flag_registered";
 		//是否已经进入聊天主界面
 		public static final String KEY_FLAG_ENTER = "flag_enter";
+		//最后一条消息记录
+		public static final String SHARE_LAST_MSGTIME = "last_recorder";
 	}
 	
 	//微信公众号ticket

@@ -23,9 +23,9 @@ import com.android.volley.toolbox.ImageLoader.ImageContainer;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
 import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
-import com.tcl.wechat.action.recorder.RecorderAudioManager;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
-import com.tcl.wechat.action.recorder.listener.AudioPlayCompletedListener;
+import com.tcl.wechat.action.audiorecorder.RecorderAudioManager;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.listener.AudioPlayCompletedListener;
 import com.tcl.wechat.common.Config;
 import com.tcl.wechat.common.IConstant;
 import com.tcl.wechat.database.WeiRecordDao;
@@ -35,6 +35,7 @@ import com.tcl.wechat.model.WeiXinMessage;
 import com.tcl.wechat.ui.activity.BaiduMapActivity;
 import com.tcl.wechat.ui.activity.ChatActivity;
 import com.tcl.wechat.ui.activity.FamilyBoardMainActivity;
+import com.tcl.wechat.ui.activity.FilePreviewActivity;
 import com.tcl.wechat.ui.activity.PlayVideoActivity;
 import com.tcl.wechat.ui.activity.ShowImageActivity;
 import com.tcl.wechat.ui.activity.ShowTextActivity;
@@ -42,6 +43,7 @@ import com.tcl.wechat.ui.activity.WebViewActivity;
 import com.tcl.wechat.utils.DataFileTools;
 import com.tcl.wechat.utils.DateUtils;
 import com.tcl.wechat.utils.ExpressionUtil;
+import com.tcl.wechat.utils.FileSizeUtil;
 import com.tcl.wechat.utils.ImageUtil;
 import com.tcl.wechat.utils.SystemTool;
 
@@ -64,7 +66,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	
 	private static int mUpdateCnt = 0;
 	
-	private boolean bPlaying = false;
+	private static boolean bPlaying = false;
 	
 	private String mLastUserOpenid = null;
 	
@@ -75,11 +77,12 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			R.id.layout_audioview,
 			R.id.layout_locationview,
 			R.id.layout_linkview,
+			R.id.layout_fileview,
+			R.id.layout_musicview,
 			R.id.img_default_info,
 			R.id.default_user_info};
 	
 	//背景
-//	private static int mStyleIndex = 0;
 	private int[] mStyleBg = new int[]{
 			R.drawable.appwidget_style1_bg,
 			R.drawable.appwidget_style2_bg };
@@ -255,7 +258,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 					//识别为邮箱
 					
 				} else {
-					contentCharSeq = ExpressionUtil.getInstance().StringToSpannale(context, 
+					contentCharSeq = new ExpressionUtil().StringToSpannale(context, 
 							new StringBuffer(contentCharSeq));
 					
 					mIntent = new Intent(context, ShowTextActivity.class);
@@ -266,13 +269,10 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			} 
 		} else if (ACTION_SHOW_IMAGE.equals(action)) {
 			//显示图像
-			String url = mRecorder.getUrl();
-			if (!TextUtils.isEmpty(url)){
-				mIntent = new Intent(context, ShowImageActivity.class);
-				mIntent.putExtra("WeiXinMsgRecorder", mRecorder);
-				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-						Intent.FLAG_ACTIVITY_CLEAR_TASK);
-			}
+			mIntent = new Intent(context, ShowImageActivity.class);
+			mIntent.putExtra("WeiXinMsgRecorder", mRecorder);
+			mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+					Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		} else if (ACTION_PLAY_AUDIO.equals(action)) {
 			//播放音频
 			String fileName = mRecorder.getFileName();
@@ -307,31 +307,26 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
 						Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			}  
+		} else if (ACTION_SHOW_FILE.equals(action)){
+			//文件信息
+			if (mRecorder != null){
+				mIntent = new Intent(context, FilePreviewActivity.class);
+				mIntent.putExtra("WeiXinMsgRecorder", mRecorder);
+				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+						Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			}
+		} else if (ACTION_SHOW_MUSIC.equals(action)){
+			
+			//音乐信息
+			String url = mRecorder.getUrl();
+			if (!TextUtils.isEmpty(url)){
+				mIntent = new Intent(mContext, WebViewActivity.class);
+				mIntent.putExtra("LinkUrl", mRecorder.getUrl());
+				mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+						Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			}
 		}
 		return mIntent;
-	}
-	
-	/**
-	 * 播放音频
-	 * @param recorder
-	 */
-	private void playAudio(String fileName){
-		
-		
-		if (!RecorderPlayerManager.getInstance().isPlaying()){
-			
-			//播放音频
-			if (!TextUtils.isEmpty(fileName) ){
-				RecorderPlayerManager.getInstance().play(fileName);
-				RecorderPlayerManager.getInstance().setPlayCompletedListener(playCompletedListener);
-			}
-			bPlaying = true;
-			mUpdateCnt = 0;
-			new Thread(mPlayIngRunnable).start();
-		} else { //如果正在播放，点击后，则需要暂停当前播放
-			RecorderPlayerManager.getInstance().stop();
-			resetPlayAnim();
-		}
 	}
 	
 	private Runnable mPlayIngRunnable = new Runnable() {
@@ -350,6 +345,28 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			}
 		}
 	};
+	
+	
+	/**
+	 * 播放音频
+	 * @param recorder
+	 */
+	private void playAudio(String fileName){
+		
+		if (!RecorderPlayerManager.getInstance().isPlaying() && !bPlaying){
+			//播放音频
+			if (!TextUtils.isEmpty(fileName) ){
+				RecorderPlayerManager.getInstance().play(fileName);
+				RecorderPlayerManager.getInstance().setPlayCompletedListener(playCompletedListener);
+			}
+			
+			mUpdateCnt = 0;
+			bPlaying = true;
+			new Thread(mPlayIngRunnable).start();
+		} else { //如果正在播放，点击后，则需要暂停当前播放
+			resetPlayAnim();
+		}
+	}
 	
 	/**
 	 * 音频播放完成监听器
@@ -371,8 +388,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	private void resetPlayAnim(){
 		mUpdateCnt = 0;
 		bPlaying = false;
-		if (RecorderPlayerManager.getInstance() != null && 
-				RecorderPlayerManager.getInstance().isPlaying()) {
+		if (RecorderPlayerManager.getInstance() != null) {
 			RecorderPlayerManager.getInstance().stop();
 		}
 		if (mRemoteViews == null){
@@ -448,6 +464,16 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		PendingIntent linkPendingIntent = PendingIntent.getBroadcast(context, 0, linkIntent, 0);
 		mRemoteViews.setOnClickPendingIntent(R.id.layout_linkview, linkPendingIntent);
 		
+		//文件信息
+		Intent filentent = new Intent(ACTION_SHOW_FILE);
+		PendingIntent filePendingIntent = PendingIntent.getBroadcast(context, 0, filentent, 0);
+		mRemoteViews.setOnClickPendingIntent(R.id.layout_fileview, filePendingIntent);
+		
+		//音乐信息
+		Intent musicIntent = new Intent(ACTION_SHOW_MUSIC);
+		PendingIntent musicPendingIntent = PendingIntent.getBroadcast(context, 0, musicIntent, 0);
+		mRemoteViews.setOnClickPendingIntent(R.id.layout_musicview, musicPendingIntent);
+		
 		appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
 	}
 	
@@ -520,7 +546,17 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 				//链接显示控件
 				resetViews(R.id.layout_linkview);
 				setupLinkView();
-			} 
+				
+			} else if (ChatMsgType.FILE.equals(msgType)){
+				//文件显示控件
+				resetViews(R.id.layout_fileview);
+				setupFileView();
+				
+			} else if (ChatMsgType.MUSIC.equals(msgType)){
+				//音乐显示控件
+				resetViews(R.id.layout_musicview);
+				setupMusicView();
+			}
 			
 			//更新用户头像
 			setupUserView();
@@ -556,7 +592,11 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 			mRemoteViews.setViewVisibility(R.id.tv_user_name, View.VISIBLE);
 			mRemoteViews.setViewVisibility(R.id.tv_msg_receiver_time, View.VISIBLE);
 			
-			updateImageView(R.id.img_user_icon, 80, 80, true);
+			if ("-2".equals(mBindUser.getSex())){
+				mRemoteViews.setImageViewResource(R.id.img_user_icon, R.drawable.default_device_icon);
+			} else { 
+				updateImageView(R.id.img_user_icon, 80, 80, true);	
+			}
 			String userName = mBindUser.getRemarkName();
 			if (TextUtils.isEmpty(userName)){
 				userName = mBindUser.getNickName();
@@ -588,7 +628,7 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	public void setupTextView(Context context){
 		CharSequence contentCharSeq = mRecorder.getContent();
 		if (!TextUtils.isEmpty(contentCharSeq)){
-			contentCharSeq = ExpressionUtil.getInstance().StringToCharacters(context, 
+			contentCharSeq = new ExpressionUtil().StringToCharacters(context, 
 					new StringBuffer(contentCharSeq), true);
 		} else {
 			contentCharSeq = context.getString(R.string.no_message);
@@ -601,7 +641,23 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 	 * 显示图像信息
 	 */
 	public void setupImageView(){
-		updateImageView(R.id.img_imagemsg_detail, 400, 400, false);
+		if ("set".equals(mRecorder.getFormat())){
+			if (!TextUtils.isEmpty(mRecorder.getFileName())){
+				Bitmap bitmap = BitmapFactory.decodeFile(mRecorder.getFileName());
+				if (mRemoteViews == null){
+					initRemoteViews();
+				}
+				
+				RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.appwidget_view);
+				remoteViews.setImageViewBitmap(R.id.img_imagemsg_detail, bitmap);
+				
+				AppWidgetManager appWidgetManger = AppWidgetManager.getInstance(mContext);
+		        int[] appWidgetIds = appWidgetManger.getAppWidgetIds(new ComponentName(mContext, WeChatWidget.class));
+		        appWidgetManger.updateAppWidget(appWidgetIds, remoteViews);
+			}
+		} else {
+			updateImageView(R.id.img_imagemsg_detail, 400, 400, false);
+		}
 	}
 	
 	/**
@@ -656,6 +712,51 @@ public class WeChatWidget extends AppWidgetProvider implements IConstant{
 		Log.i(TAG, "descHtml:" + descHtml);
 		mRemoteViews.setTextViewText(R.id.tv_link_title, Html.fromHtml(titleHtml));
 		mRemoteViews.setTextViewText(R.id.tv_link_desprition, Html.fromHtml(descHtml));
+	}
+	
+	/**
+	 * 文件显示控件
+	 */
+	public void setupFileView(){
+		
+		mRemoteViews.setTextViewText(R.id.file_title, mRecorder.getContent());
+		String fileSize = FileSizeUtil.FormetFileSize(Long.parseLong(mRecorder.getFileSize()));
+		mRemoteViews.setTextViewText(R.id.file_detail, fileSize);
+		String fileType = mRecorder.getLabel();
+		if ("mp3".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_mp3_icon);
+		} else if("wma".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_wma_icon);
+		} else if ("png".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_png_icon);
+		} else if ("jpg".equals(fileType) 
+				|| "jepg".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_jpg_icon);
+		} else if ("doc".equals(fileType) 
+				|| "docx".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_doc_icon);
+		} else if ("ppt".equals(fileType)
+				|| "pptx".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_ppt_icon);
+		} else if ("xls".equals(fileType)
+				|| "xlsx".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_xls_icon);
+		} else if ("pdf".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_pdf_icon);
+		} else if ("txt".equals(fileType)){
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_txt_icon);
+		} else {
+			mRemoteViews.setImageViewResource(R.id.img_file_icon, R.drawable.file_def_icon);
+		}
+	}
+	
+	/**
+	 * 音乐显示控件
+	 */
+	public void setupMusicView(){
+		mRemoteViews.setTextViewText(R.id.music_title, mRecorder.getContent());
+		mRemoteViews.setTextViewText(R.id.music_artist, mRecorder.getLabel());
+		mRemoteViews.setImageViewResource(R.id.img_music_icon, R.drawable.file_music_icon);
 	}
 	
 	/**

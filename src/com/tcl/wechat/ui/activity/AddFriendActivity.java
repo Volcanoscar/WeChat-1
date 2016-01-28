@@ -1,7 +1,6 @@
 package com.tcl.wechat.ui.activity;
 
-import android.app.Activity;
-import android.content.pm.ActivityInfo;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,18 +21,15 @@ import com.tcl.wechat.view.UserInfoView;
  * @author rex.lei
  *
  */
-public class AddFriendActivity extends Activity {
+public class AddFriendActivity extends BaseActivity {
 	
 	private UserInfoView mUserInfoView;
 	private ImageView mPersonalQrImg;
 	private TextView mAddFriendHintTv;
 	
-	private BindUser mSystemUser ;
+	private Context mContext;
 	
-	/**
-	 * 图像处理帮助类
-	 */
-	private ImageUtil mImageUtil;
+	private BindUser mSystemUser ;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +42,7 @@ public class AddFriendActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_qrcode);
 		
-		mImageUtil = ImageUtil.getInstance();
+		mContext = this;
 		
 		initData();
 		initView();
@@ -82,7 +78,7 @@ public class AddFriendActivity extends Activity {
 			
 			String qrUrl = WeiQrDao.getInstance().getQrUrl();
 			if (!TextUtils.isEmpty(qrUrl)){
-				mImageUtil.setImageBitmap(mPersonalQrImg, qrUrl);
+				ImageUtil.getInstance().setImageBitmap(mPersonalQrImg, qrUrl);
 			}
 		}
 		
@@ -94,23 +90,6 @@ public class AddFriendActivity extends Activity {
 		
 	}
 	
-	
-	@Override
-	protected void onResume() {
-		// TODO Auto-generated method stub
-		super.onResume();
-		if(getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
-			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		}
-	}
-	
-	/**
-	 * 返回按键
-	 * @param view
-	 */
-	public void backOnClick(View view){
-		finish();
-	}
 	
 	@Override
 	protected void onPause() {
@@ -127,6 +106,7 @@ public class AddFriendActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
+		fixInputMethodManagerLeak(mContext);
 		super.onDestroy();
 	}
 }

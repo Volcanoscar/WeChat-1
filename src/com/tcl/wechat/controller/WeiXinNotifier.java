@@ -104,7 +104,7 @@ public class WeiXinNotifier {
 		if (ChatMsgType.TEXT.equals(weiXinMsg.getMsgtype())){
 			contentText = weiXinMsg.getContent();
 			if (!TextUtils.isEmpty(contentText)){
-				contentText = ExpressionUtil.getInstance().StringToCharacters(mContext, 
+				contentText = new ExpressionUtil().StringToCharacters(mContext, 
 						new StringBuffer(contentText), false).toString();
 			} 
 		} else if (ChatMsgType.VIDEO.equals(weiXinMsg.getMsgtype()) ||

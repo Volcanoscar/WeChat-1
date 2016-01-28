@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.tcl.wechat.action.recorder.Recorder;
-import com.tcl.wechat.action.recorder.RecorderPlayerManager;
+import com.tcl.wechat.action.audiorecorder.Recorder;
+import com.tcl.wechat.action.audiorecorder.RecorderPlayerManager;
 
 public class WidgetService extends Service {
 	

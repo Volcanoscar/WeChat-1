@@ -347,7 +347,7 @@ public class ImageUtil {
 		}
 		
 		if (TextUtils.isEmpty(fileName)) {
-			fileName = System.currentTimeMillis() + "";
+			fileName = System.currentTimeMillis() + ".jpg";
 		}
 		
 		boolean bRet = false;
@@ -355,7 +355,7 @@ public class ImageUtil {
         if(!dir.exists()){
         	dir.mkdirs();
         }
-        File file = new File(dir, fileName + ".jpg");
+        File file = new File(dir, fileName);
         
         FileOutputStream out = null;
         try{

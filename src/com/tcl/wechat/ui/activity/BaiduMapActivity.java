@@ -39,6 +39,7 @@ import com.tcl.wechat.utils.WeixinToast;
  */
 public class BaiduMapActivity extends Activity {
 	
+	private Context mContext;
 	// 城市名称
 	private TextView mCityNameTv = null;
 	// 百度地图控件  
@@ -63,6 +64,8 @@ public class BaiduMapActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_mapview);
+		
+		mContext = BaiduMapActivity.this;
 		
 		initData();
 		initView();
@@ -167,9 +170,9 @@ public class BaiduMapActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			if (action.equals(SDKInitializer.SDK_BROADTCAST_ACTION_STRING_PERMISSION_CHECK_ERROR)) {
-				WeixinToast.makeText(R.string.key_error).show();
+				WeixinToast.makeText(mContext, R.string.key_error).show();
 			} else if (action.equals(SDKInitializer.SDK_BROADCAST_ACTION_STRING_NETWORK_ERROR)) {
-				WeixinToast.makeText(R.string.network_not_available).show();
+				WeixinToast.makeText(mContext, R.string.network_not_available).show();
 			}
 		}
 	}

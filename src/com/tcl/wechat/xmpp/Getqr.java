@@ -34,6 +34,7 @@ public class Getqr {
 	
 	private XMPPConnection mConnection = null;
 	private XmppEventListener mListener = null;
+	private PacketListener mPacketListener = null;
 	
 
 	public Getqr(XMPPConnection mConnection, XmppEventListener mListener) {
@@ -51,7 +52,11 @@ public class Getqr {
 				// TODO Auto-generated method stub
 				ProviderManager.getInstance().addIQProvider("getqr", "tcl:hc:wechat", new GetQrProvider());
 				PacketFilter filter = new PacketTypeFilter(GetQrResultIQ.class);
-				mConnection.addPacketListener(new PacketListener() {
+				if (mPacketListener != null){
+					mConnection.removePacketListener(mPacketListener);
+					mPacketListener = null;
+				}
+				mConnection.addPacketListener(mPacketListener = new PacketListener() {
 					
 					@Override
 					public void processPacket(Packet packet) {

@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.controller.ActivityManager;
 import com.tcl.wechat.logcat.DLog;
 import com.tcl.wechat.view.listener.UserInfoEditListener;
 
@@ -32,9 +31,11 @@ public class EditUserDialog  extends Dialog {
 	
 	private Button mCancelBtn, mConfrimBtn;
 	
-	private ActivityManager mActivityManager;
-	
 	private UserInfoEditListener mEditListener;
+	
+	public void setUserInfoEditListener(UserInfoEditListener listener){
+		mEditListener = listener;
+	}
 	
 	public EditUserDialog(Context context) {
 		this(context, R.style.dialogStyle);
@@ -48,9 +49,6 @@ public class EditUserDialog  extends Dialog {
 		
 		mContext = context;
 		setCancelable(true);
-		
-		mActivityManager = ActivityManager.getInstance();
-		mEditListener = mActivityManager.getUserInfoEditListener();
 		
 	}
 

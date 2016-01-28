@@ -109,6 +109,9 @@ public class PictureUtil {
 		Log.i(TAG, "filePath:" + filePath + ",fileName:" + fileName);
 
 		Bitmap bm = getSmallBitmap(filePath);
+		if (bm == null){
+			return null;
+		}
 
 		int degree = readPictureDegree(filePath);
 

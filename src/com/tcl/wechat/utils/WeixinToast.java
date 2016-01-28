@@ -2,9 +2,7 @@ package com.tcl.wechat.utils;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
@@ -14,7 +12,6 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.tcl.wechat.R;
-import com.tcl.wechat.WeApplication;
 
 /**
  * 自定义Toast
@@ -23,8 +20,6 @@ import com.tcl.wechat.WeApplication;
  */
 public class WeixinToast {
 	
-	private static Context mContext = WeApplication.getContext();
-
 	public static final int LENGTH_SHORT = 2000;
 	public static final int LENGTH_LONG = 3500;
 
@@ -42,23 +37,23 @@ public class WeixinToast {
 	private final WindowManager.LayoutParams mParams = new WindowManager.LayoutParams();
 	
 	
-	public static WeixinToast makeText(int srcId) {
-		return makeText(mContext.getResources().getString(srcId), LENGTH_LONG);
+	public static WeixinToast makeText(Context context, int srcId) {
+		return makeText(context, context.getResources().getString(srcId), LENGTH_LONG);
 	}
 	
-	public static WeixinToast makeText(CharSequence text) {
-		return makeText(text, LENGTH_LONG);
+	public static WeixinToast makeText(Context context, CharSequence text) {
+		return makeText(context, text, LENGTH_LONG);
 	}
 	
-	public static WeixinToast makeText(int srcId, int duration) {
-		return makeText(mContext.getResources().getString(srcId), duration);
+	public static WeixinToast makeText(Context context, int srcId, int duration) {
+		return makeText(context, context.getResources().getString(srcId), duration);
 	}
 	
-	public static WeixinToast makeText(CharSequence text, int duration) {
-		WeixinToast result = new WeixinToast(mContext);
+	public static WeixinToast makeText(Context context, CharSequence text, int duration) {
+		WeixinToast result = new WeixinToast(context);
 
-		LinearLayout mLayout = new LinearLayout(mContext);
-		TextView tv = new TextView(mContext);
+		LinearLayout mLayout = new LinearLayout(context);
+		TextView tv = new TextView(context);
 		tv.setText(text);
 		tv.setTextSize(18);
 		tv.setTextColor(Color.WHITE);

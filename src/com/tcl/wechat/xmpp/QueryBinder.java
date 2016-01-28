@@ -37,6 +37,7 @@ public class QueryBinder {
 	
 	private XMPPConnection mConnection = null;
 	private XmppEventListener mListener = null;
+	private PacketListener mPacketListener = null;
 	
 	public QueryBinder(XMPPConnection mConnection, XmppEventListener mListener) {
 		super();
@@ -52,7 +53,11 @@ public class QueryBinder {
 			protected Void doInBackground(Void... params) {
 				ProviderManager.getInstance().addIQProvider("querybinder", "tcl:hc:wechat", new QueryBinderProvider());
 				PacketFilter filter = new PacketTypeFilter(QueryBinderResultIQ.class);
-				mConnection.addPacketListener(new PacketListener() {
+				if (mPacketListener != null){
+					mConnection.removePacketListener(mPacketListener);
+					mPacketListener = null;
+				}
+				mConnection.addPacketListener(mPacketListener = new PacketListener() {
 					
 					@Override
 					public void processPacket(Packet packet) {

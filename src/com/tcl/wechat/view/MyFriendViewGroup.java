@@ -23,7 +23,6 @@ import com.tcl.wechat.R;
 import com.tcl.wechat.WeApplication;
 import com.tcl.wechat.common.IConstant.CommandAction;
 import com.tcl.wechat.common.IConstant.EventType;
-import com.tcl.wechat.controller.ActivityManager;
 import com.tcl.wechat.controller.WeiXinMsgControl;
 import com.tcl.wechat.database.DeviceDao;
 import com.tcl.wechat.database.Property;
@@ -73,7 +72,7 @@ public class MyFriendViewGroup extends LinearLayout{
 	 */
 	private int[] track = new int[]{110, 135, 160, 110, 75};
 	
-	private ActivityManager mActivityManager;
+	//private ActivityManager mActivityManager;
 	
 	private GroupScrollView mHorizontalScrollView = null;
 	
@@ -96,9 +95,9 @@ public class MyFriendViewGroup extends LinearLayout{
         mAllUserViews = new ArrayList<UserView>();
         mAllBindUsers = new LinkedList<BindUser>();
         mAllUserViewMap = new HashMap<String, UserView>();
-        mActivityManager = ActivityManager.getInstance();
+        //mActivityManager = ActivityManager.getInstance();
         
-        mActivityManager.setUserInfoEditListener(mEditListener);
+        //mActivityManager.setUserInfoEditListener(mEditListener);
 	}
 	
 	public void loadBindUserData() {
@@ -274,7 +273,7 @@ public class MyFriendViewGroup extends LinearLayout{
 		String headImageUrl = bindUser.getHeadImageUrl();
 		if (!TextUtils.isEmpty(headImageUrl)){
 			userInfoView.setUserIcon(headImageUrl, true);
-		}
+		} 
 		
 		if (bindUser.getRemarkName() != null){
 			userInfoView.setUserName(bindUser.getRemarkName());
@@ -283,14 +282,14 @@ public class MyFriendViewGroup extends LinearLayout{
 			WeiUserDao.getInstance().updateRemarkName(bindUser.getOpenId(), 
 					bindUser.getNickName());
 		}
-		if ("true".equals(bindUser.getStatus())){ //在线
-			userInfoView.setOnLineStatue(true);
-			//用户在线状态监听器
-			startMonitorUserStatus(openid);
-		} else {
-			//离线用户不用检测，在收到新消息时，开始检测
-			userInfoView.setOnLineStatue(false);
-		}
+		// if ("true".equals(bindUser.getStatus())){ //在线
+		// userInfoView.setOnLineStatue(true);
+		// //用户在线状态监听器
+		// startMonitorUserStatus(openid);
+		// } else {
+		// //离线用户不用检测，在收到新消息时，开始检测
+		// userInfoView.setOnLineStatue(false);
+		// }
 	}
 	
 	private void attachChildViewToParent(View view, int position, int width, int height, 
@@ -381,6 +380,7 @@ public class MyFriendViewGroup extends LinearLayout{
 		public void onEditUserNameEvent(String eventTag) {
 			EditUserDialog dialog = new EditUserDialog(mContext);
 			dialog.showDialog(eventTag);
+			dialog.setUserInfoEditListener(mEditListener);
 		}
 
 		@Override
@@ -393,6 +393,7 @@ public class MyFriendViewGroup extends LinearLayout{
 
 			DelUserDialog dialog = new DelUserDialog(mContext);
 			dialog.showDailog(bindUser);
+			dialog.setUserInfoEditListener(mEditListener);
 		}
 
 		@Override
@@ -440,7 +441,7 @@ public class MyFriendViewGroup extends LinearLayout{
 						mContext.sendBroadcast(intent);
 					}
 				} else {
-					WeixinToast.makeText(R.string.remarkname_is_null).show();
+					WeixinToast.makeText(getContext(), R.string.remarkname_is_null).show();
 				}
 			}
 		}

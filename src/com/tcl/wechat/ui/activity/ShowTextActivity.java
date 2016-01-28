@@ -59,7 +59,7 @@ public class ShowTextActivity extends Activity implements OnTouchListener{
 		mContentInfoTv.setMovementMethod(ScrollingMovementMethod.getInstance()); 
 		
 		if (!TextUtils.isEmpty(mContentSequence)){
-			mContentSequence = ExpressionUtil.getInstance().StringToSpannale(this, 
+			mContentSequence = new ExpressionUtil().StringToSpannale(this, 
 					new StringBuffer(mContentSequence));
 		} else {
 			mContentSequence = getString(R.string.no_message);

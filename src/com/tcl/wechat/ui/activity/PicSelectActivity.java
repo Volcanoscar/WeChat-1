@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -47,7 +46,7 @@ import com.tcl.wechat.view.ListImageDirPopupWindow.OnImageDirSelected;
  * @author rex.lei
  *
  */
-public class PicSelectActivity extends Activity implements OnImageDirSelected{
+public class PicSelectActivity extends BaseActivity implements OnImageDirSelected{
 
 	private static final String TAG = PicSelectActivity.class.getSimpleName();
 	
@@ -144,7 +143,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 						MediaStore.Images.Media.MIME_TYPE + "=? or "
 								+ MediaStore.Images.Media.MIME_TYPE + "=? or " 
 								+ MediaStore.Images.Media.MIME_TYPE + "=?",
-						new String[] { "image/jpeg", "image/png", "image/jpg"},
+						new String[] {"image/jpeg", "image/png", "image/jpg"},
 						MediaStore.Images.Media.DATE_MODIFIED);
 
 				Log.i(TAG, mCursor.getCount() + "");
@@ -163,7 +162,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 						continue;
 					String dirPath = parentFile.getAbsolutePath();
 					ImageFloder imageFloder = null;
-					// 利用一个HashSet防止多次扫描同一个文件夹（不加这个判断，图片多起来还是相当恐怖的~~）
+					// 利用一个HashSet防止多次扫描同一个文件夹
 					if (mDirPaths.contains(dirPath)){
 						continue;
 					} else {
@@ -173,25 +172,28 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 						imageFloder.setDir(dirPath);
 						imageFloder.setFirstImagePath(path);
 					}
-
-					int picSize = parentFile.list(new FilenameFilter(){
+					String[] parentFileList = parentFile.list(new FilenameFilter(){
 						@Override
 						public boolean accept(File dir, String filename){
 							if (filename.endsWith(".jpg")
 									|| filename.endsWith(".png")
-									|| filename.endsWith(".jpeg"))
+									|| filename.endsWith(".jpeg")){
 								return true;
+							}
 							return false;
 						}
-					}).length;
-					mTotalCount += picSize;
+					}) ;
+					int picSize = parentFileList == null ? 0 : parentFileList.length;
+					if (picSize > 0 ){
+						mTotalCount += picSize;
 
-					imageFloder.setCount(picSize);
-					mImageFloders.add(imageFloder);
+						imageFloder.setCount(picSize);
+						mImageFloders.add(imageFloder);
 
-					if (picSize > mPicsSize){
-						mPicsSize = picSize;
-						mImgDir = parentFile;
+						if (picSize > mPicsSize){
+							mPicsSize = picSize;
+							mImgDir = parentFile;
+						}
 					}
 				}
 				mCursor.close();
@@ -269,12 +271,24 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 	private void data2View(){
 		if (mImgDir == null){
 			mBottomLy.setVisibility(View.GONE);
-			WeixinToast.makeText(R.string.no_picture).show();
+			WeixinToast.makeText(mContext, R.string.no_picture).show();
 			//ToastUtil.showToastForced(R.string.no_picture);
 			return;
 		}
 
-		mImgs = Arrays.asList(mImgDir.list());
+		//mImgs = Arrays.asList(mImgDir.list());
+		mImgs = Arrays.asList(mImgDir.list(new FilenameFilter(){
+			@Override
+			public boolean accept(File dir, String filename){
+				if (filename.endsWith(".jpg") 
+						|| filename.endsWith(".png")
+						|| filename.endsWith(".jpeg")){
+					return true;
+				}
+				return false;
+			}
+		}));
+
 		/**
 		 * 可以看到文件夹的路径和图片的路径分开保存，极大的减少了内存的消耗；
 		 */
@@ -314,12 +328,16 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 	public void selected(ImageFloder floder){
 
 		mImgDir = new File(floder.getDir());
+		if (mImgDir == null || !mImgDir.exists()){
+			return;
+		}
 		mImgs = Arrays.asList(mImgDir.list(new FilenameFilter(){
 			@Override
 			public boolean accept(File dir, String filename){
 				if (filename.endsWith(".jpg") || filename.endsWith(".png")
-						|| filename.endsWith(".jpeg"))
+						|| filename.endsWith(".jpeg")){
 					return true;
+				}
 				return false;
 			}
 		}));
@@ -358,6 +376,7 @@ public class PicSelectActivity extends Activity implements OnImageDirSelected{
 		}
 		
 		String[] selectPics = mAdapter.getSelectedImage();
+		
 		if (selectPics != null && selectPics.length > 0) {
 			Intent intent = new Intent();
 			intent.putExtra("selectPic", selectPics);
